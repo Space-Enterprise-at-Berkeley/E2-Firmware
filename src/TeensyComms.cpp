@@ -1,4 +1,4 @@
-#include <Comms.h>
+#include <TeensyComms.h>
 
 namespace Comms {
 
