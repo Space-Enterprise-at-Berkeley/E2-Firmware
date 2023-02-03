@@ -18,7 +18,7 @@ Task taskTable[] = {
 
 void setup() {
   // setup stuff here
-  Serial.begin(921600);
+  Comms::init(); // takes care of Serial.begin()
 
   while(1) {
     // main loop here to avoid arduino overhead
@@ -28,7 +28,7 @@ void setup() {
         taskTable[i].nexttime = ticks + taskTable[i].taskCall();
       }
     }
-    // Comms::processWaitingPackets();
+    Comms::processWaitingPackets();
   }
 }
 
