@@ -5,11 +5,10 @@
 
 uint32_t task_example() { 
   
-  Serial.println("Hello world");
+  Serial.println("Hello World!");
+  return 1000 * 1000;
   
-  return 1000 * 1000; }
-
-
+}
 
 Task taskTable[] = {
   {task_example, 0, true},
@@ -19,7 +18,8 @@ Task taskTable[] = {
 
 void setup() {
   // setup stuff here
-  Serial.begin(921600);
+  Comms::init(); // takes care of Serial.begin()
+
   while(1) {
     // main loop here to avoid arduino overhead
     for(uint32_t i = 0; i < TASK_COUNT; i++) { // for each task, execute if next time >= current time
@@ -32,4 +32,4 @@ void setup() {
   }
 }
 
-void loop () {}
+void loop() {}
