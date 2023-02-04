@@ -22,38 +22,66 @@
     v1.0  - First release Mar 2018
 */
 /**************************************************************************/
-//Plus changes by Nihal!
+#if ARDUINO >= 100
+ #include "Arduino.h"
+#else
+ #include "WProgram.h"
+#endif
 
-#include "Arduino.h"
 #include <Wire.h>
 
-#include "INA233.h"
+#include "infinityPV_INA233.h"
 
-
+uint8_t INA233::requestFrom(uint8_t addr, uint8_t qty, uint32_t iaddr, uint8_t n, uint8_t stop)
+{
+	if (n > 0) {
+		union { uint32_t ul; uint8_t b[4]; } iaddress;
+		iaddress.ul = iaddr;
+		m_i2c.beginTransmission(addr);
+		if (n > 3) n = 3;
+		do {
+			n = n - 1;
+			m_i2c.write(iaddress.b[n]);
+		} while (n > 0);
+		m_i2c.endTransmission(false);
+	}
+	if (qty > 128) qty = 128;
+	return m_i2c.requestFrom(addr, qty, stop);
+}
 /**************************************************************************/
 /*!
     @brief  Writes a byte over I2C, no data are sent, only the
     PMBus comand (reg).
 */
 /**************************************************************************/
-void INA233::writeRegister(uint8_t reg)
+void INA233::wireSendCmd(uint8_t reg)
 {
-  m_i2c->beginTransmission(inaAddress);
-  m_i2c->write(reg);                       // PMBus command
-  m_i2c->endTransmission();
+  m_i2c.beginTransmission(ina233_i2caddr);
+  #if ARDUINO >= 100
+    m_i2c.write(reg);                       // PMBus command
+  #else
+    m_i2c.send(reg);                        // PMBus command
+  #endif
+  m_i2c.endTransmission();
 }
+
 /**************************************************************************/
 /*!
     @brief  Writes a byte (value) to the specified register
     by the PMBus comand (reg) over I2C
 */
 /**************************************************************************/
-void INA233::writeRegister8(uint8_t reg, uint8_t value)
+void INA233::wireWriteByte (uint8_t reg, uint8_t value)
 {
-  m_i2c->beginTransmission(inaAddress);
-  m_i2c->write(reg);                       // PMBus command
-  m_i2c->write(value);                     // byte to write
-  m_i2c->endTransmission();
+  m_i2c.beginTransmission(ina233_i2caddr);
+  #if ARDUINO >= 100
+    m_i2c.write(reg);                       // PMBus command
+    m_i2c.write(value);                     // byte to write
+  #else
+    m_i2c.send(reg);                        // PMBus command
+    m_i2c.send(value);                      // byte to write
+  #endif
+  m_i2c.endTransmission();
 }
 /**************************************************************************/
 /*!
@@ -61,70 +89,20 @@ void INA233::writeRegister8(uint8_t reg, uint8_t value)
     by the PMBus comand (reg) over I2C
 */
 /**************************************************************************/
-void INA233::writeRegister16(uint8_t reg, uint16_t value)
+void INA233::wireWriteWord (uint8_t reg, uint16_t value)
 {
-  m_i2c->beginTransmission(inaAddress);
-  m_i2c->write(reg);                       // PMBus command
-  m_i2c->write(value & 0xFF);              // Lower 8-bits
-  m_i2c->write((value >> 8) & 0xFF);       // Upper 8-bits
-  m_i2c->endTransmission();
+  m_i2c.beginTransmission(ina233_i2caddr);
+  #if ARDUINO >= 100
+    m_i2c.write(reg);                       // PMBus command
+    m_i2c.write(value & 0xFF);              // Lower 8-bits
+    m_i2c.write((value >> 8) & 0xFF);       // Upper 8-bits
+  #else
+    m_i2c.send(reg);                        // PMBus command
+    m_i2c.send(value & 0xFF);               // Lower 8-bits
+    m_i2c.send(value >> 8);                 // Upper 8-bits
+  #endif
+  m_i2c.endTransmission();
 }
-
-/**************************************************************************/
-/*!
-    @brief  Reads a 16 bit value from the INA233 over I2C
-*/
-/**************************************************************************/
-uint16_t INA233::readRegister16(uint8_t reg)
-{
-    int16_t value;
-
-    Serial.println("yeet");
-    Serial.flush();
-
-    m_i2c->beginTransmission(inaAddress);
-    Serial.println("yeet");
-    Serial.flush();
-    m_i2c->write(reg);
-    Serial.println("yeet");
-    Serial.flush();
-    m_i2c->endTransmission();
-    Serial.println("yeet");
-    Serial.flush();
-
-    m_i2c->beginTransmission(inaAddress);
-    Serial.println("yeet");
-    Serial.flush();
-    if(m_i2c->requestFrom(inaAddress, 2) != 2) { return -1; };
-    Serial.println("yeet");
-    Serial.flush();
-    // while(!m_i2c->available()) {};
-    Serial.println("yeet");
-    Serial.flush();
-    uint16_t vha = m_i2c->read();
-    Serial.println("yeet");
-    Serial.flush();
-    uint16_t vla = m_i2c->read();
-    Serial.println("yeet");
-    Serial.flush();
-
-    value = vha << 8 | vha;
-
-    return value;
-}
-/**************************************************************************/
-/*!
-    @brief  Reads a 8 bit value from the INA233 over I2C
-*/
-/**************************************************************************/
-uint8_t INA233::readRegister8(uint8_t reg)
-{
-  writeRegister(reg);
-  m_i2c->beginTransmission(inaAddress);
-  if(m_i2c->requestFrom(inaAddress, (uint8_t)1,(uint8_t)true) != 1) { return -1; };
-  return m_i2c->read();
-}
-
 /**************************************************************************/
 /*!
     @brief  Reads a Block of 6 bytes from the INA233 over I2C
@@ -132,18 +110,38 @@ uint8_t INA233::readRegister8(uint8_t reg)
     block size (6 in this case), so the request must be for block_size+1
 */
 /**************************************************************************/
-void INA233::readRegisterBlock(uint8_t reg, uint8_t value[6])
+void INA233::wireReadBlock(uint8_t reg, uint8_t value[6])
 {
   int i;
   uint8_t block_size;
-  writeRegister(reg);
-  m_i2c->beginTransmission(inaAddress);
-  if(m_i2c->requestFrom(inaAddress, (uint8_t)7,(uint8_t)true) != 7) { return;};
-  block_size=m_i2c->read();
+  requestFrom(ina233_i2caddr,(uint8_t)7,reg,(uint8_t)1,(uint8_t)true);
+  block_size=m_i2c.read();
   for (i=0;i<block_size;i++)
   {
-    value[i]=m_i2c->read();
+    value[i]=m_i2c.read();
   }
+}
+
+/**************************************************************************/
+/*!
+    @brief  Reads a 16 bit value from the INA233 over I2C
+*/
+/**************************************************************************/
+void INA233::wireReadWord(uint8_t reg, uint16_t *value)
+{
+  requestFrom(ina233_i2caddr,(uint8_t)2,reg,(uint8_t)1,(uint8_t)true);
+  *value = m_i2c.read();
+  *value=((m_i2c.read() << 8) | *value);
+}
+/**************************************************************************/
+/*!
+    @brief  Reads a 8 bit value from the INA233 over I2C
+*/
+/**************************************************************************/
+void INA233::wireReadByte(uint8_t reg, uint8_t *value)
+{
+  requestFrom(ina233_i2caddr,(uint8_t)1,reg,(uint8_t)1,(uint8_t)true);
+  *value = m_i2c.read();
 }
 /**************************************************************************/
 /*!
@@ -156,7 +154,7 @@ void INA233::readRegisterBlock(uint8_t reg, uint8_t value[6])
 
     */
 /**************************************************************************/
-uint16_t INA233::setCalibration(float r_shunt,float i_max, uint8_t *ERROR)
+uint16_t INA233::setCalibration(float r_shunt,float i_max,float *Current_LSB,float *Power_LSB, int16_t *mc,int8_t *Rc, int16_t *mp, int8_t *Rp,  uint8_t *ERROR)
 {
   float C_LSB=0;
   float P_LSB=0;
@@ -171,8 +169,8 @@ uint16_t INA233::setCalibration(float r_shunt,float i_max, uint8_t *ERROR)
 
   C_LSB=i_max/pow(2,15);
   P_LSB=25*C_LSB;
-  current_LSB=C_LSB*1000000;
-  power_LSB=P_LSB*1000;
+  *Current_LSB=C_LSB*1000000;
+  *Power_LSB=P_LSB*1000;
   CAL=0.00512/(r_shunt*C_LSB);
 
   //Check CAL is in the uint16 range
@@ -182,7 +180,7 @@ uint16_t INA233::setCalibration(float r_shunt,float i_max, uint8_t *ERROR)
     }
   else
     {
-    writeRegister16(MFR_CALIBRATION, (uint16_t)CAL);
+    wireWriteWord(MFR_CALIBRATION, (uint16_t)CAL);
     }
   m_c_F=1/C_LSB;
   m_p_F=1/P_LSB;
@@ -246,6 +244,10 @@ uint16_t INA233::setCalibration(float r_shunt,float i_max, uint8_t *ERROR)
          }
       }
     }
+  *mp=m_p_F;
+  *mc=m_c_F;
+  *Rc=local_R_c;
+  *Rp=local_R_p;
   *ERROR=local_ERROR;
 
   m_c=int16_t(m_c_F);
@@ -260,31 +262,30 @@ uint16_t INA233::setCalibration(float r_shunt,float i_max, uint8_t *ERROR)
     @brief  Instantiates a new INA233 class
 */
 /**************************************************************************/
-
-void INA233::init(TwoWire *i2c, uint8_t addr, float r_shunt,float i_max)
-{
-  m_i2c = i2c;
-  m_i2c->begin(1,2); //ESP uses pins 1, 2 as SDA, SCL
-  
-  inaAddress = addr;
-  current_LSB = 0;
-  power_LSB = 0;
+INA233::INA233(uint8_t addr, TwoWire &i2c) : m_i2c(i2c) {
+  ina233_i2caddr = addr;
   m_c=0;
   R_c=0;
   m_p=0;
   R_p=0;
-  uint8_t Set_ERROR=0;
-  setCalibration(r_shunt, i_max, &Set_ERROR);
 }
-
+/**************************************************************************/
+/*!
+    @brief  Setups the HW
+*/
+/**************************************************************************/
+void INA233::begin() {
+  m_i2c.begin();
+}
 /**************************************************************************/
 /*!
     @brief  Gets the raw bus voltage (2-byte, two's complement integer
     received from the device)
 */
 /**************************************************************************/
-int16_t INA233::readBusVoltage_raw() {
-  uint16_t value = readRegister16(READ_VIN);
+int16_t INA233::getBusVoltage_raw() {
+  uint16_t value;
+  wireReadWord(READ_VIN, &value);
 
   return (int16_t)value;
 }
@@ -294,8 +295,9 @@ int16_t INA233::readBusVoltage_raw() {
     received from the device)
 */
 /**************************************************************************/
-int16_t INA233::readShuntVoltage_raw() {
-  uint16_t value = readRegister16(MFR_READ_VSHUNT);
+int16_t INA233::getShuntVoltage_raw() {
+  uint16_t value;
+  wireReadWord(MFR_READ_VSHUNT, &value);
   return (int16_t)value;
 }
 /**************************************************************************/
@@ -304,8 +306,9 @@ int16_t INA233::readShuntVoltage_raw() {
     received from the device)
 */
 /**************************************************************************/
-int16_t INA233::readShuntCurrent_raw() {
-  uint16_t value = readRegister16(READ_IIN);
+int16_t INA233::getCurrent_raw() {
+  uint16_t value;
+  wireReadWord(READ_IIN, &value);
   return (int16_t)value;
 }
 /**************************************************************************/
@@ -314,8 +317,9 @@ int16_t INA233::readShuntCurrent_raw() {
     received from the device)
 */
 /**************************************************************************/
-int16_t INA233::readBusPower_raw() {
-  uint16_t value = readRegister16(READ_PIN);
+int16_t INA233::getPower_raw() {
+  uint16_t value;
+  wireReadWord(READ_PIN, &value);
   return (int16_t)value;
 }
 /**************************************************************************/
@@ -325,11 +329,11 @@ int16_t INA233::readBusPower_raw() {
 
 */
 /**************************************************************************/
-void INA233::readEnergy_raw(uint16_t* accumulator, uint8_t* roll_over, uint32_t* sample_count) {
+void INA233::getEnergy_raw(uint16_t* accumulator, uint8_t* roll_over, uint32_t* sample_count) {
   uint8_t value[6];
   //uint8_t test[6] = { 0x00, 0x11,0x22,0x33,0x44,0x55};
   // uint32_t aux;
-  readRegisterBlock(READ_EIN, value);
+  wireReadBlock(READ_EIN, value);
   *accumulator=(value[1] << 8) | value[0];
   *roll_over=value[2];
   *sample_count=uint32_t(value[5])<< 16;
@@ -342,14 +346,14 @@ void INA233::readEnergy_raw(uint16_t* accumulator, uint8_t* roll_over, uint32_t*
     @brief  Gets the averaged power from last reading of READ_EIN in mW
 */
 /**************************************************************************/
-float INA233::readAv_Power() {
+float INA233::getAv_Power_mW() {
   uint16_t accumulator=0;
   uint8_t roll_over=0;
   uint32_t sample_count=0;
   uint32_t accumulator_24=0;
   uint32_t raw_av_power=0;
   float av_power=0;
-  readEnergy_raw(&accumulator,&roll_over, &sample_count);
+  getEnergy_raw(&accumulator,&roll_over, &sample_count);
   accumulator_24=uint32_t(roll_over)*65536+uint32_t(accumulator);
   raw_av_power=accumulator_24/sample_count;
 
@@ -358,11 +362,11 @@ float INA233::readAv_Power() {
 }
 /**************************************************************************/
 /*!
-    @brief  reads the shunt voltage in mV
+    @brief  Gets the shunt voltage in mV
 */
 /**************************************************************************/
-float INA233::readShuntVoltage() {
-  int16_t value=readShuntVoltage_raw();
+float INA233::getShuntVoltage_mV() {
+  int16_t value=getShuntVoltage_raw();
   float vshunt;
   vshunt=(value*pow(10,-R_vs)-b_vs)/m_vs;
   return vshunt * 1000;
@@ -373,8 +377,8 @@ float INA233::readShuntVoltage() {
     @brief  Gets the shunt voltage in volts
 */
 /**************************************************************************/
-float INA233::readBusVoltage() {
-  int16_t value=readBusVoltage_raw();
+float INA233::getBusVoltage_V() {
+  int16_t value=getBusVoltage_raw();
   float vbus;
   vbus =(value*pow(10,-R_vb)-b_vb)/m_vb;
   return vbus;
@@ -386,8 +390,8 @@ float INA233::readBusVoltage() {
             config settings and current LSB
 */
 /**************************************************************************/
-float INA233::readShuntCurrent() {
-  int16_t value=readShuntCurrent_raw();
+float INA233::getCurrent_mA() {
+  int16_t value=getCurrent_raw();
   float current;
   current =(value*pow(10,-R_c)-b_c)/m_c;
   return current*1000;
@@ -399,8 +403,8 @@ float INA233::readShuntCurrent() {
             config settings and power LSB
 */
 /**************************************************************************/
-float INA233::readBusPower() {
-  int16_t value=readBusPower_raw();
+float INA233::getPower_mW() {
+  int16_t value=getPower_raw();
   float power;
   power =(value*pow(10,-R_p)-b_p)/m_p;
   return power*1000;

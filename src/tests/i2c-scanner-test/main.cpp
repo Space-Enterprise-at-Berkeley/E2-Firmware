@@ -1,12 +1,12 @@
+#include <Arduino.h>
 #include <Wire.h>
  
  
 void setup()
 {
-  Wire.begin();
+  Wire.begin(1, 2);
  
-  Serial.begin(9600);
-  while (!Serial);             // Leonardo: wait for serial monitor
+  Serial.begin(921600);
   Serial.println("\nI2C Scanner");
 }
  

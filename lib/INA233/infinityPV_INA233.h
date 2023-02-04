@@ -22,10 +22,13 @@
   v1.0  - First release Mar 2018
 */
 /**************************************************************************/
-//Plus changes by Nihal!
-#pragma once
 
-#include "Arduino.h"
+#if ARDUINO >= 100
+ #include "Arduino.h"
+#else
+ #include "WProgram.h"
+#endif
+
 #include <Wire.h>
 
 /*=========================================================================
@@ -116,38 +119,36 @@
 
 
 class INA233{
-
-
  public:
-  void init(TwoWire *i2c, uint8_t addr, float r_shunt, float i_max);
-  float readShuntCurrent(void);
-	float readShuntVoltage(void);
-	float readBusPower(void);
-	float readBusVoltage(void);
-  float readAv_Power(void);
-  int16_t readBusVoltage_raw(void);
-  int16_t readShuntVoltage_raw(void);
-  int16_t readShuntCurrent_raw(void);
-  int16_t readBusPower_raw(void);
-  void readEnergy_raw(uint16_t* accumulator, uint8_t* roll_over, uint32_t* sample_count);
-  uint16_t setCalibration(float r_shunt,float i_max, uint8_t *ERROR);
-  uint16_t readRegister16(uint8_t reg);
-  uint8_t readRegister8(uint8_t reg);
-  void readRegisterBlock(uint8_t reg, uint8_t value[6]);
-  void writeRegister16(uint8_t reg, uint16_t value);
-  void writeRegister8(uint8_t reg, uint8_t value);
-  void writeRegister(uint8_t reg);
+  INA233(uint8_t addr = INA233_ADDRESS_45, TwoWire &i2c = Wire);
+  uint8_t requestFrom(uint8_t addr, uint8_t qty, uint32_t iaddr, uint8_t n, uint8_t stop);
+  void begin(void);
+  float getBusVoltage_V(void);
+  float getShuntVoltage_mV(void);
+  float getCurrent_mA(void);
+  float getPower_mW(void);
+  float getAv_Power_mW(void);
+  int16_t getBusVoltage_raw(void);
+  int16_t getShuntVoltage_raw(void);
+  int16_t getCurrent_raw(void);
+  int16_t getPower_raw(void);
+  void getEnergy_raw(uint16_t* accumulator, uint8_t* roll_over, uint32_t* sample_count);
+  uint16_t setCalibration(float r_shunt,float i_max,float *Current_LSB,float *Power_LSB, int16_t *m_c,int8_t *R_c, int16_t *m_p, int8_t *R_p,  uint8_t *ERROR);
+  void wireReadWord(uint8_t reg, uint16_t *value);
+  void wireReadByte(uint8_t reg, uint8_t *value);
+  void wireReadBlock(uint8_t reg, uint8_t value[6]);
+  void wireWriteWord(uint8_t reg, uint16_t value);
+  void wireWriteByte (uint8_t reg, uint8_t value);
+  void wireSendCmd(uint8_t reg);
 
  private:
-  uint8_t inaAddress;
+  uint8_t ina233_i2caddr;
   uint32_t ina233_calValue;
   // The following coefficients are used to convert raw current and power
   // values to mA and mW, taking into account the current config settings
-  float current_LSB;
-  float power_LSB;
   int16_t m_c;
   int8_t R_c;
   int16_t m_p;
   int8_t R_p;
-  TwoWire *m_i2c;
+  TwoWire &m_i2c;
 };
