@@ -22,8 +22,6 @@
   v1.0  - First release Mar 2018
 */
 /**************************************************************************/
-//Plus changes by Nihal!
-#pragma once
 
 #include "Arduino.h"
 #include <Wire.h>
@@ -116,38 +114,46 @@
 
 
 class INA233{
-
-
  public:
-  void init(TwoWire *i2c, uint8_t addr, float r_shunt, float i_max);
-  float readShuntCurrent(void);
-	float readShuntVoltage(void);
-	float readBusPower(void);
-	float readBusVoltage(void);
+  INA233(uint8_t addr = INA233_ADDRESS_45, TwoWire &i2c = Wire);
+  uint8_t requestFrom(uint8_t addr, uint8_t qty, uint32_t iaddr, uint8_t n, uint8_t stop);
+  uint16_t init(float r_shunt, float i_max);
+  void wireBegin(void);
+  float readBusVoltage(void);
+  float readShuntVoltage(void);
+  float readCurrent(void);
+  float readPower(void);
   float readAv_Power(void);
   int16_t readBusVoltage_raw(void);
   int16_t readShuntVoltage_raw(void);
-  int16_t readShuntCurrent_raw(void);
-  int16_t readBusPower_raw(void);
+  int16_t readCurrent_raw(void);
+  int16_t readPower_raw(void);
   void readEnergy_raw(uint16_t* accumulator, uint8_t* roll_over, uint32_t* sample_count);
   uint16_t setCalibration(float r_shunt,float i_max, uint8_t *ERROR);
-  uint16_t readRegister16(uint8_t reg);
-  uint8_t readRegister8(uint8_t reg);
-  void readRegisterBlock(uint8_t reg, uint8_t value[6]);
-  void writeRegister16(uint8_t reg, uint16_t value);
-  void writeRegister8(uint8_t reg, uint8_t value);
-  void writeRegister(uint8_t reg);
+  void wireReadWord(uint8_t reg, uint16_t *value);
+  void wireReadByte(uint8_t reg, uint8_t *value);
+  void wireReadBlock(uint8_t reg, uint8_t value[6]);
+  void wireWriteWord(uint8_t reg, uint16_t value);
+  void wireWriteByte (uint8_t reg, uint8_t value);
+  void wireSendCmd(uint8_t reg);
+
+  float getCurrent_LSB(void);
+  float getPower_LSB(void);
+  int16_t get_m_c(void);
+  int8_t get_R_c(void);
+  int16_t get_m_p(void);
+  int8_t get_R_p(void);
 
  private:
-  uint8_t inaAddress;
+  uint8_t ina233_i2caddr;
   uint32_t ina233_calValue;
   // The following coefficients are used to convert raw current and power
   // values to mA and mW, taking into account the current config settings
-  float current_LSB;
-  float power_LSB;
   int16_t m_c;
   int8_t R_c;
   int16_t m_p;
   int8_t R_p;
-  TwoWire *m_i2c;
+  float Current_LSB;
+  float Power_LSB;
+  TwoWire &m_i2c;
 };
