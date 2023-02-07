@@ -1,5 +1,6 @@
 #include <Common.h>
 #include <EspComms.h>
+#include <ADC.h>
 
 #include <Arduino.h>
 
@@ -19,6 +20,7 @@ Task taskTable[] = {
 void setup() {
   // setup stuff here
   Comms::init(); // takes care of Serial.begin()
+  ADC::init();
 
   while(1) {
     // main loop here to avoid arduino overhead
