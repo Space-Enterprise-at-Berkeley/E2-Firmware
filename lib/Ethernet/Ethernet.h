@@ -160,7 +160,6 @@ public:
 	virtual size_t write(uint8_t);
 	// Write size bytes from buffer into the packet
 	virtual size_t write(const uint8_t *buffer, size_t size);
-
 	using Print::write;
 
 	// Start processing the next available incoming packet
@@ -203,11 +202,11 @@ public:
 	virtual size_t write(uint8_t);
 	virtual size_t write(const uint8_t *buf, size_t size);
 	virtual int available();
-	virtual int read();
-	virtual int read(uint8_t *buf, size_t size);
-	virtual int peek();
-	virtual void flush();
-	virtual void stop();
+		virtual int read();
+		virtual int read(uint8_t *buf, size_t size);
+		virtual int peek();
+		virtual void flush();
+		virtual void stop();
 	virtual uint8_t connected();
 	virtual operator bool() { return _sockindex < MAX_SOCK_NUM; }
 	virtual bool operator==(const bool value) { return bool() == value; }
@@ -243,6 +242,13 @@ public:
 	virtual operator bool();
 	using Print::write;
 	//void statusreport();
+
+	// TODO: fix this to make it so you can read and write from the server I guess
+	virtual int read();
+	virtual int read(uint8_t *buf, size_t size);
+	virtual int peek();
+	virtual void flush();
+	virtual void stop();
 
 	// TODO: make private when socket allocation moves to EthernetClass
 	static uint16_t server_port[MAX_SOCK_NUM];

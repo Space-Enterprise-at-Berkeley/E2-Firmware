@@ -1,54 +1,51 @@
 #include <Arduino.h>
-#include <NativeEthernet.h>
-#include <NativeEthernetUdp.h>
+#include <SPI.h>
+#include <EthernetUdp.h>
+#include <Ethernet.h>
 
-#include <string>
-
-int port = 42069;
-IPAddress ip(10, 0, 0, 42);
-IPAddress remote(10, 0, 0, 69);
+int count;
 EthernetUDP Udp;
+byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 21};
+IPAddress groundStation1(192, 168, 0, 70);
+IPAddress ip(192, 168, 0, 42);
+int port = 42069;
 
-const uint32_t __m1 = HW_OCOTP_MAC1;
-const uint32_t __m2 = HW_OCOTP_MAC0;
-const byte mac[] = {
-    (uint8_t)(__m1 >> 8),
-    (uint8_t)(__m1 >> 0),
-    (uint8_t)(__m2 >> 24),
-    (uint8_t)(__m2 >> 16),
-    (uint8_t)(__m2 >> 8),
-    (uint8_t)(__m2 >> 0),
-};
+void setup()
+{
+  Serial.begin(921600);
+  Ethernet.init(10);
+  Ethernet.begin((uint8_t *)mac, ip);
+  pinMode(9, INPUT);
+  Udp.begin(port);
+  Serial.println("running setup");
 
-uint32_t counter = 0;
+  Udp.beginPacket(groundStation1, port);
+}
 
-int main() {
-    Serial.begin(115200);
-    while(!Serial);
-    Serial.println("starting");
-    Serial.flush();
-    Ethernet.begin((uint8_t *)mac, ip);
-    Udp.begin(port);
-    Serial.println("UDP begun");
-    Serial.flush();
+void loop()
+{
+  // Serial.println("before begin");
+  // Serial.flush();
+  while(1) {
+    Udp.resetSendOffset();
 
-    while(1) {
-        Serial.println("Starting send");
-        Serial.flush();
-        Udp.beginPacket(remote, port);
-        Serial.println("packet begun");
-        Serial.flush();
-        Udp.write("hello");
-        char count[10];
-        Udp.write(itoa(counter, (char*) &count, 10));
-        Serial.println("packet writ");
-        Serial.flush();
-        Udp.endPacket();
-        Serial.println("packet ended");
-        Serial.flush();
-        counter++;
-        delay(1000);
-    }
+    char tosend[] = "itimelckdatadatadatadata";
+
+    Udp.write((unsigned char *) tosend, 24);
     
-    return 0;
+    Serial.println("Writing");
+    Udp.endPacket();
+
+    // Read IO9
+    uint8_t ACK = digitalRead(9);
+    //ACK will be pulled
+    Serial.printf("Read Information %i \n", ACK);
+    delay(1000);
+  }
+
+  
+  // Serial.flush();
+  // count += 1;
+
+  // delay(1000);
 }

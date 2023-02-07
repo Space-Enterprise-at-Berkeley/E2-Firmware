@@ -62,11 +62,13 @@ void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress g
 void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress gateway, IPAddress subnet)
 {
 	if (W5500.init() == 0) return;
+
 	SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
 	W5500.setMACAddress(mac);
 	W5500.setIPAddress(ip._address.bytes);
 	W5500.setGatewayIp(gateway._address.bytes);
 	W5500.setSubnetMask(subnet._address.bytes);
+	// W5500.writeSIMR(0x01);
 	SPI.endTransaction();
 }
 
