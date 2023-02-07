@@ -3,15 +3,10 @@
 
 #include <Arduino.h>
 
-uint32_t task_example() { 
-  
-  Serial.println("Hello World!");
-  return 1000 * 1000;
-  
-}
+#include "TC.h"
 
 Task taskTable[] = {
-  {task_example, 0, true},
+  {TC::tcSampleTask, 0, true},
 };
 
 #define TASK_COUNT (sizeof(taskTable) / sizeof (struct Task))
