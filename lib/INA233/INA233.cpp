@@ -355,7 +355,7 @@ void INA233::readEnergy_raw(uint16_t* accumulator, uint8_t* roll_over, uint32_t*
     @brief  reads the averaged power from last reading of READ_EIN in mW
 */
 /**************************************************************************/
-float INA233::readAv_Power() {
+float INA233::readAvgPower() {
   uint16_t accumulator=0;
   uint8_t roll_over=0;
   uint32_t sample_count=0;

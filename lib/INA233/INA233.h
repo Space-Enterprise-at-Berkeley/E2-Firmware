@@ -123,7 +123,7 @@ class INA233{
   float readShuntVoltage(void);
   float readCurrent(void);
   float readPower(void);
-  float readAv_Power(void);
+  float readAvgPower(void);
   int16_t readBusVoltage_raw(void);
   int16_t readShuntVoltage_raw(void);
   int16_t readCurrent_raw(void);
