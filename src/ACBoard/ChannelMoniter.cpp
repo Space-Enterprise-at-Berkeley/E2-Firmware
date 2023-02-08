@@ -29,6 +29,7 @@ uint32_t readChannels() {
         digitalWrite(sel0, i & 0x01);
         digitalWrite(sel1, (i >> 1) & 0x01);
         digitalWrite(sel2, (i >> 2) & 0x01);
+        
 
         Comms::packetAddFloat(&contPacket, analogRead(contpin));
         Comms::packetAddFloat(&currPacket, analogRead(currpin));
