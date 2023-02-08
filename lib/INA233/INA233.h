@@ -22,6 +22,7 @@
   v1.0  - First release Mar 2018
 */
 /**************************************************************************/
+#pragma once
 
 #include "Arduino.h"
 #include <Wire.h>
