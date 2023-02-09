@@ -9,6 +9,13 @@ uint32_t task_example() {
   return 1000 * 1000; 
 }
 
+uint32_t task_example() { 
+  
+  Serial.println("Hello World!");
+  return 1000 * 1000;
+  
+}
+
 Task taskTable[] = {
   {task_example, 0, true},
 };
@@ -17,7 +24,7 @@ Task taskTable[] = {
 
 void setup() {
   // setup stuff here
-  Serial.begin(921600);
+  Comms::init(); // takes care of Serial.begin()
 
   while(1) {
     // main loop here to avoid arduino overhead
@@ -27,10 +34,9 @@ void setup() {
         taskTable[i].nexttime = ticks + taskTable[i].taskCall();
       }
     }
-    // Comms::processWaitingPackets();
+
+    Comms::processWaitingPackets();
   }
 }
 
-void loop(){
-
-}
+void loop() {} // unused
