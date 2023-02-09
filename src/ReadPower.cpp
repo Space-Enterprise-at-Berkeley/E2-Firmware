@@ -1,6 +1,7 @@
-#include <readINA.h>
+#include <ReadPower.h>
 
-namespace readINA
+//reads power stats from INA233 and sends to ground station
+namespace Power
 {
     INA233 ina(INA233_ADDRESS_41, Wire);
     float rShunt = 0.004;
@@ -21,7 +22,7 @@ namespace readINA
         ina.init(rShunt,iMax);
     }
 
-    void readAndSend()
+    uint32_t task_readSendPower()
     {
         // read the ina
         float busVoltage = ina.readBusVoltage();
@@ -38,6 +39,8 @@ namespace readINA
 
         // emit the packet
         Comms::emitPacket(&p);
+
+        return 1000 * 1000; // 1 second
     }
 
     void print()

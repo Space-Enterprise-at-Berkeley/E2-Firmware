@@ -6,9 +6,10 @@
 #include <Common.h>
 #include <EspComms.h>
 
-namespace readINA
+//reads power stats from INA233 and sends to ground station
+namespace Power
 {
   void init();
-  void readAndSend();
+  uint32_t task_readSendPower();
   void print();
 }
