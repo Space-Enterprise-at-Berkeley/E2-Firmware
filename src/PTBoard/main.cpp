@@ -2,6 +2,7 @@
 #include <EspComms.h>
 
 #include <Arduino.h>
+#include "Ducers.h"
 
 uint32_t task_example() { 
   
@@ -12,6 +13,9 @@ uint32_t task_example() {
 
 Task taskTable[] = {
   {task_example, 0, true},
+
+  // Ducers
+  {Ducers::ptSample, 0},
 };
 
 #define TASK_COUNT (sizeof(taskTable) / sizeof (struct Task))

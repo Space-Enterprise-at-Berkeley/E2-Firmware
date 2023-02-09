@@ -19,7 +19,7 @@ bool ADS8167::init(SPIClass *theSPI, uint8_t cs, uint8_t rdy) {
   pinMode(_cs_pin, OUTPUT);
   pinMode(_rdy_pin, INPUT_PULLUP);
 
-  digitalWriteFast(_cs_pin, HIGH);
+  digitalWrite(_cs_pin, HIGH);
 
   // enable writing
   write_cmd(ADCCMD_WR_REG, REG_ACCESS, REG_ACCESS_BITS);
@@ -105,25 +105,25 @@ uint16_t ADS8167::readChannel(uint8_t* channel_out) {
   waitForDataReady();
 
   _theSPI->beginTransaction(SPISettings(_SPI_SPEED, MSBFIRST, SPI_MODE0));
-  digitalWriteFast(_cs_pin, LOW);
-
+  digitalWrite(_cs_pin, LOW);
+  
   buffer[0] = 0x00;
   buffer[1] = 0x00;
   _theSPI->transfer(buffer, 2);
 
-  digitalWriteFast(_cs_pin, HIGH);
+  digitalWrite(_cs_pin, HIGH);
   _theSPI->endTransaction();
 
   waitForDataReady();
 
   _theSPI->beginTransaction(SPISettings(_SPI_SPEED, MSBFIRST, SPI_MODE0));
-  digitalWriteFast(_cs_pin, LOW);
+  digitalWrite(_cs_pin, LOW);
 
   buffer[0] = 0x00;
   buffer[1] = 0x00;
   _theSPI->transfer(buffer, 2);
 
-  digitalWriteFast(_cs_pin, HIGH);
+  digitalWrite(_cs_pin, HIGH);
   _theSPI->endTransaction();
 
   // if(channel_out != NULL)
@@ -146,7 +146,7 @@ void ADS8167::enableOTFMode() {
 }
 
 void ADS8167::waitForDataReady() {
-  while(digitalReadFast(_rdy_pin)==0) {
+  while(digitalRead(_rdy_pin)==0) {
   }
 }
 
@@ -163,7 +163,7 @@ uint16_t ADS8167::readChannelOTF(const uint8_t otf_next_channel, uint8_t* channe
     waitForDataReady();
 
     _theSPI->beginTransaction(SPISettings(_SPI_SPEED, MSBFIRST, SPI_MODE0)); // chip uses mode 0 by default
-    digitalWriteFast(_cs_pin, LOW);
+    digitalWrite(_cs_pin, LOW);
 
     buffer[0] = cmd << 3;
     buffer[1] = 0x00;
@@ -171,7 +171,7 @@ uint16_t ADS8167::readChannelOTF(const uint8_t otf_next_channel, uint8_t* channe
 
     _theSPI->transfer(buffer, 3);
 
-    digitalWriteFast(_cs_pin, HIGH);
+    digitalWrite(_cs_pin, HIGH);
     _theSPI->endTransaction();
 
     if(channel_out != NULL)
@@ -182,7 +182,7 @@ uint16_t ADS8167::readChannelOTF(const uint8_t otf_next_channel, uint8_t* channe
 
 void ADS8167::write_cmd(const adc_cmd_t cmd, const uint16_t address, const uint8_t data) {
     _theSPI->beginTransaction(SPISettings(_SPI_SPEED, MSBFIRST, SPI_MODE0)); // chip uses mode 0 by default
-    digitalWriteFast(_cs_pin, LOW);
+    digitalWrite(_cs_pin, LOW);
     uint32_t writeData = (cmd << 3) << 16; // Top 3 address bits are discarded, cmd is 5 bits
     writeData  |= address << 8; // Top 5 address bits are discarded, address is 11 bits
     writeData  |= data;
@@ -193,5 +193,5 @@ void ADS8167::write_cmd(const adc_cmd_t cmd, const uint16_t address, const uint8
 
     _theSPI->endTransaction();
 
-    digitalWriteFast(_cs_pin, HIGH);
+    digitalWrite(_cs_pin, HIGH);
 }
