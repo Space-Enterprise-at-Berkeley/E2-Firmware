@@ -1,6 +1,6 @@
 #include <Common.h>
 #include <EspComms.h>
-#include <ADC.h>
+#include <ChannelMoniter.h>
 
 #include <Arduino.h>
 
@@ -20,7 +20,8 @@ Task taskTable[] = {
 void setup() {
   // setup stuff here
   Comms::init(); // takes care of Serial.begin()
-  ADC::init();
+  ChannelMoniter::init(41, 42, 47, 4, 5);
+  
 
   while(1) {
     // main loop here to avoid arduino overhead
@@ -30,7 +31,7 @@ void setup() {
         taskTable[i].nexttime = ticks + taskTable[i].taskCall();
       }
     }
-    Comms::processWaitingPackets();
+    //Comms::processWaitingPackets();
   }
 }
 

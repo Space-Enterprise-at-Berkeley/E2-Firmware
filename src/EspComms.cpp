@@ -80,6 +80,13 @@ namespace Comms {
     }
   }
 
+  void packetAddFloatArray(Packet *packet, float *arr, uint8_t len)
+  {
+    for (int i = 0; i < len; i ++){
+      packetAddFloat(packet, *(arr + i));
+    }
+  }
+
   void packetAddFloat(Packet *packet, float value)
   {
     uint32_t rawData = *(uint32_t *)&value;
