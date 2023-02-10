@@ -31,7 +31,6 @@ int EthernetClass::begin(uint8_t *mac, unsigned long timeout, unsigned long resp
 	W5500.setMACAddress(mac);
 	W5500.setIPAddress(IPAddress(0,0,0,0).raw_address());
 	SPI.endTransaction();
-
 	return 0;
 }
 
@@ -68,8 +67,18 @@ void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress g
 	W5500.setIPAddress(ip._address.bytes);
 	W5500.setGatewayIp(gateway._address.bytes);
 	W5500.setSubnetMask(subnet._address.bytes);
-	// W5500.writeSIMR(0x01);
+	W5500.writeSIMR(0x01);
 	SPI.endTransaction();
+}
+
+void EthernetClass::resetINTnPin() {
+	// This method will reset the INTn pin to 0x00 after a write has been acknowledged
+	uint8_t value = W5500.readSIR();
+	if (value > 0) {
+		// Meaning an interrupt is occured as a bit is ticked to 1
+		W5500.writeSIR(0x00); // Reset the register and pull the INTn back down
+	}
+	// otherwise don't do anything
 }
 
 void EthernetClass::init(uint8_t sspin)

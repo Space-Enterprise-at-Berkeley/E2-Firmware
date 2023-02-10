@@ -82,6 +82,11 @@ public:
 	void setGatewayIP(const IPAddress gateway);
 	void setRetransmissionTimeout(uint16_t milliseconds);
 	void setRetransmissionCount(uint8_t num);
+	/**
+	 * @brief Checks to see if the SIR register has registered an interrupt at one of its sockets, then reset it back to 0x00
+	 * 
+	 */
+	void resetINTnPin();
 
 	friend class EthernetClient;
 	friend class EthernetServer;

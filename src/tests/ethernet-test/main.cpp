@@ -6,8 +6,8 @@
 int count;
 EthernetUDP Udp;
 byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 21};
-IPAddress groundStation1(192, 168, 0, 70);
-IPAddress ip(192, 168, 0, 42);
+IPAddress groundStation1(10, 0, 0, 70);
+IPAddress ip(10, 0, 0, 42);
 int port = 42069;
 
 void setup()
@@ -18,34 +18,25 @@ void setup()
   pinMode(9, INPUT);
   Udp.begin(port);
   Serial.println("running setup");
-
   Udp.beginPacket(groundStation1, port);
 }
 
 void loop()
 {
-  // Serial.println("before begin");
-  // Serial.flush();
   while(1) {
     Udp.resetSendOffset();
-
-    char tosend[] = "itimelckdatadatadatadata";
-
-    Udp.write((unsigned char *) tosend, 24);
-    
-    Serial.println("Writing");
-    Udp.endPacket();
-
     // Read IO9
     uint8_t ACK = digitalRead(9);
     //ACK will be pulled
-    Serial.printf("Read Information %i \n", ACK);
-    delay(1000);
+    
+    Serial.printf("%i \n", ACK);
+    if (ACK == 0) {
+      Serial.print("ACK \n");
+      // pin is pulled down. Manually reset it.
+      Ethernet.resetINTnPin(); // Done with this custom method
+    } else {
+      Serial.print("FAKE \n");
+    }
+    sleep(0.5);
   }
-
-  
-  // Serial.flush();
-  // count += 1;
-
-  // delay(1000);
 }
