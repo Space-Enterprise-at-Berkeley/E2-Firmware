@@ -74,7 +74,8 @@ namespace Comms {
 
   void processWaitingPackets()
   {
-    if(Udp.parsePacket()) {
+    //UDP receiving disabled until Keene fixes it
+    /*if(Udp.parsePacket()) {
         if(Udp.remotePort() != port) return; // make sure this packet is for the right port
         Udp.read(packetBuffer, sizeof(Packet));
 
@@ -85,7 +86,7 @@ namespace Comms {
         // DEBUG(packet->id);
         // DEBUG('\n');
         evokeCallbackFunction(packet, Udp.remoteIP()[3]);
-    } else if (Serial.available())
+    } else */if (Serial.available())
     {
       int cnt = 0;
       while (Serial.available() && cnt < sizeof(Packet))
