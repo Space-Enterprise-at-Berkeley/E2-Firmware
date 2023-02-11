@@ -6,7 +6,7 @@ namespace TC {
 
   void init() {
     uint8_t chipSelectPins[] = { 16, 17, 18, 19, 20, 21, 26, 33 };
-    vspi = new SPIClass(VSPI);
+    vspi = new SPIClass(HSPI);
     vspi->begin(36, 37, 4, 5);
     for (uint8_t i = 0; i < 8; i ++) {
       tcs[0] = MAX31855();

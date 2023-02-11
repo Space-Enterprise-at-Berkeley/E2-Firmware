@@ -9,7 +9,7 @@ int MAX31855::init(SPIClass *spi, uint8_t chipSelect)
     _spi->beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
 
     pinMode(_chipSelect, OUTPUT);
-    digitalWriteFast(_chipSelect, HIGH);
+    digitalWrite(_chipSelect, HIGH);
 
     return 0;
 }
@@ -18,9 +18,9 @@ float MAX31855::readCelsius()
 {
     int32_t v;
 
-    digitalWriteFast(_chipSelect, LOW);
+    digitalWrite(_chipSelect, LOW);
     v = spiread32();
-    digitalWriteFast(_chipSelect, HIGH);
+    digitalWrite(_chipSelect, HIGH);
 
     if (v & 0x7)
     {
