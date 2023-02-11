@@ -106,7 +106,7 @@ uint16_t ADS8167::readChannel(uint8_t* channel_out) {
 
   _theSPI->beginTransaction(SPISettings(_SPI_SPEED, MSBFIRST, SPI_MODE0));
   digitalWrite(_cs_pin, LOW);
-  
+
   buffer[0] = 0x00;
   buffer[1] = 0x00;
   _theSPI->transfer(buffer, 2);
