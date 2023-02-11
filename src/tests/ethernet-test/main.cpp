@@ -27,16 +27,15 @@ void loop()
     Udp.resetSendOffset();
     // Read IO9
     uint8_t ACK = digitalRead(9);
-    //ACK will be pulled
-    
-    Serial.printf("%i \n", ACK);
+    // ACK will be pulled down
     if (ACK == 0) {
       Serial.print("ACK \n");
-      // pin is pulled down. Manually reset it.
       Ethernet.resetINTnPin(); // Done with this custom method
+      // pin is pulled down. Manually reset it.
     } else {
       Serial.print("FAKE \n");
     }
+    
     sleep(0.5);
   }
 }

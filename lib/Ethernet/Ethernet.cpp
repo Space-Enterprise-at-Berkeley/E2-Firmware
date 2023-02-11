@@ -73,11 +73,13 @@ void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress g
 
 void EthernetClass::resetINTnPin() {
 	// This method will reset the INTn pin to 0x00 after a write has been acknowledged
-	uint8_t value = W5500.readSIR();
-	if (value > 0) {
-		// Meaning an interrupt is occured as a bit is ticked to 1
+	// Serial.printf("SIMR %i SIR %i IR %i \n", W5500.readSIMR(),W5500.readSIR(), W5500.readIR());
+	if (W5500.readSIR() > 0) {
 		W5500.writeSIR(0x00); // Reset the register and pull the INTn back down
+		W5500.writeIR(0x00);
+		// W5500.writeSnIR(0, 0x1F);
 	}
+	
 	// otherwise don't do anything
 }
 
