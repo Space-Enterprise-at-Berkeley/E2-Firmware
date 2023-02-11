@@ -14,7 +14,29 @@ int main(){
     adc.enableOTFMode();
 
     while(1) {
-        Serial.print("  adc0:   ");
+        Serial.print("adc0: ");
+        Serial.print(adc.readData(0));
+        Serial.print("   adc1: ");
+        Serial.print(adc.readData(1));
+        Serial.print("   adc2: ");
+        Serial.print(adc.readData(2));
+        Serial.print("   adc3: ");
+        Serial.print(adc.readData(3));
+        Serial.print("   adc4: ");
+        Serial.print(adc.readData(4));
+        Serial.print("   adc5: ");
+        Serial.print(adc.readData(5));
+        Serial.print("   adc6: ");
+        Serial.print(adc.readData(6));
+        Serial.print("   adc7: ");
+        Serial.println(adc.readData(7));
+        delay(200);
+    }
+
+    //on the fly testing
+    /*
+    while(1){
+        Serial.print("adc0: ");
         Serial.print(adc.readChannelOTF(1));
         Serial.print("  adc1:   ");
         Serial.print(adc.readChannelOTF(2));
@@ -33,4 +55,5 @@ int main(){
         delay(200);
     }
     return 0;
+    */
 }
