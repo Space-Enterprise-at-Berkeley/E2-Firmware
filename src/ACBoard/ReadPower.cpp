@@ -6,6 +6,7 @@ namespace Power
     INA233 ina(INA233_ADDRESS_41, Wire);
     float rShunt = 0.004;
     float iMax = 5.0;
+    float sendRate = 500 * 1000; // 0.5 second
     
     Comms::Packet p = {.id = 1};
 
@@ -40,7 +41,7 @@ namespace Power
         // emit the packet
         Comms::emitPacket(&p);
 
-        return 1000 * 1000; // 1 second
+        return sendRate; // 1 second
     }
 
     void print()
