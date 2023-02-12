@@ -7,20 +7,20 @@ namespace TC {
   SPIClass *vspi;
 
   void init() {
-    Serial.println("Initializing TCs...");
+    //Serial.println("Initializing TCs...");
     uint8_t chipSelectPins[] = { 16, 17, 18, 19, 20, 21, 26, 33 };
     vspi = new SPIClass(HSPI);
     vspi->begin(36, 37, 4, 5);
-    Serial.println("SPI initialized");
+    //Serial.println("SPI initialized");
     for (uint8_t i = 0; i < 8; i ++) {
       tcs[i] = MAX31855();
       Serial.print("yeeyy");
       tcs[i].init(vspi, chipSelectPins[i]);
-      Serial.print("TC ");
-      Serial.print(i);
-      Serial.println(" initialized");
+      //Serial.print("TC ");
+      //Serial.print(i);
+      //Serial.println(" initialized");
     }
-    Serial.println("TCs initialized");
+    //Serial.println("TCs initialized");
   }
 
 
