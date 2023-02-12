@@ -11,12 +11,13 @@
 
 namespace ADS {
 
-    extern const int size;
+    extern const int ADCsize;
 
 
 
     void init();
 
+    uint32_t printReadings();
     void refreshReadings();
     uint32_t sampleLC();
 

@@ -15,6 +15,15 @@ ADS1231::ADS1231(uint8_t clkPin, uint8_t dataPin)
 
 }
 
+ADS1231::ADS1231(){
+}
+
+void ADS1231::init(uint8_t clkPin,uint8_t dataPin){
+    pData = dataPin;
+    pClk = clkPin;
+    begin();
+}
+
 bool ADS1231::begin() {
     // Init clock pin
     pinMode(pClk, OUTPUT);
@@ -67,6 +76,7 @@ int ADS1231::getValue(long& val)
         digitalWrite(pClk, HIGH);
         val = (val << 1) + digitalRead(pData);
         digitalWrite(pClk, LOW);
+        
     }
 
     /* Accomodate for sign bit */

@@ -11,6 +11,8 @@
 class ADS1231 {
     public:
         ADS1231(uint8_t clkPin,uint8_t dataPin);
+        ADS1231();
+        void init(uint8_t clkPin,uint8_t dataPin);
         int getValue(long &val);
         bool begin();
     private:

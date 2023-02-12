@@ -1,18 +1,20 @@
 #include <Common.h>
 #include <EspComms.h>
-#include <ADC.h>
+#include "ADS.h"
 
 #include <Arduino.h>
 
-uint32_t task_example() { 
-  
-  Serial.println("Hello World!");
-  return 1000 * 1000;
-  
+uint32_t refreshADCReadings() { 
+  return ADS::sampleLC();
+}
+
+uint32_t printReadings(){
+  return ADS::printReadings();
 }
 
 Task taskTable[] = {
-  {task_example, 0, true},
+  {refreshADCReadings, 0, true},
+  {printReadings, 0, true}
 };
 
 #define TASK_COUNT (sizeof(taskTable) / sizeof (struct Task))
@@ -20,7 +22,7 @@ Task taskTable[] = {
 void setup() {
   // setup stuff here
   Comms::init(); // takes care of Serial.begin()
-  ADC::init();
+  ADS::init();
 
   while(1) {
     // main loop here to avoid arduino overhead
