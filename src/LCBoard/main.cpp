@@ -5,17 +5,11 @@
 
 #include <Arduino.h>
 
-uint32_t refreshADCReadings() { 
-  return ADS::sampleLC();
-}
-
-uint32_t printReadings(){
-  return ADS::printReadings();
-}
+//TODO - LEDs
 
 Task taskTable[] = {
-  {refreshADCReadings, 0, true},
-  {printReadings, 0, true},
+  {ADS::task_sampleLC, 0, true},
+  {ADS::printReadings, 0, true},
   {Power::task_readSendPower, 0, true}
 };
 

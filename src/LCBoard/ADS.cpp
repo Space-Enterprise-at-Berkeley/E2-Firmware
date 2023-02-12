@@ -10,6 +10,7 @@ namespace ADS {
     const int ADCsize = sizeof(dataPins)/sizeof(int);
     ADS1231 adcs[ADCsize];
     long data[sizeof(ADCsize)];
+    uint32_t sampleRate = 12500; //80Hz
 
 
     void init(){
@@ -37,7 +38,7 @@ namespace ADS {
         return 125000; //8Hz
     }
 
-    uint32_t sampleLC(){
+    uint32_t task_sampleLC(){
         refreshReadings();
 
         ADCPacket.len = 0;
@@ -46,7 +47,7 @@ namespace ADS {
         }
         Comms::emitPacket(&ADCPacket); //commented out for tesing. shoud comment back in for comms
 
-        return 12500; //80Hz
+        return sampleRate; //80Hz
 
     }
 

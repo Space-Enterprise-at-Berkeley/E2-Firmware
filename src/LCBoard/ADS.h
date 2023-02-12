@@ -19,7 +19,7 @@ namespace ADS {
 
     uint32_t printReadings();
     void refreshReadings();
-    uint32_t sampleLC();
+    uint32_t task_sampleLC();
 
 
 
