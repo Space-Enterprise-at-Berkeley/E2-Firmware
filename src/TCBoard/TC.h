@@ -7,11 +7,12 @@
 #include <Arduino.h>
 
 namespace TC {
-  extern SPIClass* vspi;
+  //extern SPIClass* vspi;
 
   void init();
 
   float sample(uint8_t index);
 
-  uint32_t tcSampleTask();
+  uint32_t task_sampleTCs();
+  void print_sampleTCs();
 }
