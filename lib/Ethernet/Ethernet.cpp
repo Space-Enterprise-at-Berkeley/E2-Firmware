@@ -71,15 +71,16 @@ void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress g
 	SPI.endTransaction();
 }
 
-void EthernetClass::resetINTnPin() {
+bool EthernetClass::detectRead() {
 	// This method will reset the INTn pin to 0x00 after a write has been acknowledged
-	// Serial.printf("SIMR %i SIR %i IR %i \n", W5500.readSIMR(),W5500.readSIR(), W5500.readIR());
+	Serial.printf("SIMR %i SIR %i IR %i SnIR %i", W5500.readSIMR(),W5500.readSIR(), W5500.readIR(), W5500.readSnIR(0));
 	if (W5500.readSIR() > 0) {
-		W5500.writeSIR(0x00); // Reset the register and pull the INTn back down
-		W5500.writeIR(0x00);
-		// W5500.writeSnIR(0, 0x1F);
-	}
-	
+		// Reset the register and pull the INTn back down
+		Serial.printf("Reset Detected /n");
+		W5500.writeSnIR(0, 0xff);
+		return true;
+	}	
+	return false;
 	// otherwise don't do anything
 }
 

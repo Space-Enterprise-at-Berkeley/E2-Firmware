@@ -86,7 +86,7 @@ public:
 	 * @brief Checks to see if the SIR register has registered an interrupt at one of its sockets, then reset it back to 0x00
 	 * 
 	 */
-	void resetINTnPin();
+	bool detectRead();
 
 	friend class EthernetClient;
 	friend class EthernetServer;
