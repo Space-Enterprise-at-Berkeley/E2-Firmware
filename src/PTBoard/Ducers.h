@@ -18,8 +18,9 @@ namespace Ducers {
     // extern float loxDomePTValue;
     // extern float fuelDomePTValue;
     
-    void initDucers();
+    void init();
     // float interpolate1000(uint16_t rawValue);
     // float interpolate5000(uint16_t rawValue);
-    uint32_t ptSample();
+    uint32_t task_ptSample();
+    void print_ptSample();
 };

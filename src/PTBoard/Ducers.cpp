@@ -2,9 +2,10 @@
 
 namespace Ducers {
     ADS8167 adc1;
+    SPIClass *spi2; 
     
 
-    uint32_t ptUpdatePeriod = 20 * 1000;
+    uint32_t ptUpdatePeriod = 2000 * 1000;
     Comms::Packet ptPacket = {.id = 10};
 
     // float pressurantPTValue = 0.0;
@@ -23,9 +24,12 @@ namespace Ducers {
         }
     }
 
-    void initDucers() {
+    void init() {
         // Comms::registerCallback(140, handleFastReadPacket);
-        adc1.init(&SPI, 37, 25);
+        spi2 = new SPIClass(HSPI);
+        spi2->begin(41, 42, 40, 39);
+        adc1.init(spi2, 39, 38);
+
         adc1.setAllInputsSeparate();
         adc1.enableOTFMode();
     }
@@ -41,18 +45,18 @@ namespace Ducers {
         return tmp / 12.97;
     }
 
-    uint32_t ptSample() {
-        // read from all 6 PTs in sequence
+    uint32_t task_ptSample() {
+        // read from all 8 PTs in sequence
         
-        adc1.readChannelOTF(1); // switch mux back to channel 1
-        float ch0 = interpolate1000(adc1.readChannelOTF(0));
-        float ch1 = interpolate1000(adc1.readChannelOTF(1));
-        float ch2 = interpolate1000(adc1.readChannelOTF(2));
-        float ch3 = interpolate1000(adc1.readChannelOTF(3));
-        float ch4 = interpolate1000(adc1.readChannelOTF(4));
-        float ch5 = interpolate1000(adc1.readChannelOTF(5)); 
-        float ch6 = interpolate1000(adc1.readChannelOTF(6));
-        float ch7 = interpolate1000(adc1.readChannelOTF(7));
+        adc1.setChannel(0); // switch mux back to channel 0
+        float ch0 = interpolate1000(adc1.readChannelOTF(1));
+        float ch1 = interpolate1000(adc1.readChannelOTF(2));
+        float ch2 = interpolate1000(adc1.readChannelOTF(3));
+        float ch3 = interpolate1000(adc1.readChannelOTF(4));
+        float ch4 = interpolate1000(adc1.readChannelOTF(5));
+        float ch5 = interpolate1000(adc1.readChannelOTF(6)); 
+        float ch6 = interpolate1000(adc1.readChannelOTF(7));
+        float ch7 = interpolate1000(adc1.readChannelOTF(0));
 
         DEBUG("Read all PTs\n");
         DEBUG_FLUSH();
@@ -75,6 +79,39 @@ namespace Ducers {
         DEBUG_FLUSH();
 
         return ptUpdatePeriod;
+    }
+
+    void print_ptSample(){
+        // read from all 8 PTs in sequence
+        adc1.setChannel(0); // switch mux back to channel 0
+        float ch0 = interpolate1000(adc1.readChannelOTF(1));
+        float ch1 = interpolate1000(adc1.readChannelOTF(2));
+        float ch2 = interpolate1000(adc1.readChannelOTF(3));
+        float ch3 = interpolate1000(adc1.readChannelOTF(4));
+        float ch4 = interpolate1000(adc1.readChannelOTF(5));
+        float ch5 = interpolate1000(adc1.readChannelOTF(6)); 
+        float ch6 = interpolate1000(adc1.readChannelOTF(7));
+        float ch7 = interpolate1000(adc1.readChannelOTF(0));
+
+        DEBUG("Read all PTs\n");
+        DEBUG_FLUSH();
+
+        Serial.print("PT0: ");
+        Serial.println(ch0);
+        Serial.print("PT1: ");
+        Serial.println(ch1);
+        Serial.print("PT2: ");
+        Serial.println(ch2);
+        Serial.print("PT3: ");
+        Serial.println(ch3);
+        Serial.print("PT4: ");
+        Serial.println(ch4);
+        Serial.print("PT5: ");
+        Serial.println(ch5);
+        Serial.print("PT6: ");
+        Serial.println(ch6);
+        Serial.print("PT7: ");
+        Serial.println(ch7);
     }
 
 };
