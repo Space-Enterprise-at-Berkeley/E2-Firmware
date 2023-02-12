@@ -1,5 +1,6 @@
 #include <Common.h>
 #include <EspComms.h>
+#include "ReadPower.h"
 
 #include <Arduino.h>
 
@@ -14,6 +15,8 @@ Task taskTable[] = {
 void setup() {
   // setup stuff here
   Comms::init(); // takes care of Serial.begin()
+  initWire();
+  Power::init();
 
   while(1) {
     // main loop here to avoid arduino overhead
