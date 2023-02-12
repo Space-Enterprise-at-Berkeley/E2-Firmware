@@ -1,6 +1,7 @@
 #include <Common.h>
 #include <EspComms.h>
 #include "ADS.h"
+#include "ReadPower.h"
 
 #include <Arduino.h>
 
@@ -14,7 +15,8 @@ uint32_t printReadings(){
 
 Task taskTable[] = {
   {refreshADCReadings, 0, true},
-  {printReadings, 0, true}
+  {printReadings, 0, true},
+  {Power::task_readSendPower, 0, true}
 };
 
 #define TASK_COUNT (sizeof(taskTable) / sizeof (struct Task))
@@ -23,6 +25,8 @@ void setup() {
   // setup stuff here
   Comms::init(); // takes care of Serial.begin()
   ADS::init();
+  initWire();
+  Power::init();
 
   while(1) {
     // main loop here to avoid arduino overhead
