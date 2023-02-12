@@ -11,6 +11,7 @@ namespace TC {
     uint8_t chipSelectPins[] = { 16, 17, 18, 19, 20, 21, 26, 33 };
     vspi = new SPIClass(HSPI);
     vspi->begin(36, 37, 4, 5);
+    vspi->beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
     //Serial.println("SPI initialized");
     for (uint8_t i = 0; i < 8; i ++) {
       tcs[i] = MAX31855();
