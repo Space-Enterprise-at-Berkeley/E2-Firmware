@@ -13,9 +13,11 @@ if __name__ == "__main__":
     print("Sending data to", remote, ":", port)
     tsent = 0
     while (True):
-        msg = b'ereg'
+
+        msg = bytes('read test ' + str(tsent), 'utf-8')
         sent = sock.sendto(msg, (remote, port))
         if (sent == 0):
             raise RuntimeError("Socket disconnected")
+        print(msg);
         time.sleep(0.1)
         tsent+=1
