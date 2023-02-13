@@ -26,29 +26,45 @@ uint32_t LED_roll(){
   if (roll == 0){
     digitalWrite(LED_0, HIGH);
     digitalWrite(LED_4, HIGH);
-    digitalWrite(LED_3, LOW);
-    digitalWrite(LED_7, LOW);
+    if (Ducers::samplePT(3) < 0){
+      digitalWrite(LED_3, LOW);
+    }
+    if (Ducers::samplePT(7) < 0){
+      digitalWrite(LED_7, LOW);
+    }
     roll = 1;
   }
   else if (roll == 1){
     digitalWrite(LED_1, HIGH);
     digitalWrite(LED_5, HIGH);
-    digitalWrite(LED_0, LOW);
-    digitalWrite(LED_4, LOW);
+    if (Ducers::samplePT(0) < 0){
+      digitalWrite(LED_0, LOW);
+    }
+    if (Ducers::samplePT(4) < 0){
+      digitalWrite(LED_4, LOW);
+    }
     roll = 2;
   }
   else if (roll == 2){
     digitalWrite(LED_2, HIGH);
     digitalWrite(LED_6, HIGH);
-    digitalWrite(LED_1, LOW);
-    digitalWrite(LED_5, LOW);
+    if (Ducers::samplePT(1) < 0){
+      digitalWrite(LED_1, LOW);
+    }
+    if (Ducers::samplePT(5) < 0){
+      digitalWrite(LED_5, LOW);
+    }
     roll = 3;
   }
   else if (roll == 3){
     digitalWrite(LED_3, HIGH);
     digitalWrite(LED_7, HIGH);
-    digitalWrite(LED_2, LOW);
-    digitalWrite(LED_6, LOW);
+    if (Ducers::samplePT(2) < 0){
+      digitalWrite(LED_2, LOW);
+    }
+    if (Ducers::samplePT(6) < 0){
+      digitalWrite(LED_6, LOW);
+    }
     roll = 0;
     return 400*1000;
   }

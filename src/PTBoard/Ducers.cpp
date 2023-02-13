@@ -5,7 +5,7 @@ namespace Ducers {
     SPIClass *spi2; 
     
 
-    uint32_t ptUpdatePeriod = 2000 * 1000;
+    uint32_t ptUpdatePeriod = 50 * 1000;
     Comms::Packet ptPacket = {.id = 2};
 
     // float pressurantPTValue = 0.0;
@@ -43,6 +43,11 @@ namespace Ducers {
     float interpolate5000(uint16_t rawValue) {
         float tmp = (float) rawValue;
         return tmp / 12.97;
+    }
+
+    float samplePT(uint8_t channel) {
+        adc1.setChannel(channel);
+        return interpolate1000(adc1.readChannelOTF(channel));
     }
 
     uint32_t task_ptSample() {
