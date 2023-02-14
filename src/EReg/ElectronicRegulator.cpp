@@ -60,50 +60,50 @@ void setup() {
     Serial.printf("hi!!\n");
     delay(5000);
 
-    if (HAL::init() == -1) {
-        DEBUGF("HAL initialization failed\n");
-        while (true) {1;}
-    } else {
-        DEBUGF("HAL initialization success!\n");
-    }
-    Serial.printf("hal init\n");
-    Comms::initComms();
-    StateMachine::enterIdleClosedState();
-    zero(); 
-    Comms::registerCallback(200, flow);
-    Comms::registerCallback(201, stopFlow);
-    Comms::registerCallback(202, partialOpen);
-    Comms::registerCallback(203, pressurize);
-    Comms::registerCallback(204, runDiagnostics);
-    Comms::registerCallback(205, zero);
-    Comms::registerCallback(206, actuateMainValve);
+    // if (HAL::init() == -1) {
+    //     DEBUGF("HAL initialization failed\n");
+    //     while (true) {1;}
+    // } else {
+    //     DEBUGF("HAL initialization success!\n");
+    // }
+    // Serial.printf("hal init\n");
+    // Comms::initComms();
+    // StateMachine::enterIdleClosedState();
+    // zero(); 
+    // Comms::registerCallback(200, flow);
+    // Comms::registerCallback(201, stopFlow);
+    // Comms::registerCallback(202, partialOpen);
+    // Comms::registerCallback(203, pressurize);
+    // Comms::registerCallback(204, runDiagnostics);
+    // Comms::registerCallback(205, zero);
+    // Comms::registerCallback(206, actuateMainValve);
     
-    Packets::sendConfig();
+    // Packets::sendConfig();
 }
 
 void loop() {
-    Comms::processWaitingPackets();
-    Util::checkMotorDriverHealth();
-    switch (StateMachine::getCurrentState()) {
-        case StateMachine::IDLE_CLOSED:
-        idleClosedState->update();
-        break;
+    // Comms::processWaitingPackets();
+    // Util::checkMotorDriverHealth();
+    // switch (StateMachine::getCurrentState()) {
+    //     case StateMachine::IDLE_CLOSED:
+    //     idleClosedState->update();
+    //     break;
         
-        case StateMachine::PARTIAL_OPEN:
-        partiallyOpenState->update();
-        break;
+    //     case StateMachine::PARTIAL_OPEN:
+    //     partiallyOpenState->update();
+    //     break;
 
-        case StateMachine::PRESSURIZE:
-        pressurizeState->update();
-        break;
+    //     case StateMachine::PRESSURIZE:
+    //     pressurizeState->update();
+    //     break;
 
-        case StateMachine::FLOW:
-        flowState->update();
-        break;
+    //     case StateMachine::FLOW:
+    //     flowState->update();
+    //     break;
 
-        case StateMachine::DIAGNOSTIC:
-        diagnosticState->update();
-        break;
-    };
+    //     case StateMachine::DIAGNOSTIC:
+    //     diagnosticState->update();
+    //     break;
+    // };
 }
 

@@ -6,9 +6,9 @@
 #include <TimeUtil.h>
 #include "EReg/StateMachine.h"
 #include "EReg/Packets.h"
-#include "Ereg/HAL.h"
-#include "Ereg/Util.h"
-#include "Ereg/Config.h"
+#include "EReg/HAL.h"
+#include "EReg/Util.h"
+#include "EReg/Config.h"
 
 namespace StateMachine {
 
