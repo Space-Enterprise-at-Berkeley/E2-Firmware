@@ -1,18 +1,17 @@
 #include <Common.h>
 #include <EspComms.h>
-#include <ChannelMoniter.h>
-
 #include <Arduino.h>
 
-uint32_t task_example() { 
-  
-  Serial.println("Hello World!");
-  return 1000 * 1000;
-  
-}
+#include "AC.h"
+#include "ChannelMonitor.h"
+#include "MCP23008.h"
+#include <Wire.h>
+
 
 Task taskTable[] = {
-  {task_example, 0, true},
+  {AC::actuationDaemon, 0, true},
+  {AC::actuatorStatesTask, 0, true},
+  {ChannelMonitor::readChannels, 0, true},
 };
 
 #define TASK_COUNT (sizeof(taskTable) / sizeof (struct Task))
@@ -20,8 +19,9 @@ Task taskTable[] = {
 void setup() {
   // setup stuff here
   Comms::init(); // takes care of Serial.begin()
-  ChannelMoniter::init(41, 42, 47, 4, 5);
-  
+  AC::init();
+  ChannelMonitor::init(41, 42, 47, 4, 5);
+
 
   while(1) {
     // main loop here to avoid arduino overhead
