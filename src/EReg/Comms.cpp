@@ -7,9 +7,8 @@ namespace Comms {
     char packetBuffer[sizeof(Packet)];
 
     void initComms() {
-        Serial.begin(921600);
         Ethernet.init(HAL::ETH_CS);
-        Ethernet.begin((uint8_t *)mac, ip);
+        Ethernet.begin((uint8_t *)mac, ip, HAL::ETH_MISO, HAL::ETH_MOSI, HAL::ETH_SCLK);
         Udp.begin(port);
         DEBUGLN("Ethernet Initialized");
     }

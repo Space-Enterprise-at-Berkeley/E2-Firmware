@@ -14,17 +14,16 @@ StateMachine::DiagnosticState *diagnosticState = StateMachine::getDiagnosticStat
 StateMachine::PressurizeState *pressurizeState = StateMachine::getPressurizeState();
 StateMachine::InjectorFlowState *injectorFlowState = StateMachine::getInjectorFlowState();
 
-void zero() { //DO NOT ZERO UNTIL MOTOR STALL CHARACTERISTICS HAVE BEEN FIGURED OUT
-    DEBUGF("attempted zero, ignoring\n");
-    // DEBUGLN("starting zero command");
-    // Util::runMotors(-150);
-    // delay(2000);
-    // Util::runMotors(0);
-    // // zero encoder value (so encoder readings range from -x (open) to 0 (closed))
-    // delay(400);
-    // HAL::encoder.setCount(-20);
-    // DEBUG("encoder position after zero: ");
-    // DEBUGLN(HAL::encoder.getCount());
+void zero() { 
+    DEBUGLN("starting zero command");
+    Util::runMotors(-50);
+    delay(2000);
+    Util::runMotors(0);
+    // zero encoder value (so encoder readings range from -x (open) to 0 (closed))
+    delay(400);
+    HAL::encoder.setCount(-20);
+    DEBUG("encoder position after zero: ");
+    DEBUGLN(HAL::encoder.getCount());
 }
 
 void zero(Comms::Packet packet, uint8_t ip) {
@@ -57,7 +56,9 @@ void actuateMainValve(Comms::Packet packet, uint8_t ip) {
 
 void setup() {
     delay(1000);
+    Serial.begin(115200);
     Serial.printf("hi!!\n");
+    delay(5000);
 
     if (HAL::init() == -1) {
         DEBUGF("HAL initialization failed\n");
@@ -65,10 +66,10 @@ void setup() {
     } else {
         DEBUGF("HAL initialization success!\n");
     }
+    Serial.printf("hal init\n");
     Comms::initComms();
-    Ducers::init();
     StateMachine::enterIdleClosedState();
-    // zero(); DO NOT ZERO 
+    zero(); 
     Comms::registerCallback(200, flow);
     Comms::registerCallback(201, stopFlow);
     Comms::registerCallback(202, partialOpen);
@@ -97,11 +98,7 @@ void loop() {
         break;
 
         case StateMachine::FLOW:
-        #ifdef IS_INJECTOR
-        injectorFlowState->update();
-        #else
         flowState->update();
-        #endif
         break;
 
         case StateMachine::DIAGNOSTIC:

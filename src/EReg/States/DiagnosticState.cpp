@@ -56,8 +56,8 @@ namespace StateMachine {
 
         float motorAngle = HAL::encoder.getCount()
 ;
-        float upstreamPsi = HAL::readUpstreamPT();
-        float downstreamPsi = HAL::readDownstreamPT();
+        float upstreamPsi = Ducers::readUpstreamPT();
+        float downstreamPsi = Ducers::readDownstreamPT();
         
         unsigned long testTime = TimeUtil::timeInterval(timeTestStarted_, micros());
         float speed;

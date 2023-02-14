@@ -24,33 +24,8 @@ namespace Util {
         return &outerController;
     }
 
-    /**
-     * Converts encoder angle to valve angle in degrees based on motor gear ratio.
-     * Currently uncalibrated. DO NOT USE
-     */
-    double encoderToAngle(double encoderValue) {
-        return (encoderValue/560.0)*360*1/3.0;
-    }
 
-    /**
-     * Converts analogRead values from low pressure PT to PSI value
-     * PT voltage frange .4-4.5
-     * PT reads from 0-1000
-     * @param voltage analog reading from [0, 1023]
-     * @return PSI pressure 
-     */
-    double voltageToLowPressure(double voltage) {
-        return 222.22 * voltage - 61.1;
-    }
 
-    /**                                        
-     * Converts analogRead values from high pressure PT to PSI value
-     * @param voltage analog reading from [0, 1023]
-     * @return PSI pressure 
-     */
-    double voltageToHighPressure(double voltage) {
-        return (1111.1 * voltage) + 65; //5V corresponds to 5k psi (after voltage divider)
-    }
 
     /**
      * Computes feedforward value for valve angle during regulated flow
@@ -162,6 +137,13 @@ namespace Util {
     void runMotors(float speed) {
         // ledcWrite(HAL::motor1Channel,-min(0,speed));
         // ledcWrite(HAL::motor2Channel,max(0,speed));
+
+        int pwmPower = abs(speed);
+        int motorDir = (int)speed / pwmPower;
+        pwmPower = (int) clip((double)pwmPower, (double)Config::minimumMotorPower, (double)Config::maximumMotorPower);
+        // ledcWrite(HAL::motorChannel, pwmPower);
+        // digitalWrite(HAL::INHC, motorDir);
+        Serial.printf("Updating motor: pwm %d, direction pin %d\n", pwmPower, motorDir);
     }
 
     /**
@@ -176,10 +158,10 @@ namespace Util {
     }
 
     void checkMotorDriverHealth() {
-        if (HAL::motorDriverFault) {
+        if (HAL::getMotorDriverFault()) {
             Serial.printf("motor driver fault \n");
             HAL::printMotorDriverFault();
-            HAL::motorDriverFault = false;
+            HAL::clearMotorDriverFault();
         }
     }
 

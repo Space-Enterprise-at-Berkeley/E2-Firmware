@@ -22,13 +22,11 @@ namespace Config {
 
     #define ESP_ADDRESS_1 25
     #define ESP_ADDRESS_2 26
-    #define ESP_ADDRESS_3 27
-    #define ESP_ADDRESS_4 28
 
     #define MAX_SPD 255
     #define MIN_SPD -255
 
-    #define OPEN_LOOP_SPEED 200                                                                                                                                                  
+    #define OPEN_LOOP_SPEED 100                                                                                                                                                  
 
     #define INNER_BUFFER_SIZE 2
     #define DIAGNOSTIC_BUFFER_SIZE 5
@@ -63,6 +61,11 @@ namespace Config {
     const float maxInjectorFeedforwardAngle = 900;
     const unsigned long injectorPidStart = 400UL * 1000UL; // time in microseconds
     const unsigned long injectorPidFull = 3 * 1000UL * 1000UL; // time in microseconds
+
+
+    //motor configs
+    const int minimumMotorPower = 20; //out of 256
+    const int maximumMotorPower = 75; //out of 256;
     
 
 

@@ -5,25 +5,12 @@ namespace Ducers {
     int16_t upstreamPT;
     int16_t downstreamPT;
 
-    TaskHandle_t adcTask;
-
-    void readADC(void * parameter) {
-        for(;;) {
-            upstreamPT = HAL::adc.readADC(HAL::upstreamPT);
-            downstreamPT = HAL::adc.readADC(HAL::downstreamPT);
-        }
+    void updateUpstreamPT() {
+        upstreamPT = HAL::readPTVoltage(2);
     }
 
-    void init() {
-        xTaskCreatePinnedToCore(
-            readADC,
-            "adcTask",
-            10000,
-            NULL,
-            0,
-            &adcTask,
-            0
-        );
+    void updateDownstreamPT() {
+        downstreamPT = HAL::readPTVoltage(0);
     }
 
     float interpolate1000(double rawValue) {
@@ -35,22 +22,22 @@ namespace Ducers {
     }
 
     float readPressurantPT() {
-        double voltage = (upstreamPT * 0.1875)/1000;
-        return max(1, interpolate5000(voltage));
+        updateUpstreamPT();
+        return max(1, interpolate5000(upstreamPT));
     }
 
     float readTankPT() {
-        double voltage = (downstreamPT * 0.1875)/1000;
-        return max(1, interpolate1000(voltage));
+        updateDownstreamPT();
+        return max(1, interpolate1000(downstreamPT));
     }
 
-    float readTankFromInjectorPT() {
-        double voltage = (upstreamPT * 0.1875)/1000;
-        return max(1, interpolate1000(voltage));
+    float readDownstreamPT() {
+        return readTankPT();
     }
 
-    float readInjectorPT() {
-        double voltage = (downstreamPT * 0.1875)/1000;
-        return max(1, interpolate1000(voltage));
+    float readUpstreamPT() {
+        return readPressurantPT();
     }
+
+
 }

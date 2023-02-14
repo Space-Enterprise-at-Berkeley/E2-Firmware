@@ -20,7 +20,6 @@ namespace StateMachine {
         timeStarted_ = millis();
         lastPrint_ = 0;
         Util::runMotors(closeSpeed_);
-        actuateMainValve(MAIN_VALVE_CLOSE);
     }
 
     /**

@@ -44,7 +44,6 @@ namespace Packets {
         Comms::packetAddFloat(&packet, pressureControlI);
         Comms::packetAddFloat(&packet, pressureControlD);
         Comms::emitPacket(&packet);
-        Comms::emitPacket(&packet, HAL::acEndIp); //TODO not working right now, need for forwarding pressures for aborts
         #endif
     }
 
@@ -126,10 +125,6 @@ namespace Packets {
         //send to all ESPs including to itself
         Comms::emitPacket(&packet, ESP_ADDRESS_1);
         Comms::emitPacket(&packet, ESP_ADDRESS_2);
-        Comms::emitPacket(&packet, ESP_ADDRESS_3);
-        Comms::emitPacket(&packet, ESP_ADDRESS_4);
-        Comms::emitPacket(&packet, HAL::acEndIp);
-        Comms::emitPacket(&packet, HAL::daqEndIp);
     }
 
 }

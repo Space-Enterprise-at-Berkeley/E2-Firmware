@@ -29,9 +29,6 @@ namespace HAL {
     const int encC = 16; //encoder C
 
     extern ESP32Encoder encoder;
-    uint8_t SPIBUFF[2]; // spi buffer for all SPI except ethernet.
-    SPIClass *motorSPI = NULL;
-    SPIClass *dataSPI = NULL;
     
 
     const uint8_t upstreamPT = 0; // pressurant
@@ -62,14 +59,9 @@ namespace HAL {
 
     const int eregAbortID = 201;
 
-    int DRVSPISpeed = 1000000;
-    int ADCSPISpeed = 1000000;
 
-    bool motorDriverFault = false;
 
     int init();
-    float readUpstreamPT();
-    float readDownstreamPT();
     int initializeMotorDriver();
     void sendSPICommand(void* dataBuffer, int numBytes, SPIClass* spi, int csPin, int clkSpeed, int spiMode);
     void readMotorDriverRegister(int8_t addr);
@@ -78,4 +70,10 @@ namespace HAL {
     void disableMotorDriver();
     void handleMotorDriverFault();
     void printMotorDriverFault();
+    float readPhaseCurrent(int phase);
+    float readPTVoltage(uint8_t channel);
+    float readUpstreamPT();
+    float readDownstreamPT();
+    bool getMotorDriverFault();
+    void clearMotorDriverFault();
 }

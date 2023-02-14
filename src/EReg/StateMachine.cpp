@@ -87,17 +87,7 @@ namespace StateMachine {
      * @param action Desired valve state
      */
     void actuateMainValve(ValveAction action) {
-        switch (action) {
-            case MAIN_VALVE_OPEN:
-                digitalWrite(HAL::mainValve1, HIGH);
-                digitalWrite(HAL::mainValve2, LOW);
-            break;
-            case MAIN_VALVE_CLOSE:
-                digitalWrite(HAL::mainValve1, LOW);
-                digitalWrite(HAL::mainValve2, LOW);
-            break;
-        }
-        currentMainValveState = action;
+        return; //no more main valve!
     }
 
     void checkAbortPressure(float currentPressure, float abortPressure) {

@@ -37,31 +37,50 @@ int EthernetClass::begin(uint8_t *mac, unsigned long timeout, unsigned long resp
 
 void EthernetClass::begin(uint8_t *mac, IPAddress ip)
 {
+	begin(mac, ip, -1, -1, -1);
+}
+void EthernetClass::begin(uint8_t *mac, IPAddress ip, int spiMisoPin, int spiMosiPin, int spiSclkPin)
+{
 	// Assume the DNS server will be the machine on the same network as the local IP
 	// but with last octet being '1'
 	IPAddress dns = ip;
 	dns[3] = 1;
-	begin(mac, ip, dns);
+	begin(mac, ip, dns, spiMisoPin, spiMosiPin, spiSclkPin);
 }
 
 void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns)
+{
+	begin(mac, ip, dns, -1, -1, -1);
+}
+
+void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, int spiMisoPin, int spiMosiPin, int spiSclkPin)
 {
 	// Assume the gateway will be the machine on the same network as the local IP
 	// but with last octet being '1'
 	IPAddress gateway = ip;
 	gateway[3] = 1;
-	begin(mac, ip, dns, gateway);
+	begin(mac, ip, dns, gateway, spiMisoPin, spiMosiPin, spiSclkPin);
 }
 
 void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress gateway)
 {
+	begin(mac, ip, dns, gateway, -1, -1, -1);
+}
+
+void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress gateway, int spiMisoPin, int spiMosiPin, int spiSclkPin)
+{
 	IPAddress subnet(255, 255, 255, 0);
-	begin(mac, ip, dns, gateway, subnet);
+	begin(mac, ip, dns, gateway, subnet, spiMisoPin, spiMosiPin, spiSclkPin);
 }
 
 void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress gateway, IPAddress subnet)
 {
-	if (W5500.init() == 0) return;
+	begin(mac, ip, dns, gateway, subnet, -1, -1, -1);
+}
+
+void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress gateway, IPAddress subnet, int spiMisoPin, int spiMosiPin, int spiSclkPin)
+{
+	if (W5500.init(spiMisoPin, spiMosiPin, spiSclkPin) == 0) return;
 	SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
 	W5500.setMACAddress(mac);
 	W5500.setIPAddress(ip._address.bytes);

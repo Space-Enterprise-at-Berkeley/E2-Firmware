@@ -3,12 +3,17 @@
 namespace HAL {
 
     ESP32Encoder encoder;
-
+    int DRVSPISpeed = 1000000;
+    int ADCSPISpeed = 1000000;
+    bool motorDriverFault = false;
+    uint8_t SPIBUFF[2]; // spi buffer for all SPI except ethernet.
+    SPIClass *motorSPI = NULL;
+    SPIClass *dataSPI = NULL;
 
     int init() {
 
 
-        motorSPI = new SPIClass(VSPI);
+        motorSPI = new SPIClass(FSPI);
         dataSPI = new SPIClass(HSPI);
 
         motorSPI->begin(MOTOR_SCLK, MOTOR_MISO, MOTOR_MOSI);
@@ -24,25 +29,10 @@ namespace HAL {
         pinMode(encB, INPUT);
 
         encoder.attachFullQuad(encA, encB);
+        return 0;
     }
 
     
-    float readUpstreamPT() {
-        #ifndef IS_INJECTOR
-        return Ducers::readPressurantPT();
-        #else
-        return Ducers::readTankFromInjectorPT();
-        #endif
-    }
-
-    float readDownstreamPT() {
-        #ifndef IS_INJECTOR
-        return Ducers::readTankPT();
-        #else
-        return Ducers::readInjectorPT();
-        #endif
-    }
-
     int initializeMotorDriver() {
         pinMode(DRV_CS, OUTPUT);
         pinMode(DRV_EN, OUTPUT);
@@ -204,6 +194,22 @@ namespace HAL {
             return 0; 
         }
         return readADC(dataSPI, PTADC_CS, channel);
+    }
+
+    float readUpstreamPT() {
+        return Ducers::readPressurantPT();
+    }
+
+    float readDownstreamPT() {
+        return Ducers::readTankPT();
+    }
+
+    void clearMotorDriverFault() {
+        motorDriverFault = false;
+    }
+
+    bool getMotorDriverFault() {
+        return motorDriverFault;
     }
 
 }
