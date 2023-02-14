@@ -6,6 +6,7 @@
 #include <EthernetUdp.h>
 #include <map>
 #include "stdint.h"
+#include "HAL.h"
 
 namespace Comms {
 

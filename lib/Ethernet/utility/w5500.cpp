@@ -32,7 +32,7 @@ uint16_t W5500Class::SMASK = 0x07FF;
 W5500Class W5500;
 
 
-uint8_t W5500Class::init(void)
+uint8_t W5500Class::init(int spiMisoPin, int spiMosiPin, int spiSclkPin)
 {
 	static bool initialized = false;
 	uint8_t i;
@@ -49,8 +49,11 @@ uint8_t W5500Class::init(void)
 	// reset time, this can be edited or removed.
 	delay(560);
 	//Serial.println("w5100 init");
-
-	SPI.begin();
+	if ((spiMisoPin == -1) || (spiMosiPin == -1) || (spiSclkPin == -1)) {
+		SPI.begin();
+	} else {
+		SPI.begin(spiSclkPin, spiMisoPin, spiMosiPin);
+	}
 	initSS();
 	resetSS();
 	SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
@@ -80,6 +83,10 @@ uint8_t W5500Class::init(void)
 	SPI.endTransaction();
 	initialized = true;
 	return 1; // successful init
+}
+
+uint8_t W5500Class::init() {
+	return init(-1, -1, -1);
 }
 
 // Soft reset the WIZnet chip, by writing to its MR register reset bit
