@@ -6,10 +6,12 @@
 #define DEBUG(val) Serial.print(val)
 #define DEBUG_FLUSH() Serial.flush()
 #define DEBUGLN(val) Serial.println(val)
+#define DEBUGF Serial.printf
 #else
 #define DEBUG(val)
 #define DEBUG_FLUSH()
 #define DEBUGLN(val)
+#define DEBUGF(...)
 #endif
 
 struct Task
