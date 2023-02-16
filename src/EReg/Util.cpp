@@ -137,13 +137,14 @@ namespace Util {
     void runMotors(float speed) {
         // ledcWrite(HAL::motor1Channel,-min(0,speed));
         // ledcWrite(HAL::motor2Channel,max(0,speed));
-
-        int pwmPower = abs(speed);
-        int motorDir = (int)speed / pwmPower;
-        pwmPower = (int) clip((double)pwmPower, (double)Config::minimumMotorPower, (double)Config::maximumMotorPower);
+        int pwmPower = abs((int) speed);
+        int motorDir = (speed > 0) ? 1 : 0;
+        if (pwmPower > 0) {
+            pwmPower = (int) clip((double)pwmPower, (double)Config::minimumMotorPower, (double)Config::maximumMotorPower);
+        }
         // ledcWrite(HAL::motorChannel, pwmPower);
         // digitalWrite(HAL::INHC, motorDir);
-        Serial.printf("Updating motor: pwm %d, direction pin %d\n", pwmPower, motorDir);
+        // Serial.printf("Updating motor: pwm %d, direction pin %d\n", pwmPower, motorDir);
     }
 
     /**
@@ -163,6 +164,14 @@ namespace Util {
             HAL::printMotorDriverFault();
             HAL::clearMotorDriverFault();
         }
+    }
+
+    float max(float a, float b) {
+        return (a > b) ? a : b;
+    }
+
+    float min(float a, float b) {
+        return (a < b) ? a : b;
     }
 
     

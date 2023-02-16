@@ -2,7 +2,6 @@
 
 #include <stdint.h>
 #include <Arduino.h>
-#include <ESP32Encoder.h>
 #include "Ducers.h"
 #include "Util.h" 
 #include "SPI.h"
@@ -28,7 +27,6 @@ namespace HAL {
     const int encB = 15; //encoder B
     const int encC = 16; //encoder C
 
-    extern ESP32Encoder encoder;
     
 
     const uint8_t upstreamPT = 0; // pressurant
@@ -44,9 +42,9 @@ namespace HAL {
     const int DRV_FAULT = 12;
 
     const int DRV_CS = 10;
-    const int MADC_CS = 10;
-    const int ETH_CS = 10;
-    const int PTADC_CS = 10;
+    const int MADC_CS = 13;
+    const int ETH_CS = 39;
+    const int PTADC_CS = 21;
 
     
     const int MOTOR_MISO = 8;
@@ -76,4 +74,7 @@ namespace HAL {
     float readDownstreamPT();
     bool getMotorDriverFault();
     void clearMotorDriverFault();
+    void setEncoderCount(int i);
+    int getEncoderCount();
+    void setupEncoder();
 }

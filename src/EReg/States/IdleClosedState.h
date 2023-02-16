@@ -4,10 +4,10 @@
 #include <data_buff.h>
 #include <PIDController.h>
 #include "EReg/StateMachine.h"
-#include "Ereg/HAL.h"
-#include "Ereg/Util.h"
-#include "Ereg/Comms.h"
-#include "Ereg/Config.h"
+#include "EReg/HAL.h"
+#include "EReg/Util.h"
+#include "EspComms.h"
+#include "Config.h"
 
 namespace StateMachine {
 

@@ -14,7 +14,6 @@
 #include "States/FlowState.h"
 #include "States/PartiallyOpenState.h"
 #include "States/PressurizeState.h"
-#include "States/InjectorFlowState.h"
 
 namespace StateMachine {
 

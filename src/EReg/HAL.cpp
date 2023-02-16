@@ -2,33 +2,31 @@
 
 namespace HAL {
 
-    ESP32Encoder encoder;
-    int DRVSPISpeed = 1000000;
+    int DRVSPISpeed = 5000000;
     int ADCSPISpeed = 1000000;
-    bool motorDriverFault = false;
+    volatile bool motorDriverFault = false;
     uint8_t SPIBUFF[2]; // spi buffer for all SPI except ethernet.
     SPIClass *motorSPI = NULL;
     SPIClass *dataSPI = NULL;
+    volatile int encoderTicks = 0;
 
     int init() {
 
 
         motorSPI = new SPIClass(FSPI);
-        dataSPI = new SPIClass(HSPI);
+        // motorSPI->end();
+        // dataSPI = new SPIClass(HSPI);
 
         motorSPI->begin(MOTOR_SCLK, MOTOR_MISO, MOTOR_MOSI);
-        dataSPI->begin(ETH_SCLK, ETH_MISO, ETH_MOSI);
+        // dataSPI->begin(ETH_SCLK, ETH_MISO, ETH_MOSI);
+
+        setupEncoder();
 
         int motorDriverInitSuccess = initializeMotorDriver();
         if (motorDriverInitSuccess == -1) {
             disableMotorDriver();
             return -1;
         }
-        
-        pinMode(encA, INPUT);
-        pinMode(encB, INPUT);
-
-        encoder.attachFullQuad(encA, encB);
         return 0;
     }
 
@@ -40,73 +38,88 @@ namespace HAL {
         pinMode(INHC, OUTPUT);
         pinMode(INLC, OUTPUT);
 
+        disableMotorDriver();
         digitalWrite(DRV_CS, HIGH);
         digitalWrite(INHC, LOW);
         digitalWrite(INLC, LOW);
-        disableMotorDriver();
+        delay(10);
 
-        attachInterrupt(DRV_EN, handleMotorDriverFault, FALLING);
+        attachInterrupt(DRV_FAULT, handleMotorDriverFault, FALLING);
 
         int pwmFreq = 50000;
         int pwmResolution = 8;
         ledcSetup(motorChannel, pwmFreq, pwmResolution);
         ledcAttachPin(INHA, 0);
-        ledcWrite(INHA, 0);
+        ledcWrite(motorChannel, 0);
 
         enableMotorDriver();
         delay(10);
+        printMotorDriverFault();
 
         //set driver control
-        readMotorDriverRegister(2);
+        SPIBUFF[0] = 0b00000000;
         SPIBUFF[1] = 0b11000000; //1x pwm control for trap control
         writeMotorDriverRegister(2);
-        readMotorDriverRegister(2);
-        if (SPIBUFF[0] != 0x00 && SPIBUFF[1] != 0xc0) {
-            Serial.printf("reg 2 bad :( %hhx, %hhx\n", SPIBUFF[0], SPIBUFF[1]);
-            return -1;
-        } 
 
         //set CSA
-        readMotorDriverRegister(6);
-        SPIBUFF[1] = 0b10000001; //sense ocp 0.5v, gain 20v/v
+        SPIBUFF[0] = 0b00000010;
+        SPIBUFF[1] = 0b10000001; //sense ocp 0.5v, gain 20v/v //TODO change this
         writeMotorDriverRegister(6);
-        readMotorDriverRegister(6);
-        if (SPIBUFF[0] != 0x02 && SPIBUFF[1] != 0x80) {
-            Serial.printf("reg 6 bad :( %hhx, %hhx\n", SPIBUFF[0], SPIBUFF[1]);
-            return -1;
-        } 
 
         // set gate drive HS 
-        readMotorDriverRegister(3);
-        SPIBUFF[1] = 0b11111111; //1000mA, 2000mA source/sink gate current
+        SPIBUFF[0] = 0b00000011;
+        SPIBUFF[1] = 0b11111110; //1000mA, 2000mA source/sink gate current
         writeMotorDriverRegister(3);
-        readMotorDriverRegister(3);
-        if (SPIBUFF[0] != 0x03 && SPIBUFF[1] != 0xFF) {
-            Serial.printf("reg 3 bad :( %hhx, %hhx\n", SPIBUFF[0], SPIBUFF[1]);
-            return -1;
-        }
 
         //set gate drive LS
-        readMotorDriverRegister(4);
+        SPIBUFF[0] = 0b00000111;
         SPIBUFF[1] = 0b11111111; //1000mA, 2000mA source/sink gate current
         writeMotorDriverRegister(4);
-        readMotorDriverRegister(4);
-        if (SPIBUFF[0] != 0x07 && SPIBUFF[1] != 0x84) {
-            Serial.printf("reg 4 bad :( %hhx, %hhx\n", SPIBUFF[0], SPIBUFF[1]);
-            return -1;
-        }
 
         //set OCP
-        readMotorDriverRegister(5);
+        SPIBUFF[0] = 0b00000001;
         SPIBUFF[1] = 0b01110101; // OC to auto retry under fault, OC deglitch to 8us, Vds trip to 0.45V
         writeMotorDriverRegister(5);
-        readMotorDriverRegister(5);
-        if (SPIBUFF[0] != 0x01 && SPIBUFF[1] != 0x35) {
-            Serial.printf("reg 5 bad :( %hhx, %hhx\n", SPIBUFF[0], SPIBUFF[1]);
+
+        readMotorDriverRegister(2);
+        if (SPIBUFF[0] != 0x00 || SPIBUFF[1] != 0xc0) {
+            Serial.printf("reg 2 bad :( %hhx, %hhx\n", SPIBUFF[0], SPIBUFF[1]);
             return -1;
+        } else {
+            Serial.printf("reg 2 good!\n");
         }
 
-        disableMotorDriver();
+        readMotorDriverRegister(6);
+        if (SPIBUFF[0] != 0x02 || SPIBUFF[1] != 0x80) {
+            Serial.printf("reg 6 bad :( %hhx, %hhx\n", SPIBUFF[0], SPIBUFF[1]);
+            return -1;
+        } else {
+            Serial.printf("reg 6 good!\n");
+        } 
+
+        readMotorDriverRegister(3);
+        if (SPIBUFF[0] != 0x03 || SPIBUFF[1] != 0xFE) {
+            Serial.printf("reg 3 bad :( %hhx, %hhx\n", SPIBUFF[0], SPIBUFF[1]);
+            return -1;
+        } else {
+            Serial.printf("reg 3 good!\n");
+        }
+
+        readMotorDriverRegister(4);
+        if (SPIBUFF[0] != 0x07 || SPIBUFF[1] != 0xFE) {
+            Serial.printf("reg 4 bad :( %hhx, %hhx\n", SPIBUFF[0], SPIBUFF[1]);
+            return -1;
+        } else {
+            Serial.printf("reg 4 good!\n");
+        }
+
+        readMotorDriverRegister(5);
+        if (SPIBUFF[0] != 0x01 || SPIBUFF[1] != 0x35) {
+            Serial.printf("reg 5 bad :( %hhx, %hhx\n", SPIBUFF[0], SPIBUFF[1]);
+            return -1;
+        } else {
+            Serial.printf("reg 5 good!\n");
+        }
 
         return 0;
 
@@ -147,17 +160,15 @@ namespace HAL {
     void handleMotorDriverFault() {
         motorDriverFault = true;
         ledcWrite(motorChannel, 0);
-        disableMotorDriver();
     }
 
     void printMotorDriverFault() {
         ledcWrite(motorChannel, 0);
-        enableMotorDriver();
         delayMicroseconds(50);
         readMotorDriverRegister(0);
         Serial.printf("Fault:\n reg 0 <%hhx>, <%hhx>\n", SPIBUFF[0], SPIBUFF[1]);
         readMotorDriverRegister(1);
-        Serial.printf("reg 0 <%hhx>, <%hhx>\n", SPIBUFF[0], SPIBUFF[1]);
+        Serial.printf("reg 1 <%hhx>, <%hhx>\n", SPIBUFF[0], SPIBUFF[1]);
         disableMotorDriver();
 
     }
@@ -211,5 +222,84 @@ namespace HAL {
     bool getMotorDriverFault() {
         return motorDriverFault;
     }
+
+    void setEncoderCount(int i) {
+        encoderTicks = (int) i;
+    }
+
+    int getEncoderCount() {
+        return encoderTicks;
+    }
+
+
+    void risingA() {
+        if (digitalRead(encC)) {
+            encoderTicks += 1;
+        } else {
+            encoderTicks -= 1;
+        }
+    }
+
+    void risingB() {
+        if (digitalRead(encA)) {
+            encoderTicks += 1;
+        } else {
+            encoderTicks -= 1;
+        } 
+    }
+
+    void risingC() {
+        if (digitalRead(encB)) {
+            encoderTicks += 1;
+        } else {
+            encoderTicks -= 1;
+        } 
+    }
+
+    void fallingA() {
+        if (digitalRead(encB)) {
+            encoderTicks += 1;
+        } else {
+            encoderTicks -= 1;
+        }  
+    }
+
+    void fallingB() {
+        if (digitalRead(encC)) {
+            encoderTicks += 1;
+        } else {
+            encoderTicks -= 1;
+        }  
+    }
+
+    void fallingC() {
+        if (digitalRead(encA)) {
+            encoderTicks += 1;
+        } else {
+            encoderTicks -= 1;
+        }  
+    }
+
+
+
+
+    void setupEncoder() {
+        pinMode(encA, INPUT);
+        pinMode(encB, INPUT);
+        pinMode(encC, INPUT);
+
+        attachInterrupt(encA, risingA, RISING);
+        attachInterrupt(encB, risingB, RISING);
+        attachInterrupt(encC, risingC, RISING);
+
+        attachInterrupt(encA, fallingA, FALLING);
+        attachInterrupt(encB, fallingB, FALLING);
+        attachInterrupt(encC, fallingC, FALLING);
+
+        // Serial.printf("done setting up encoder. ticks: %d, prevEncoderState: %hhx\n", encoderTicks, prevEncoderState);
+
+    }
+
+
 
 }

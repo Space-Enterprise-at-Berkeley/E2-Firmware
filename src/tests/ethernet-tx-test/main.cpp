@@ -14,7 +14,7 @@ void setup()
 {
   Serial.begin(921600);
   Ethernet.init(10);
-  Ethernet.begin((uint8_t *)mac, ip);
+  Ethernet.begin((uint8_t *)mac, ip, 37, 36, 38);
   Udp.begin(port);
 
   Udp.beginPacket(groundStation1, port);

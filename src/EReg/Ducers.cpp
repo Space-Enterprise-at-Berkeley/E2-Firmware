@@ -23,12 +23,12 @@ namespace Ducers {
 
     float readPressurantPT() {
         updateUpstreamPT();
-        return max(1, interpolate5000(upstreamPT));
+        return max((float)1, interpolate5000(upstreamPT));
     }
 
     float readTankPT() {
         updateDownstreamPT();
-        return max(1, interpolate1000(downstreamPT));
+        return max((float)1, interpolate1000(downstreamPT));
     }
 
     float readDownstreamPT() {
@@ -38,6 +38,8 @@ namespace Ducers {
     float readUpstreamPT() {
         return readPressurantPT();
     }
+
+
 
 
 }

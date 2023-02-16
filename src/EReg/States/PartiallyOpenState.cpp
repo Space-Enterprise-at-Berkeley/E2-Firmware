@@ -9,7 +9,7 @@ namespace StateMachine {
 
     
     PartiallyOpenState::PartiallyOpenState() {
-        this->init(0);
+        // this->init(0);
     }
 
     /**
@@ -26,7 +26,7 @@ namespace StateMachine {
      * Perform single iteration of valve angle servo loop
      */
     void PartiallyOpenState::update() {
-        float motorAngle = HAL::encoder.getCount();
+        float motorAngle = HAL::getEncoderCount();
 
         float upstreamPsi = HAL::readUpstreamPT();
         float downstreamPsi = HAL::readDownstreamPT();

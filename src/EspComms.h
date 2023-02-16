@@ -25,6 +25,7 @@ namespace Comms
     uint8_t data[256];
   };
 
+  void init(int cs, int spiMisoPin, int spiMosiPin, int spiSclkPin);
   void init();
 
   typedef void (*commFunction)(Packet, uint8_t);

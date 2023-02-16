@@ -22,7 +22,7 @@ namespace StateMachine {
     }
 
     void PressurizeState::update() {
-        float motorAngle = HAL::encoder.getCount()
+        float motorAngle = HAL::getEncoderCount()
 ;
         float upstreamPsi = HAL::readUpstreamPT();
         float downstreamPsi = HAL::readDownstreamPT();

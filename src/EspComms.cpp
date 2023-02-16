@@ -11,14 +11,17 @@ namespace Comms {
   IPAddress ip(10, 0, 0, IP_ADDRESS_END);
   int port = 42069;
 
-  void init()
+  void init(int cs, int spiMisoPin, int spiMosiPin, int spiSclkPin)
   {
-    Serial.begin(921600);
-    Ethernet.init(10);
-    Ethernet.begin((uint8_t *)mac, ip);
+    Ethernet.init(cs);
+    Ethernet.begin((uint8_t *)mac, ip, spiMisoPin, spiMosiPin, spiSclkPin);
     Udp.begin(port);
 
-    Udp.beginPacket(groundStation1, port);
+    // Udp.beginPacket(groundStation1, port);
+  }
+
+  void init() {
+    init(10, -1, -1, -1);
   }
 
   void sendFirmwareVersionPacket(Packet unused, uint8_t ip)
@@ -75,7 +78,7 @@ namespace Comms {
   void processWaitingPackets()
   {
     //UDP receiving disabled until Keene fixes it
-    /*if(Udp.parsePacket()) {
+    if(Udp.parsePacket()) {
         if(Udp.remotePort() != port) return; // make sure this packet is for the right port
         Udp.read(packetBuffer, sizeof(Packet));
 
@@ -85,8 +88,9 @@ namespace Comms {
         // DEBUG("Got unverified packet with ID ");
         // DEBUG(packet->id);
         // DEBUG('\n');
-        evokeCallbackFunction(packet, Udp.remoteIP()[3]);
-    } else */if (Serial.available())
+        Serial.printf("got packet with id %d\n", packet->id);
+        // evokeCallbackFunction(packet, Udp.remoteIP()[3]);
+    } else if (Serial.available())
     {
       int cnt = 0;
       while (Serial.available() && cnt < sizeof(Packet))
@@ -182,18 +186,11 @@ namespace Comms {
     packet->checksum[0] = checksum & 0xFF;
     packet->checksum[1] = checksum >> 8;
 
-    // Send over serial, but disable if in debug mode
-    #ifndef DEBUG_MODE
-    Serial.write(packet->id);
-    Serial.write(packet->len);
-    Serial.write(packet->timestamp, 4);
-    Serial.write(packet->checksum, 2);
-    Serial.write(packet->data, packet->len);
-    Serial.write('\n');
-    #endif
+
 
     // Send over UDP
-    Udp.resetSendOffset();
+    // Udp.resetSendOffset();
+    Udp.beginPacket(groundStation1, port);
     Udp.write(packet->id);
     Udp.write(packet->len);
     Udp.write(packet->timestamp, 4);
@@ -201,6 +198,8 @@ namespace Comms {
     Udp.write(packet->data, packet->len);
     Udp.endPacket();
   }
+
+
 
   bool verifyPacket(Packet *packet)
   {

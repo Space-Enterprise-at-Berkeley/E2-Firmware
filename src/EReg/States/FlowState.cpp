@@ -29,7 +29,7 @@ namespace StateMachine {
      * Perform single iteration of flow control loop 
      */
     void FlowState::update() {
-        float motorAngle = HAL::encoder.getCount();
+        float motorAngle = HAL::getEncoderCount();
         float UpstreamPsi = HAL::readUpstreamPT();
         float DownstreamPsi = HAL::readDownstreamPT();
         unsigned long flowTime = TimeUtil::timeInterval(timeStarted_, micros());
