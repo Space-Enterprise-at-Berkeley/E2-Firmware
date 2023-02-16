@@ -44,6 +44,7 @@
 #include "Server.h"
 #include "Udp.h"
 
+
 enum EthernetLinkStatus {
 	Unknown,
 	LinkON,
@@ -83,11 +84,13 @@ public:
 	void setRetransmissionTimeout(uint16_t milliseconds);
 	void setRetransmissionCount(uint8_t num);
 	/**
-	 * @brief Checks to see if the SIR register has registered an interrupt at one of its sockets, then reset it back to 0x00
+	 * @brief Reads the INTn flag
 	 * 
+	 * @return true 
+	 * @return false 
 	 */
 	bool detectRead();
-
+	
 	friend class EthernetClient;
 	friend class EthernetServer;
 	friend class EthernetUDP;
@@ -125,6 +128,9 @@ private:
 	static bool socketSendUDP(uint8_t s);
 	// Initialize the "random" source port number
 	static void socketPortRand(uint16_t n);
+
+	
+
 };
 
 extern EthernetClass Ethernet;
@@ -148,8 +154,6 @@ public:
 	virtual uint8_t begin(uint16_t);      // initialize, start listening on specified port. Returns 1 if successful, 0 if there are no sockets available to use
 	virtual uint8_t beginMulticast(IPAddress, uint16_t);  // initialize, start listening on specified port. Returns 1 if successful, 0 if there are no sockets available to use
 	virtual void stop();  // Finish with the UDP socket
-
-	// Sending UDP packets
 
 	// Start building up a packet to send to the remote host specific in ip and port
 	// Returns 1 if successful, 0 if there was a problem with the supplied IP address or port
@@ -189,6 +193,7 @@ public:
 	// Return the port of the host who sent the current incoming packet
 	virtual uint16_t remotePort() { return _remotePort; };
 	virtual uint16_t localPort() { return _port; }
+
 };
 
 

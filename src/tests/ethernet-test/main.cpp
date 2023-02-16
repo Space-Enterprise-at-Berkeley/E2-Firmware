@@ -16,8 +16,8 @@ void setup()
 {
   Serial.begin(921600);
   Ethernet.init(10);
-  Ethernet.begin((uint8_t *)mac, ip);
   pinMode(9, INPUT);
+  Ethernet.begin((uint8_t *)mac, ip);
   Udp.begin(port);
   Serial.println("running setup");
   Udp.beginPacket(groundStation1, port);
@@ -30,11 +30,11 @@ void loop()
     // Read IO9
     if (Ethernet.detectRead()) {
       if (Udp.parsePacket()) {
-        float bruh = micros();
+        long bruh = micros();
         Udp.read(packetBuffer, sizeof(Comms::Packet));
-        Serial.printf("Recieved: %s delta: %d \n", packetBuffer, bruh - micros());
+        Serial.printf("Recieved: %s delta: %ld \n", packetBuffer, micros() -  bruh);
+        Udp.flush(); // Flush this maybe?
       }
     }
-    
   }
 }
