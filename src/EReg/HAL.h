@@ -67,7 +67,7 @@ namespace HAL {
     void enableMotorDriver();
     void disableMotorDriver();
     void handleMotorDriverFault();
-    void printMotorDriverFault();
+    void printMotorDriverFaultAndDisable();
     float readPhaseCurrent(int phase);
     float readPTVoltage(uint8_t channel);
     float readUpstreamPT();

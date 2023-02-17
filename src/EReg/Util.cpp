@@ -142,9 +142,18 @@ namespace Util {
         if (pwmPower > 0) {
             pwmPower = (int) clip((double)pwmPower, (double)Config::minimumMotorPower, (double)Config::maximumMotorPower);
         }
-        // ledcWrite(HAL::motorChannel, pwmPower);
-        // digitalWrite(HAL::INHC, motorDir);
-        // Serial.printf("Updating motor: pwm %d, direction pin %d\n", pwmPower, motorDir);
+        int brakePin = 0;
+        if (speed == 0) {
+            brakePin = LOW;
+        } else {
+            brakePin = HIGH;
+        }
+        digitalWrite(HAL::INLC, brakePin);
+        ledcWrite(HAL::motorChannel, pwmPower);
+        digitalWrite(HAL::INHC, motorDir);
+        if (millis() % 300 == 0) {
+        Serial.printf("Updating motor: pwm %d, direction pin %d, brake pin: %d\n", pwmPower, motorDir, brakePin);
+        }
     }
 
     /**
@@ -161,7 +170,7 @@ namespace Util {
     void checkMotorDriverHealth() {
         if (HAL::getMotorDriverFault()) {
             Serial.printf("motor driver fault \n");
-            HAL::printMotorDriverFault();
+            HAL::printMotorDriverFaultAndDisable();
             HAL::clearMotorDriverFault();
         }
     }

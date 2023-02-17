@@ -13,7 +13,7 @@ int port = 42069;
 void setup()
 {
   Serial.begin(921600);
-  Ethernet.init(10);
+  Ethernet.init(39);
   Ethernet.begin((uint8_t *)mac, ip, 37, 36, 38);
   Udp.begin(port);
 

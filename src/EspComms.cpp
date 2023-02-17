@@ -13,11 +13,12 @@ namespace Comms {
 
   void init(int cs, int spiMisoPin, int spiMosiPin, int spiSclkPin)
   {
+    pinMode(35, INPUT);
     Ethernet.init(cs);
     Ethernet.begin((uint8_t *)mac, ip, spiMisoPin, spiMosiPin, spiSclkPin);
     Udp.begin(port);
 
-    // Udp.beginPacket(groundStation1, port);
+    Udp.beginPacket(groundStation1, port);
   }
 
   void init() {
@@ -77,20 +78,16 @@ namespace Comms {
 
   void processWaitingPackets()
   {
-    //UDP receiving disabled until Keene fixes it
-    if(Udp.parsePacket()) {
-        if(Udp.remotePort() != port) return; // make sure this packet is for the right port
-        Udp.read(packetBuffer, sizeof(Packet));
+    Udp.resetSendOffset();
+    if (Ethernet.detectRead()) {
+      Serial.println("got stu");
+      if (Udp.parsePacket()) {
+        Udp.read(packetBuffer, sizeof(Comms::Packet));
+        Serial.printf("Recieved: %s \n", packetBuffer);
+      }
+    }
 
-        Packet *packet = (Packet *)&packetBuffer;
-        // DEBUG(packet->id);
-        // DEBUG("\n");
-        // DEBUG("Got unverified packet with ID ");
-        // DEBUG(packet->id);
-        // DEBUG('\n');
-        Serial.printf("got packet with id %d\n", packet->id);
-        // evokeCallbackFunction(packet, Udp.remoteIP()[3]);
-    } else if (Serial.available())
+  if (Serial.available())
     {
       int cnt = 0;
       while (Serial.available() && cnt < sizeof(Packet))
