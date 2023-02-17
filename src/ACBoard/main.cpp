@@ -7,13 +7,11 @@
 #include "MCP23008.h"
 #include <Wire.h>
 
-
-
-
 Task taskTable[] = {
   {AC::actuationDaemon, 0, true},
   {AC::actuatorStatesTask, 0, true},
   {ChannelMonitor::readChannels, 0, true},
+  {Power::task_readSendPower, 0, true},
 };
 
 #define TASK_COUNT (sizeof(taskTable) / sizeof (struct Task))
@@ -22,6 +20,8 @@ void setup() {
   // setup stuff here
   Comms::init(); // takes care of Serial.begin()
   AC::init();
+  initWire();
+  Power::init();
   ChannelMonitor::init(41, 42, 47, 4, 5);
 
 
@@ -72,5 +72,3 @@ void setup() {
     //Comms::processWaitingPackets();
   }
 }
-
-void loop() {} // unused

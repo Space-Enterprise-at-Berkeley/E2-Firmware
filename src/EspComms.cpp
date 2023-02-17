@@ -6,9 +6,19 @@ namespace Comms {
   EthernetUDP Udp;
   char packetBuffer[sizeof(Packet)];
 
+  byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, IP_ADDRESS_END};
+  IPAddress groundStation1(10, 0, 0, 169);
+  IPAddress ip(10, 0, 0, IP_ADDRESS_END);
+  int port = 42069;
+
   void init()
   {
     Serial.begin(921600);
+    Ethernet.init(10);
+    Ethernet.begin((uint8_t *)mac, ip);
+    Udp.begin(port);
+
+    Udp.beginPacket(groundStation1, port);
   }
 
   void sendFirmwareVersionPacket(Packet unused, uint8_t ip)
@@ -64,7 +74,19 @@ namespace Comms {
 
   void processWaitingPackets()
   {
-    if (Serial.available())
+    //UDP receiving disabled until Keene fixes it
+    /*if(Udp.parsePacket()) {
+        if(Udp.remotePort() != port) return; // make sure this packet is for the right port
+        Udp.read(packetBuffer, sizeof(Packet));
+
+        Packet *packet = (Packet *)&packetBuffer;
+        // DEBUG(packet->id);
+        // DEBUG("\n");
+        // DEBUG("Got unverified packet with ID ");
+        // DEBUG(packet->id);
+        // DEBUG('\n');
+        evokeCallbackFunction(packet, Udp.remoteIP()[3]);
+    } else */if (Serial.available())
     {
       int cnt = 0;
       while (Serial.available() && cnt < sizeof(Packet))
@@ -176,6 +198,15 @@ namespace Comms {
     Serial.write(packet->data, packet->len);
     Serial.write('\n');
     #endif
+
+    // Send over UDP
+    Udp.resetSendOffset();
+    Udp.write(packet->id);
+    Udp.write(packet->len);
+    Udp.write(packet->timestamp, 4);
+    Udp.write(packet->checksum, 2);
+    Udp.write(packet->data, packet->len);
+    Udp.endPacket();
   }
 
   bool verifyPacket(Packet *packet)
