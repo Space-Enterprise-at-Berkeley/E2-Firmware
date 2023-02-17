@@ -1,6 +1,7 @@
 #include <Common.h>
 #include <EspComms.h>
 #include <Arduino.h>
+#include "ReadPower.h"
 
 #include "AC.h"
 #include "ChannelMonitor.h"
