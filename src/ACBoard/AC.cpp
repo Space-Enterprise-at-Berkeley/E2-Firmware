@@ -8,7 +8,7 @@
 // PACKET ID : 2, Actuator States
 // 0: Retracting
 // 1: Extending 
-// 5: Off
+// 2: Off
 
 // PACKET ID : 100, Actuate Actuator
 // 0: Retract fully 
