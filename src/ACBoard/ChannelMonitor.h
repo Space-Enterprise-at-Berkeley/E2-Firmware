@@ -1,6 +1,6 @@
 #pragma once
 #include <Arduino.h>
-
+#include "MCP23008.h"
 
 
 namespace ChannelMonitor {
@@ -13,5 +13,8 @@ namespace ChannelMonitor {
     
     float* getCurrents();
     float* getContinuities();
+
+    MCP23008 getMCP1();
+    MCP23008 getMCP2();
 
 }

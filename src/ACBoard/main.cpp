@@ -8,6 +8,8 @@
 #include <Wire.h>
 
 
+
+
 Task taskTable[] = {
   {AC::actuationDaemon, 0, true},
   {AC::actuatorStatesTask, 0, true},
@@ -22,6 +24,42 @@ void setup() {
   AC::init();
   ChannelMonitor::init(41, 42, 47, 4, 5);
 
+
+
+  for (int i = 0; i < 8; i++) {
+    ChannelMonitor::getMCP1().digitalWrite(i, LOW); 
+    ChannelMonitor::getMCP2().digitalWrite(i, LOW); 
+  }
+      
+  for (int i = 0; i < 8; i+=2) {
+    ChannelMonitor::getMCP1().digitalWrite(i, HIGH); 
+    delay(250);
+  }
+
+  for (int i = 0; i < 8; i++) {
+    ChannelMonitor::getMCP1().digitalWrite(i, LOW); 
+  }
+
+  for (int i = 1; i < 8; i+=2) {
+    ChannelMonitor::getMCP1().digitalWrite(i, HIGH); 
+    delay(250);
+  }
+
+  for (int i = 0; i < 8; i+=2) {
+    ChannelMonitor::getMCP2().digitalWrite(i, HIGH); 
+    delay(250);
+  }
+
+  for (int i = 0; i < 8; i++) {
+    ChannelMonitor::getMCP2().digitalWrite(i, LOW); 
+  }
+
+  for (int i = 1; i < 8; i+=2) {
+    ChannelMonitor::getMCP2().digitalWrite(i, HIGH); 
+    delay(250);
+  }
+ 
+  
 
   while(1) {
     // main loop here to avoid arduino overhead

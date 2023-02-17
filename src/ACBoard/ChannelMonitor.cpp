@@ -132,4 +132,12 @@ float* getContinuities() {
     return continuities;
 }
 
+MCP23008 getMCP1() {
+    return MCP1;
+}
+
+MCP23008 getMCP2() {
+    return MCP2;
+}
+
 }
