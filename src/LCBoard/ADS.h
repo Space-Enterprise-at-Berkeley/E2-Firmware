@@ -21,6 +21,7 @@ namespace ADS {
     void refreshReadings();
     uint32_t task_sampleLC();
 
+    long unrefreshedSample(int i);
 
 
 }
