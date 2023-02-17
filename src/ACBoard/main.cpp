@@ -73,3 +73,5 @@ void setup() {
     //Comms::processWaitingPackets();
   }
 }
+
+void loop() {} // unused
