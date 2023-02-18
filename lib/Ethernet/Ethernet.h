@@ -44,6 +44,7 @@
 #include "Server.h"
 #include "Udp.h"
 
+
 enum EthernetLinkStatus {
 	Unknown,
 	LinkON,
@@ -82,7 +83,14 @@ public:
 	void setGatewayIP(const IPAddress gateway);
 	void setRetransmissionTimeout(uint16_t milliseconds);
 	void setRetransmissionCount(uint8_t num);
-
+	/**
+	 * @brief Reads the INTn flag
+	 * 
+	 * @return true 
+	 * @return false 
+	 */
+	bool detectRead();
+	
 	friend class EthernetClient;
 	friend class EthernetServer;
 	friend class EthernetUDP;
@@ -120,6 +128,9 @@ private:
 	static bool socketSendUDP(uint8_t s);
 	// Initialize the "random" source port number
 	static void socketPortRand(uint16_t n);
+
+	
+
 };
 
 extern EthernetClass Ethernet;
@@ -144,8 +155,6 @@ public:
 	virtual uint8_t beginMulticast(IPAddress, uint16_t);  // initialize, start listening on specified port. Returns 1 if successful, 0 if there are no sockets available to use
 	virtual void stop();  // Finish with the UDP socket
 
-	// Sending UDP packets
-
 	// Start building up a packet to send to the remote host specific in ip and port
 	// Returns 1 if successful, 0 if there was a problem with the supplied IP address or port
 	virtual int beginPacket(IPAddress ip, uint16_t port);
@@ -160,7 +169,6 @@ public:
 	virtual size_t write(uint8_t);
 	// Write size bytes from buffer into the packet
 	virtual size_t write(const uint8_t *buffer, size_t size);
-
 	using Print::write;
 
 	// Start processing the next available incoming packet
@@ -185,6 +193,7 @@ public:
 	// Return the port of the host who sent the current incoming packet
 	virtual uint16_t remotePort() { return _remotePort; };
 	virtual uint16_t localPort() { return _port; }
+
 };
 
 
@@ -203,11 +212,11 @@ public:
 	virtual size_t write(uint8_t);
 	virtual size_t write(const uint8_t *buf, size_t size);
 	virtual int available();
-	virtual int read();
-	virtual int read(uint8_t *buf, size_t size);
-	virtual int peek();
-	virtual void flush();
-	virtual void stop();
+		virtual int read();
+		virtual int read(uint8_t *buf, size_t size);
+		virtual int peek();
+		virtual void flush();
+		virtual void stop();
 	virtual uint8_t connected();
 	virtual operator bool() { return _sockindex < MAX_SOCK_NUM; }
 	virtual bool operator==(const bool value) { return bool() == value; }
@@ -243,6 +252,13 @@ public:
 	virtual operator bool();
 	using Print::write;
 	//void statusreport();
+
+	// TODO: fix this to make it so you can read and write from the server I guess
+	virtual int read();
+	virtual int read(uint8_t *buf, size_t size);
+	virtual int peek();
+	virtual void flush();
+	virtual void stop();
 
 	// TODO: make private when socket allocation moves to EthernetClass
 	static uint16_t server_port[MAX_SOCK_NUM];

@@ -159,3 +159,14 @@ size_t EthernetServer::write(const uint8_t *buffer, size_t size)
 	}
 	return size;
 }
+
+// Read functionality (copied over from client!)
+
+int EthernetServer::read() {
+	
+}
+
+int EthernetServer::read(uint8_t *buf, size_t size) {
+
+}
+

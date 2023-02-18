@@ -22,6 +22,8 @@
 #include "Ethernet.h"
 #include "utility/w5500.h"
 
+volatile bool INTnFlag;
+
 int EthernetClass::begin(uint8_t *mac, unsigned long timeout, unsigned long responseTimeout)
 {
 
@@ -31,7 +33,6 @@ int EthernetClass::begin(uint8_t *mac, unsigned long timeout, unsigned long resp
 	W5500.setMACAddress(mac);
 	W5500.setIPAddress(IPAddress(0,0,0,0).raw_address());
 	SPI.endTransaction();
-
 	return 0;
 }
 
@@ -59,15 +60,43 @@ void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress g
 	begin(mac, ip, dns, gateway, subnet);
 }
 
+void setRecvFlag() {
+	// This method will reset the INTn pin to 0x00 after a write has been acknowledged
+	// Serial.printf("SIMR %i SIR %i IR %i SnIR %i", W5500.readSIMR(),W5500.readSIR(), W5500.readIR(), W5500.readSnIR(0));
+	// if (W5500.readSIR() > 0) {
+	// 	// Reset the register and pull the INTn back down
+	// 	W5500.writeSnIR(0, 0xff);
+		
+	// }	
+	INTnFlag = true;
+	// otherwise don't do anything
+}
+
 void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress gateway, IPAddress subnet)
 {
 	if (W5500.init() == 0) return;
+
 	SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
 	W5500.setMACAddress(mac);
 	W5500.setIPAddress(ip._address.bytes);
 	W5500.setGatewayIp(gateway._address.bytes);
 	W5500.setSubnetMask(subnet._address.bytes);
+	W5500.writeSIMR(0xFF);
+	// Set Interupprt
+	attachInterrupt(9, setRecvFlag, FALLING);
 	SPI.endTransaction();
+}
+
+bool EthernetClass::detectRead() {
+	if (INTnFlag) {
+		Serial.print("Hello \n");
+		W5500.writeSnIMR(0, 0x04);
+		W5500.writeSnIR(0, 0xff);
+		INTnFlag = false;
+		return true;
+	} else {
+		return false;
+	}
 }
 
 void EthernetClass::init(uint8_t sspin)
