@@ -7,13 +7,7 @@
 
 namespace Util {
 
-    #ifndef min
-    #define min(a,b) (((a) < (b)) ? (a) : (b))
-    #endif
 
-    #ifndef max
-    #define max(a,b) (((a) > (b)) ? (a) : (b))
-    #endif
 
     struct PidConstants {
         double k_p;
@@ -31,6 +25,8 @@ namespace Util {
     void runMotors(float speed);
     void runInjectorMotors(float speed);
     void checkMotorDriverHealth();
+    float max(float a, float b);
+    float min(float a, float b);
     
     PIDController* getInnerController();
     PIDController* getOuterController();

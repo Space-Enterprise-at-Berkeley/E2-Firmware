@@ -8,11 +8,7 @@ namespace StateMachine {
     void enterFlowState() {
         if (currentState == IDLE_CLOSED) {
             currentState = FLOW;
-            #ifdef IS_INJECTOR
-            getInjectorFlowState()->init();
-            #else
             getFlowState()->init();
-            #endif
         } else {
             // Illegal state transition
             Packets::sendStateTransitionError(0);

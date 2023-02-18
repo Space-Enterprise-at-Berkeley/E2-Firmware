@@ -54,7 +54,7 @@ namespace StateMachine {
 
         // Packets::sendDiagnostic(true, "starting motor dir test");
 
-        float motorAngle = HAL::encoder.getCount()
+        float motorAngle = HAL::getEncoderCount()
 ;
         float upstreamPsi = Ducers::readUpstreamPT();
         float downstreamPsi = Ducers::readDownstreamPT();
@@ -109,7 +109,7 @@ namespace StateMachine {
 
     void DiagnosticState::servoTestUpdate() {
 
-        float motorAngle = HAL::encoder.getCount()
+        float motorAngle = HAL::getEncoderCount()
 ;
         float upstreamPsi = HAL::readUpstreamPT();
         float downstreamPsi = HAL::readDownstreamPT();
@@ -169,7 +169,7 @@ namespace StateMachine {
             Util::runMotors(-OPEN_LOOP_SPEED);
 
             if (TimeUtil::timeInterval(lastPrint_, micros()) > Config::telemetryInterval) {
-                float motorAngle = HAL::encoder.getCount()
+                float motorAngle = HAL::getEncoderCount()
 ;
                 float upstreamPsi = HAL::readUpstreamPT();
                 float downstreamPsi = HAL::readDownstreamPT();
@@ -210,7 +210,7 @@ namespace StateMachine {
             Util::runMotors(-OPEN_LOOP_SPEED);
 
             if (TimeUtil::timeInterval(lastPrint_, micros()) > Config::telemetryInterval) {
-                float motorAngle = HAL::encoder.getCount()
+                float motorAngle = HAL::getEncoderCount()
 ;
                 float upstreamPsi = HAL::readUpstreamPT();
                 float downstreamPsi = HAL::readDownstreamPT();

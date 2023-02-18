@@ -1,6 +1,6 @@
 #include "Packets.h"
 #include "Config.h"
-#include "Comms.h"
+#include "EspComms.h"
 #include "StateMachine.h"
 
 namespace Packets {
@@ -27,12 +27,7 @@ namespace Packets {
         float pressureControlI,
         float pressureControlD
     ) {
-        #ifdef DEBUG_MODE
-        DEBUG(StateMachine::getCurrentState()); DEBUG("\t");
-        DEBUG(encoderAngle); DEBUG("\t");
-        DEBUG(angleSetpoint); DEBUG("\t");
-        DEBUG(motorPower); DEBUGLN("\t");
-        #else
+
         Comms::Packet packet = {.id = TELEMETRY_ID};
         Comms::packetAddFloat(&packet, upstreamPressure);
         Comms::packetAddFloat(&packet, downstreamPressure);
@@ -44,7 +39,7 @@ namespace Packets {
         Comms::packetAddFloat(&packet, pressureControlI);
         Comms::packetAddFloat(&packet, pressureControlD);
         Comms::emitPacket(&packet);
-        #endif
+        // Serial.printf("packet sent\n");
     }
 
     /**
@@ -118,13 +113,10 @@ namespace Packets {
     /**
      * Sends an abort command to all 4 ESPs
      */
-    void broadcastAbort() {
+    void broadcastAbort() { //TODO
         Comms::Packet packet = {.id = ABORT_ID};
         packet.len = 0;
-
-        //send to all ESPs including to itself
-        Comms::emitPacket(&packet, ESP_ADDRESS_1);
-        Comms::emitPacket(&packet, ESP_ADDRESS_2);
+        Comms::emitPacket(&packet);
     }
 
 }

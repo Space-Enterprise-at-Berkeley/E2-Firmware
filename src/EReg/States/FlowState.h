@@ -5,10 +5,10 @@
 #include <PIDController.h>
 #include <TimeUtil.h>
 #include "EReg/StateMachine.h"
-#include "Ereg/HAL.h"
-#include "Ereg/Util.h"
-#include "Ereg/Comms.h"
-#include "Ereg/Config.h"
+#include "EReg/HAL.h"
+#include "EReg/Util.h"
+#include "EspComms.h"
+#include "EReg/Config.h"
 #include "EReg/FlowProfiles.h"
 #include "EReg/Packets.h"
 

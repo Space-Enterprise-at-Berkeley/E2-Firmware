@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "HAL.h"
 #include "Util.h"
-#include "Comms.h"
+#include "EspComms.h"
 #include "Config.h"
 #include "StateMachine.h"
 #include "Packets.h"
@@ -12,18 +12,17 @@ StateMachine::IdleClosedState *idleClosedState = StateMachine::getIdleClosedStat
 StateMachine::PartiallyOpenState *partiallyOpenState = StateMachine::getPartiallyOpenState();
 StateMachine::DiagnosticState *diagnosticState = StateMachine::getDiagnosticState();
 StateMachine::PressurizeState *pressurizeState = StateMachine::getPressurizeState();
-StateMachine::InjectorFlowState *injectorFlowState = StateMachine::getInjectorFlowState();
 
 void zero() { 
     DEBUGLN("starting zero command");
     Util::runMotors(-50);
     delay(2000);
-    Util::runMotors(0);
+    Util::runMotors(0); 
     // zero encoder value (so encoder readings range from -x (open) to 0 (closed))
     delay(400);
-    HAL::encoder.setCount(-20);
+    HAL::setEncoderCount(-20);
     DEBUG("encoder position after zero: ");
-    DEBUGLN(HAL::encoder.getCount());
+    DEBUGLN(HAL::getEncoderCount());
 }
 
 void zero(Comms::Packet packet, uint8_t ip) {
@@ -55,55 +54,53 @@ void actuateMainValve(Comms::Packet packet, uint8_t ip) {
 }
 
 void setup() {
-    delay(1000);
+    delay(3000);
     Serial.begin(115200);
+    Serial.printf("micros: %d\n", micros());
     Serial.printf("hi!!\n");
-    delay(5000);
-
-    // if (HAL::init() == -1) {
-    //     DEBUGF("HAL initialization failed\n");
-    //     while (true) {1;}
-    // } else {
-    //     DEBUGF("HAL initialization success!\n");
-    // }
-    // Serial.printf("hal init\n");
-    // Comms::initComms();
-    // StateMachine::enterIdleClosedState();
-    // zero(); 
-    // Comms::registerCallback(200, flow);
-    // Comms::registerCallback(201, stopFlow);
-    // Comms::registerCallback(202, partialOpen);
-    // Comms::registerCallback(203, pressurize);
-    // Comms::registerCallback(204, runDiagnostics);
-    // Comms::registerCallback(205, zero);
-    // Comms::registerCallback(206, actuateMainValve);
+    if (HAL::init() == -1) {
+        DEBUGF("HAL initialization failed\n");
+    } else {
+        DEBUGF("HAL initialization success!\n");
+    }
+    Comms::init(HAL::ETH_CS, HAL::ETH_MISO, HAL::ETH_MOSI, HAL::ETH_SCLK);
+    Serial.printf("Comms init done!\n");
+    StateMachine::enterIdleClosedState();
+    zero(); 
+    Comms::registerCallback(200, flow);
+    Comms::registerCallback(201, stopFlow);
+    Comms::registerCallback(202, partialOpen);
+    Comms::registerCallback(203, pressurize);
+    Comms::registerCallback(204, runDiagnostics);
+    Comms::registerCallback(205, zero);
+    Comms::registerCallback(206, actuateMainValve);
     
-    // Packets::sendConfig();
+    Packets::sendConfig();
 }
 
 void loop() {
-    // Comms::processWaitingPackets();
-    // Util::checkMotorDriverHealth();
-    // switch (StateMachine::getCurrentState()) {
-    //     case StateMachine::IDLE_CLOSED:
-    //     idleClosedState->update();
-    //     break;
+    Comms::processWaitingPackets();
+    Util::checkMotorDriverHealth();
+    switch (StateMachine::getCurrentState()) {
+        case StateMachine::IDLE_CLOSED:
+        idleClosedState->update();
+        break;
         
-    //     case StateMachine::PARTIAL_OPEN:
-    //     partiallyOpenState->update();
-    //     break;
+        case StateMachine::PARTIAL_OPEN:
+        partiallyOpenState->update();
+        break;
 
-    //     case StateMachine::PRESSURIZE:
-    //     pressurizeState->update();
-    //     break;
+        case StateMachine::PRESSURIZE:
+        pressurizeState->update();
+        break;
 
-    //     case StateMachine::FLOW:
-    //     flowState->update();
-    //     break;
+        case StateMachine::FLOW:
+        flowState->update();
+        break;
 
-    //     case StateMachine::DIAGNOSTIC:
-    //     diagnosticState->update();
-    //     break;
-    // };
+        case StateMachine::DIAGNOSTIC:
+        diagnosticState->update();
+        break;
+    };
 }
 
