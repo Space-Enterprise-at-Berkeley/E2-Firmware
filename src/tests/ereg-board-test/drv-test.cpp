@@ -136,6 +136,9 @@ void setup() {
     pinMode(DRV_CS, OUTPUT);
     digitalWrite(DRV_CS, HIGH);
 
+    pinMode(MADC_CS, OUTPUT);
+    digitalWrite(MADC_CS, HIGH);
+
     pinMode(DRV_FAULT, INPUT_PULLUP);
     attachInterrupt(DRV_FAULT, handleFaultInterrupt, FALLING);
 
