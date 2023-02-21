@@ -36,19 +36,22 @@ namespace StateMachine {
     }
 
     void enterDiagnosticState() {
-        if (currentState == IDLE_CLOSED) {
-            currentState = DIAGNOSTIC;
-            getDiagnosticState()->init();
-        } else {
-            // Illegal state transition
+        float pressure = HAL::readUpstreamPT();
+        if (pressure > 200) {
             Packets::sendStateTransitionError(3);
+        } else {
+            if (currentState == IDLE_CLOSED) {
+                currentState = DIAGNOSTIC;
+                getDiagnosticState()->init();
+            } else {
+                // Illegal state transition
+                Packets::sendStateTransitionError(3);
+            }
         }
     }
 
     void enterPressurizeState() {
-        #ifdef IS_INJECTOR
-        Packets::sendStateTransitionError(4);
-        #else
+
         if (currentState == IDLE_CLOSED) {
             currentState = PRESSURIZE;
             getPressurizeState()->init();
@@ -56,22 +59,9 @@ namespace StateMachine {
             // Illegal state transition
             Packets::sendStateTransitionError(4);
         }
-        #endif
     }
 
-    void enterMainValveState(uint8_t actionByte) {
-        #ifdef IS_INJECTOR
-        Packets::sendStateTransitionError(5);
-        #else
-        ValveAction action = actionByte ? MAIN_VALVE_OPEN : MAIN_VALVE_CLOSE;
-        if (currentState == IDLE_CLOSED || currentState == PARTIAL_OPEN) {
-            actuateMainValve(action);
-        } else {
-            // Illegal state transition
-            Packets::sendStateTransitionError(5);
-        }
-        #endif
-    }
+
 
     State getCurrentState() {
         return currentState;
@@ -88,7 +78,7 @@ namespace StateMachine {
 
     void checkAbortPressure(float currentPressure, float abortPressure) {
         if (currentPressure > abortPressure) {
-            Packets::sendFlowState(0);
+            // Packets::sendFlowState(0);
             Packets::broadcastAbort();
             StateMachine::enterIdleClosedState();
         }

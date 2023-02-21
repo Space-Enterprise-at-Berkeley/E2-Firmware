@@ -49,9 +49,6 @@ void pressurize(Comms::Packet packet, uint8_t ip) {
     StateMachine::enterPressurizeState();
 }
 
-void actuateMainValve(Comms::Packet packet, uint8_t ip) {
-    StateMachine::enterMainValveState(Comms::packetGetUint8(&packet, 0));
-}
 
 void setup() {
     delay(3000);
@@ -73,7 +70,6 @@ void setup() {
     Comms::registerCallback(203, pressurize);
     Comms::registerCallback(204, runDiagnostics);
     Comms::registerCallback(205, zero);
-    // Comms::registerCallback(206, actuateMainValve);
     
     Packets::sendConfig();
 }
