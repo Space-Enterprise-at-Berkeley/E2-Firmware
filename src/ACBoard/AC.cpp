@@ -25,6 +25,7 @@
 
 // current threshold for a fully extended actuator (i.e less that 0.1A means an actuator has hit its limit switch)
 float FULLY_EXTENDED_CURRENT = 0.1;
+int FULLY_EXTENDED_MIN_TIME = 100;
 
 
 namespace AC {
@@ -91,7 +92,7 @@ namespace AC {
       // if a full actuation, check current
       if (actuator.state == 0 || actuator.state == 1) {
         float* currents = ChannelMonitor::getCurrents();
-        if (currents[i] < FULLY_EXTENDED_CURRENT) {
+        if (currents[i] < FULLY_EXTENDED_CURRENT && t - actuator.stamp > FULLY_EXTENDED_MIN_TIME) {
           actuator.stop();
         }
       }
