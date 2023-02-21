@@ -95,10 +95,9 @@ namespace AC {
           actuator.stop();
         }
       }
-
       // if a timed actuation, check times
       else if (actuator.state == 2 || actuator.state == 3) {
-        if (t - actuator.state > actuator.timeLeft) {
+        if (t - actuator.stamp > actuator.timeLeft) {
           actuator.timeLeft = 0;
           // stop sets the state to 5 - off
           actuator.stop();
