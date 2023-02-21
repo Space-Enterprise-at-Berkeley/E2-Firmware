@@ -73,7 +73,7 @@ void setup() {
     Comms::registerCallback(203, pressurize);
     Comms::registerCallback(204, runDiagnostics);
     Comms::registerCallback(205, zero);
-    Comms::registerCallback(206, actuateMainValve);
+    // Comms::registerCallback(206, actuateMainValve);
     
     Packets::sendConfig();
 }
