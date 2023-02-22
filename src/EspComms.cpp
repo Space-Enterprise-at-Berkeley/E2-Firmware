@@ -79,13 +79,13 @@ namespace Comms {
   void processWaitingPackets()
   {
     Udp.resetSendOffset();
-    if (Ethernet.detectRead()) {
-      Serial.println("got stu");
-      if (Udp.parsePacket()) {
-        Udp.read(packetBuffer, sizeof(Comms::Packet));
-        Serial.printf("Recieved: %s \n", packetBuffer);
-      }
-    }
+    // if (Ethernet.detectRead()) {
+    //   Serial.println("got stu");
+    //   if (Udp.parsePacket()) {
+    //     Udp.read(packetBuffer, sizeof(Comms::Packet));
+    //     Serial.printf("Recieved: %s \n", packetBuffer);
+    //   }
+    // }
 
   if (Serial.available())
     {

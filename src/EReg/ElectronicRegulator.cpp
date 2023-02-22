@@ -19,7 +19,7 @@ void zero() {
     delay(2000);
     Util::runMotors(0); 
     // zero encoder value (so encoder readings range from -x (open) to 0 (closed))
-    delay(400);
+    delay(1100);
     HAL::setEncoderCount(-20);
     DEBUG("encoder position after zero: ");
     DEBUGLN(HAL::getEncoderCount());
@@ -57,6 +57,7 @@ void setup() {
     Serial.printf("hi!!\n");
     if (HAL::init() == -1) {
         DEBUGF("HAL initialization failed\n");
+        while(1);
     } else {
         DEBUGF("HAL initialization success!\n");
     }

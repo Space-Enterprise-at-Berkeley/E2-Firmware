@@ -151,7 +151,7 @@ namespace Util {
         digitalWrite(HAL::INLC, brakePin);
         ledcWrite(HAL::motorChannel, pwmPower);
         digitalWrite(HAL::INHC, motorDir);
-        if (millis() % 300 == 0) {
+        if (millis() % 600 == 0) {
         Serial.printf("Updating motor: pwm %d, direction pin %d, brake pin: %d\n", pwmPower, motorDir, brakePin);
         }
     }
