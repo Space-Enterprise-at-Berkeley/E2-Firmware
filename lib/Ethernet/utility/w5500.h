@@ -89,7 +89,8 @@ enum W5500Linkstatus {
 class W5500Class {
 
 public:
-  static uint8_t init(void);
+  static uint8_t init();
+  static uint8_t init(int spiMisoPin, int spiMosiPin, int spiSclkPin);
 
   inline void setGatewayIp(const uint8_t * addr) { writeGAR(addr); }
   inline void getGatewayIp(uint8_t * addr) { readGAR(addr); }
@@ -260,9 +261,9 @@ public:
 
 private:
   static uint8_t ss_pin;
-  static uint8_t softReset(void);
 
 public:
+static uint8_t softReset(void);
 #ifdef ETHERNET_LARGE_BUFFERS
   static uint16_t SSIZE;
   static uint16_t SMASK;

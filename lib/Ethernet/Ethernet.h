@@ -67,9 +67,13 @@ public:
 
 	// Manual configuration
 	static void begin(uint8_t *mac, IPAddress ip);
+	static void begin(uint8_t *mac, IPAddress ip, int spiMisoPin, int spiMosiPin, int spiSclkPin, int ETH_intN);	
 	static void begin(uint8_t *mac, IPAddress ip, IPAddress dns);
+	static void begin(uint8_t *mac, IPAddress ip, IPAddress dns, int spiMisoPin, int spiMosiPin, int spiSclkPin, int ETH_intN);
 	static void begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress gateway);
+	static void begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress gateway, int spiMisoPin, int spiMosiPin, int spiSclkPin, int ETH_intN);
 	static void begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress gateway, IPAddress subnet);
+	static void begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress gateway, IPAddress subnet, int spiMisoPin, int spiMosiPin, int spiSclkPin, int ETH_intN);
 	static void init(uint8_t sspin = 10);
 
 	static void MACAddress(uint8_t *mac_address);
