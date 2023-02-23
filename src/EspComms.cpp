@@ -11,18 +11,17 @@ namespace Comms {
   IPAddress ip(10, 0, 0, IP_ADDRESS_END);
   int port = 42069;
 
-  void init(int cs, int spiMisoPin, int spiMosiPin, int spiSclkPin)
+  void init(int cs, int spiMisoPin, int spiMosiPin, int spiSclkPin, int ETH_intN)
   {
-    pinMode(35, INPUT);
     Ethernet.init(cs);
-    Ethernet.begin((uint8_t *)mac, ip, spiMisoPin, spiMosiPin, spiSclkPin);
+    Ethernet.begin((uint8_t *)mac, ip, spiMisoPin, spiMosiPin, spiSclkPin, ETH_intN);
     Udp.begin(port);
 
     Udp.beginPacket(groundStation1, port);
   }
 
   void init() {
-    init(10, -1, -1, -1);
+    init(10, -1, -1, -1, -1);
   }
 
   void sendFirmwareVersionPacket(Packet unused, uint8_t ip)
@@ -79,28 +78,29 @@ namespace Comms {
   void processWaitingPackets()
   {
     Udp.resetSendOffset();
-    // if (Ethernet.detectRead()) {
-    //   Serial.println("got stu");
-    //   if (Udp.parsePacket()) {
-    //     Udp.read(packetBuffer, sizeof(Comms::Packet));
-    //     Serial.printf("Recieved: %s \n", packetBuffer);
-    //   }
-    // }
-
-  if (Serial.available())
-    {
-      int cnt = 0;
-      while (Serial.available() && cnt < sizeof(Packet))
-      {
-        packetBuffer[cnt] = Serial.read();
-        cnt++;
+    if (Ethernet.detectRead()) {
+      if (Udp.parsePacket()) {
+        if(Udp.remotePort() != port) return;
+        Udp.read(packetBuffer, sizeof(Comms::Packet));
+        Packet *packet = (Packet*) &packetBuffer;
+        evokeCallbackFunction(packet, Udp.remoteIP()[3]);
       }
-      Packet *packet = (Packet *)&packetBuffer;
-      // DEBUG("Got unverified packet with ID ");
-      // DEBUG(packet->id);
-      // DEBUG('\n');
-      evokeCallbackFunction(packet, 255); // 255 signifies a USB packet
     }
+
+    if (Serial.available())
+      {
+        int cnt = 0;
+        while (Serial.available() && cnt < sizeof(Packet))
+        {
+          packetBuffer[cnt] = Serial.read();
+          cnt++;
+        }
+        Packet *packet = (Packet *)&packetBuffer;
+        // DEBUG("Got unverified packet with ID ");
+        // DEBUG(packet->id);
+        // DEBUG('\n');
+        evokeCallbackFunction(packet, 255); // 255 signifies a USB packet
+      }
   }
 
   void packetAddFloat(Packet *packet, float value)

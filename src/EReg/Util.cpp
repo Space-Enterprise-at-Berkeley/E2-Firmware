@@ -139,9 +139,14 @@ namespace Util {
         // ledcWrite(HAL::motor2Channel,max(0,speed));
         int pwmPower = abs((int) speed);
         int motorDir = (speed > 0) ? 1 : 0;
-        if (pwmPower > 0) {
-            pwmPower = (int) clip((double)pwmPower, (double)Config::minimumMotorPower, (double)Config::maximumMotorPower);
+        if (pwmPower > Config::maximumMotorPower) {
+            pwmPower = Config::maximumMotorPower;
         }
+
+        if (pwmPower < Config::minimumMotorPower) {
+            pwmPower = 0;
+        }
+
         int brakePin = 0;
         if (speed == 0) {
             brakePin = LOW;
@@ -151,7 +156,7 @@ namespace Util {
         digitalWrite(HAL::INLC, brakePin);
         ledcWrite(HAL::motorChannel, pwmPower);
         digitalWrite(HAL::INHC, motorDir);
-        if (millis() % 600 == 0) {
+        if (millis() % 300 == 0) {
         Serial.printf("Updating motor: pwm %d, direction pin %d, brake pin: %d\n", pwmPower, motorDir, brakePin);
         }
     }
@@ -181,6 +186,10 @@ namespace Util {
 
     float min(float a, float b) {
         return (a < b) ? a : b;
+    }
+
+    void readPhaseCurrent() {
+        
     }
 
     

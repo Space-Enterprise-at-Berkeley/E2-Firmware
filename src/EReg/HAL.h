@@ -41,6 +41,8 @@ namespace HAL {
     const int DRV_EN = 11;
     const int DRV_FAULT = 12;
 
+    const int ETH_INTn = 35;
+
     const int DRV_CS = 10;
     const int MADC_CS = 13;
     const int ETH_CS = 39;

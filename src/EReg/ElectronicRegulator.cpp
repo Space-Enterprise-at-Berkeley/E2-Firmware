@@ -61,7 +61,7 @@ void setup() {
     } else {
         DEBUGF("HAL initialization success!\n");
     }
-    Comms::init(HAL::ETH_CS, HAL::ETH_MISO, HAL::ETH_MOSI, HAL::ETH_SCLK);
+    Comms::init(HAL::ETH_CS, HAL::ETH_MISO, HAL::ETH_MOSI, HAL::ETH_SCLK, HAL::ETH_INTn);
     Serial.printf("Comms init done!\n");
     StateMachine::enterIdleClosedState();
     zero(); 
@@ -78,6 +78,7 @@ void setup() {
 void loop() {
     Comms::processWaitingPackets();
     Util::checkMotorDriverHealth();
+    Util::readPhaseCurrent();
     switch (StateMachine::getCurrentState()) {
         case StateMachine::IDLE_CLOSED:
         idleClosedState->update();

@@ -22,6 +22,8 @@
 #include "Ethernet.h"
 #include "utility/w5500.h"
 
+volatile bool INTnFlag;
+
 int EthernetClass::begin(uint8_t *mac, unsigned long timeout, unsigned long responseTimeout)
 {
 
@@ -31,7 +33,6 @@ int EthernetClass::begin(uint8_t *mac, unsigned long timeout, unsigned long resp
 	W5500.setMACAddress(mac);
 	W5500.setIPAddress(IPAddress(0,0,0,0).raw_address());
 	SPI.endTransaction();
-
 	return 0;
 }
 
@@ -39,54 +40,85 @@ void EthernetClass::begin(uint8_t *mac, IPAddress ip)
 {
 	begin(mac, ip, -1, -1, -1);
 }
-void EthernetClass::begin(uint8_t *mac, IPAddress ip, int spiMisoPin, int spiMosiPin, int spiSclkPin)
+void EthernetClass::begin(uint8_t *mac, IPAddress ip, int spiMisoPin, int spiMosiPin, int spiSclkPin, int ETH_intN)
 {
 	// Assume the DNS server will be the machine on the same network as the local IP
 	// but with last octet being '1'
 	IPAddress dns = ip;
 	dns[3] = 1;
-	begin(mac, ip, dns, spiMisoPin, spiMosiPin, spiSclkPin);
+	begin(mac, ip, dns, spiMisoPin, spiMosiPin, spiSclkPin, ETH_intN);
 }
 
 void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns)
 {
-	begin(mac, ip, dns, -1, -1, -1);
+	begin(mac, ip, dns, -1, -1, -1, -1);
 }
 
-void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, int spiMisoPin, int spiMosiPin, int spiSclkPin)
+void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, int spiMisoPin, int spiMosiPin, int spiSclkPin, int ETH_intN)
 {
 	// Assume the gateway will be the machine on the same network as the local IP
 	// but with last octet being '1'
 	IPAddress gateway = ip;
 	gateway[3] = 1;
-	begin(mac, ip, dns, gateway, spiMisoPin, spiMosiPin, spiSclkPin);
+	begin(mac, ip, dns, gateway, spiMisoPin, spiMosiPin, spiSclkPin, ETH_intN);
 }
 
 void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress gateway)
 {
-	begin(mac, ip, dns, gateway, -1, -1, -1);
+	begin(mac, ip, dns, gateway, -1, -1, -1, -1);
 }
 
-void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress gateway, int spiMisoPin, int spiMosiPin, int spiSclkPin)
+void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress gateway, int spiMisoPin, int spiMosiPin, int spiSclkPin, int ETH_intN)
 {
 	IPAddress subnet(255, 255, 255, 0);
-	begin(mac, ip, dns, gateway, subnet, spiMisoPin, spiMosiPin, spiSclkPin);
+	begin(mac, ip, dns, gateway, subnet, spiMisoPin, spiMosiPin, spiSclkPin, ETH_intN);
+}
+
+void setRecvFlag() {
+	// This method will reset the INTn pin to 0x00 after a write has been acknowledged
+	// Serial.printf("SIMR %i SIR %i IR %i SnIR %i", W5500.readSIMR(),W5500.readSIR(), W5500.readIR(), W5500.readSnIR(0));
+	// if (W5500.readSIR() > 0) {
+	// 	// Reset the register and pull the INTn back down
+	// 	W5500.writeSnIR(0, 0xff);
+		
+	// }	
+	INTnFlag = true;
+	// otherwise don't do anything
 }
 
 void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress gateway, IPAddress subnet)
 {
-	begin(mac, ip, dns, gateway, subnet, -1, -1, -1);
+	begin(mac, ip, dns, gateway, subnet, -1, -1, -1, -1);
 }
 
-void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress gateway, IPAddress subnet, int spiMisoPin, int spiMosiPin, int spiSclkPin)
+void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress gateway, IPAddress subnet, int spiMisoPin, int spiMosiPin, int spiSclkPin, int ETH_intN)
 {
 	if (W5500.init(spiMisoPin, spiMosiPin, spiSclkPin) == 0) return;
+	W5500.softReset();
 	SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
 	W5500.setMACAddress(mac);
 	W5500.setIPAddress(ip._address.bytes);
 	W5500.setGatewayIp(gateway._address.bytes);
 	W5500.setSubnetMask(subnet._address.bytes);
+	W5500.writeSIMR(0xFF);
+	// Set Interupprt
+	if (ETH_intN == -1) {
+		ETH_intN = 9;
+	}
+	pinMode(ETH_intN, INPUT);
+	attachInterrupt(ETH_intN, setRecvFlag, FALLING);
 	SPI.endTransaction();
+}
+
+bool EthernetClass::detectRead() {
+	if (INTnFlag) {
+		W5500.writeSnIMR(0, 0x04);
+		W5500.writeSnIR(0, 0xff);
+		INTnFlag = false;
+		return true;
+	} else {
+		return false;
+	}
 }
 
 void EthernetClass::init(uint8_t sspin)

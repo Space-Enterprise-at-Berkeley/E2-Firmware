@@ -233,7 +233,7 @@ private:
 public:
   __SOCKET_REGISTER8(SnMR,        0x0000)        // Mode
   __SOCKET_REGISTER8(SnCR,        0x0001)        // Command
-  __SOCKET_REGISTER8(SnIR,        0x0002)        // Interrupt
+  __SOCKET_REGISTER8(SnIR,        0x0002)        // Interrupt (no one cares)
   __SOCKET_REGISTER8(SnSR,        0x0003)        // Status
   __SOCKET_REGISTER16(SnPORT,     0x0004)        // Source Port
   __SOCKET_REGISTER_N(SnDHAR,     0x0006, 6)     // Destination Hardw Addr
@@ -250,7 +250,7 @@ public:
   __SOCKET_REGISTER16(SnRX_RSR,   0x0026)        // RX Free Size
   __SOCKET_REGISTER16(SnRX_RD,    0x0028)        // RX Read Pointer
   __SOCKET_REGISTER16(SnRX_WR,    0x002A)        // RX Write Pointer (supported?)
-  __SOCKET_REGISTER8(SnIMR,       0x002C)        // Socket Interrupt Mask
+  __SOCKET_REGISTER8(SnIMR,       0x002C)        // Socket Interrupt Mask (No one cares)
   __SOCKET_REGISTER16(SnFRAG,     0x002D)         // Socket fragment offset in IP header
   __SOCKET_REGISTER8(SnKPALVTR,   0x002F)        // Socket keep alive timer
 
@@ -261,9 +261,9 @@ public:
 
 private:
   static uint8_t ss_pin;
-  static uint8_t softReset(void);
 
 public:
+static uint8_t softReset(void);
 #ifdef ETHERNET_LARGE_BUFFERS
   static uint16_t SSIZE;
   static uint16_t SMASK;
