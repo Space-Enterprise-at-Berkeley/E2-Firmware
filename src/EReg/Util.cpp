@@ -25,7 +25,7 @@ namespace Util {
     }
 
     
-
+    float prevValue = 0;
 
 
 
@@ -157,10 +157,12 @@ namespace Util {
             brakePin = HIGH;
         }
         digitalWrite(HAL::INLC, brakePin);
-        ledcWrite(HAL::motorChannel, min(pwmPower*2, 120));
         ledcWrite(HAL::motorChannel, pwmPower);
         digitalWrite(HAL::INHC, motorDir);
-        Serial.printf("Updating motor: pwm %d, direction pin %d, brake pin: %d\n", pwmPower, motorDir, brakePin);
+        if (pwmPower != prevValue) {
+            Serial.printf("Updating motor: pwm %d, direction pin %d, brake pin: %d\n", pwmPower, motorDir, brakePin);
+            prevValue = pwmPower;
+        }
     }
 
     /**

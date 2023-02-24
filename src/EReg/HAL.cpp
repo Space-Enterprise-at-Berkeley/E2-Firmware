@@ -25,7 +25,7 @@ namespace HAL {
         motorSPI->begin(MOTOR_SCLK, MOTOR_MISO, MOTOR_MOSI);
         pinMode(MADC_CS, OUTPUT);
         digitalWrite(MADC_CS, HIGH);
-        // dataSPI->begin(ETH_SCLK, ETH_MISO, ETH_MOSI);
+        dataSPI->begin(ETH_SCLK, ETH_MISO, ETH_MOSI);
 
         setupEncoder();
 
@@ -137,6 +137,7 @@ namespace HAL {
         } else {
             Serial.printf("reg 5 good!\n");
         }
+        delay(1);
         // disableMotorDriver(); //remove this later
         return 0;
 
