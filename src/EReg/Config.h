@@ -32,7 +32,7 @@ namespace Config {
     #define DIAGNOSTIC_BUFFER_SIZE 5
 
     const unsigned long telemetryInterval = 50 * 1000UL; // time in microseconds between telemetry packets
-    const unsigned long telemetryIntervalIdle = 100 * 1000UL; // time in microseconds between telemetry packets
+    const unsigned long telemetryIntervalIdle = 10 * 1000UL; // time in microseconds between telemetry packets
 
     const unsigned long closeTime = 3UL * 1000UL; // time in milliseconds //CHANGE THIS BACK TO 3S
 
@@ -64,8 +64,8 @@ namespace Config {
 
 
     //motor configs
-    const int minimumMotorPower = 50; //out of 256
-    const int maximumMotorPower = 65; //out of 256;
+    const int minimumMotorPower = 40; //out of 256
+    const int maximumMotorPower = 50; //out of 256;
     
 
 

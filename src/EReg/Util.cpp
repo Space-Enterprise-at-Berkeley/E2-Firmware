@@ -139,6 +139,14 @@ namespace Util {
     void runMotors(float speed) {
         // ledcWrite(HAL::motor1Channel,-min(0,speed));
         // ledcWrite(HAL::motor2Channel,max(0,speed));
+        int closedLimitSwitchState = HAL::getClosedLimitSwitchState();
+        int openLimitSwitchState = HAL::getOpenLimitSwitchState();
+        if (closedLimitSwitchState == 1) {
+            speed = max(0, speed);
+        } 
+        if (openLimitSwitchState == 1) {
+            speed = min(0, speed);
+        }
         int pwmPower = abs((int) speed);
         int motorDir = (speed > 0) ? 1 : 0;
         if (pwmPower > Config::maximumMotorPower) {
@@ -150,7 +158,6 @@ namespace Util {
         }
 
         int brakePin = 0;
-        // if (pwmPower == 0) {
         if (pwmPower == 0) {
             brakePin = LOW;
         } else {
@@ -160,9 +167,15 @@ namespace Util {
         ledcWrite(HAL::motorChannel, pwmPower);
         digitalWrite(HAL::INHC, motorDir);
         if (pwmPower != prevValue) {
-            Serial.printf("Updating motor: pwm %d, direction pin %d, brake pin: %d\n", pwmPower, motorDir, brakePin);
+            // Serial.printf("Updating motor: pwm %d, direction pin %d, brake pin: %d, closeLimSw: %d, openLimSw: %d\n", pwmPower, motorDir, brakePin, closedLimitSwitchState, openLimitSwitchState);
             prevValue = pwmPower;
         }
+    }
+
+    void stopMotor() {
+        digitalWrite(HAL::INLC, LOW);
+        ledcWrite(HAL::motorChannel, 0);
+        digitalWrite(HAL::INHC, 0);
     }
 
     /**

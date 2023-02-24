@@ -15,6 +15,9 @@ namespace HAL {
     double cumPhaseCurrentC = 0;
     int32_t numReads = 0;
 
+    int openLimitSwitchEngaged = 0;
+    int closedLimitSwitchEngaged = 0;
+
     int init() {
 
 
@@ -34,6 +37,15 @@ namespace HAL {
             disableMotorDriver();
             return -1;
         }
+
+        pinMode(LIMIT_1, INPUT);
+        pinMode(LIMIT_2, INPUT);
+        closedLimitSwitchEngaged = digitalRead(LIMIT_1);
+        openLimitSwitchEngaged = digitalRead(LIMIT_2);
+        attachInterrupt(LIMIT_1, valveClosedLimitSwitchTrigger, CHANGE);
+        attachInterrupt(LIMIT_2, valveOpenLimitSwitchTrigger, CHANGE);
+
+
         return 0;
     }
 
@@ -342,5 +354,23 @@ namespace HAL {
         cumPhaseCurrentC = 0;
         numReads = 0;
     }
+
+    void valveClosedLimitSwitchTrigger() {
+        closedLimitSwitchEngaged = digitalRead(LIMIT_1);
+        Util::stopMotor();
+    }
+    void valveOpenLimitSwitchTrigger() {
+        openLimitSwitchEngaged = digitalRead(LIMIT_2);
+        Util::stopMotor();
+    }
+    int getClosedLimitSwitchState() {
+        closedLimitSwitchEngaged = digitalRead(LIMIT_1);
+        return closedLimitSwitchEngaged;
+    }
+    int getOpenLimitSwitchState() {
+        openLimitSwitchEngaged = digitalRead(LIMIT_2);
+        return openLimitSwitchEngaged;
+    }
+
 
 }

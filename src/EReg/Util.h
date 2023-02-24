@@ -23,6 +23,7 @@ namespace Util {
     double heartBeat(unsigned long time);
     double clip(double value, double minOutput, double maxOutput);
     void runMotors(float speed);
+    void stopMotor();
     void runInjectorMotors(float speed);
     void checkMotorDriverHealth();
     float max(float a, float b);

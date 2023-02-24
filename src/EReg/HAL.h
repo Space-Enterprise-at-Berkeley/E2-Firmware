@@ -83,4 +83,8 @@ namespace HAL {
     void setupEncoder();
     void readPhaseCurrents();
     void packetizePhaseCurrents(Comms::Packet* packet);
+    void valveClosedLimitSwitchTrigger();
+    void valveOpenLimitSwitchTrigger();
+    int getOpenLimitSwitchState();
+    int getClosedLimitSwitchState();
 }

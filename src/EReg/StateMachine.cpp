@@ -4,6 +4,9 @@ namespace StateMachine {
 
     State currentState = IDLE_CLOSED;
     ValveAction currentMainValveState = MAIN_VALVE_CLOSE;
+    const int bufferSize = 100;
+    float overpressureBuffer[bufferSize];
+    uint8_t opBuffCnt;
 
     void enterFlowState() {
         if (currentState == IDLE_CLOSED) {
@@ -77,10 +80,23 @@ namespace StateMachine {
     }
 
     void checkAbortPressure(float currentPressure, float abortPressure) {
-        if (currentPressure > abortPressure) {
+
+        overpressureBuffer[opBuffCnt] = currentPressure;
+        opBuffCnt = (opBuffCnt + 1) % bufferSize;
+
+        float total;
+
+        for(uint8_t i = 0; i < bufferSize; i++) {
+            total += overpressureBuffer[i];
+        }
+
+        total /= bufferSize;
+
+        if (total > abortPressure) {
             // Packets::sendFlowState(0);
             Packets::broadcastAbort();
             StateMachine::enterIdleClosedState();
+            Serial.printf("overpressure abort %f\n", currentPressure);
         }
     }
 
