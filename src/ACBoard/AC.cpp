@@ -53,6 +53,8 @@ namespace AC {
     uint8_t cmd = packetGetUint8(&tmp, 1);
     uint32_t time = packetGetUint32(&tmp, 2);
 
+    DEBUG("Received command!");
+
     // set states and timers of actuator
     actuators[channel].state = cmd;
     actuators[channel].timeLeft = time;
