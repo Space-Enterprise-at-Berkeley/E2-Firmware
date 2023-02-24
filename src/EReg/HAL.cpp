@@ -3,18 +3,23 @@
 namespace HAL {
 
     int DRVSPISpeed = 1000000;
-    int ADCSPISpeed = 1000000;
+    int ADCSPISpeed = 8000000;
     volatile bool motorDriverFault = false;
     int8_t SPIBUFF[2]; // spi buffer for all SPI except ethernet.
     SPIClass *motorSPI = NULL;
     SPIClass *dataSPI = NULL;
     volatile int encoderTicks = 0;
+    
+    double cumPhaseCurrentA = 0;
+    double cumPhaseCurrentB = 0;
+    double cumPhaseCurrentC = 0;
+    int32_t numReads = 0;
 
     int init() {
 
 
         motorSPI = new SPIClass(FSPI);
-        // dataSPI = new SPIClass(HSPI);
+        dataSPI = new SPIClass(HSPI);
 
 
         motorSPI->begin(MOTOR_SCLK, MOTOR_MISO, MOTOR_MOSI);
@@ -23,7 +28,6 @@ namespace HAL {
         // dataSPI->begin(ETH_SCLK, ETH_MISO, ETH_MOSI);
 
         setupEncoder();
-
 
         int motorDriverInitSuccess = initializeMotorDriver();
         if (motorDriverInitSuccess == -1) {
@@ -50,7 +54,7 @@ namespace HAL {
         delay(10);
 
 
-        int pwmFreq = 50000;
+        int pwmFreq = 70000;
         int pwmResolution = 8;
         ledcSetup(motorChannel, pwmFreq, pwmResolution);
         ledcAttachPin(INHA, 0);
@@ -70,7 +74,7 @@ namespace HAL {
 
         //set CSA
         SPIBUFF[0] = 0b00000010;
-        SPIBUFF[1] = 0b10000001; //sense ocp 0.5v, gain 20v/v //TODO change this
+        SPIBUFF[1] = 0b00000001; //sense ocp 0.5v, gain 5v/v //TODO change this
         writeMotorDriverRegister(6);
 
 
@@ -99,7 +103,7 @@ namespace HAL {
         // delay(10);
 
         readMotorDriverRegister(6);
-        if ((SPIBUFF[0] != (int8_t) 0x02) || (SPIBUFF[1] != (int8_t) 0x81)) {
+        if ((SPIBUFF[0] != (int8_t) 0x02) || (SPIBUFF[1] != (int8_t) 0x01)) {
             Serial.printf("reg 6 bad :( %hhx, %hhx\n", SPIBUFF[0], SPIBUFF[1]);
             return -1;
         } else {
@@ -194,23 +198,22 @@ namespace HAL {
         }
         SPIBUFF[0] = 0;
         SPIBUFF[0] |= (channel << 3);
-        SPIBUFF[0] &= 0b00011000;
+        SPIBUFF[0] &= 0b00111000;
         SPIBUFF[1] = 0;
         sendSPICommand(SPIBUFF, 2, spi, csPin, ADCSPISpeed, SPI_MODE0);
-
-        int16_t val = ((SPIBUFF[0] & 0b00001111) << 8) + SPIBUFF[1];
-        
-        float f = (((float) val) / 4096) * 5.0;
-        f = (5 - f) / (20*0.005);
+        uint16_t val = 0;
+        val += ((SPIBUFF[0] & 0b00001111) << 8) + SPIBUFF[1];
+        float f = (((float) val) / 4096.0) * 5.0;
         return f;
     }  
 
-    float readPhaseCurrent(uint8_t phase) {
+    float getPhaseCurrent(uint8_t phase) {
         if ((phase > 2) || (phase < 0)) {
             DEBUGF("bad motor current phase index\n");
             return 0;
         }
-        return readADC(motorSPI, MADC_CS, phase);
+        float v = readADC(motorSPI, MADC_CS, phase);
+        return (2.5 - v) / (0.005*20);
     }
     
     float readPTVoltage(uint8_t channel) {
@@ -218,8 +221,7 @@ namespace HAL {
             DEBUGF("bad channel index\n");
             return 0; 
         }
-        return 1;
-        // return readADC(dataSPI, PTADC_CS, channel);
+        return readADC(dataSPI, PTADC_CS, channel);
     }
 
     float readUpstreamPT() {
@@ -315,6 +317,29 @@ namespace HAL {
 
     }
 
+ 
 
+    void readPhaseCurrents() {
+        float p0 = getPhaseCurrent(0);
+        cumPhaseCurrentA += pow(p0, 2);
+        // cumPhaseCurrentB += pow(getPhaseCurrent(1), 2);
+        // cumPhaseCurrentC += pow(getPhaseCurrent(2), 2);
+        numReads++;
+    }
+
+    void packetizePhaseCurrents(Comms::Packet* packet) {
+        packet->len = 0;
+        if (numReads == 0) {
+            numReads = 1;
+        }
+        Comms::packetAddFloat(packet, sqrt(cumPhaseCurrentA / (float)numReads));
+        Comms::packetAddFloat(packet, sqrt(cumPhaseCurrentB / (float)numReads));
+        Comms::packetAddFloat(packet, sqrt(cumPhaseCurrentC / (float)numReads));
+        // Serial.printf("total: %.2f, numReads: %d, time: %d\n", cumPhaseCurrentA, numReads, millis());
+        cumPhaseCurrentA = 0;
+        cumPhaseCurrentB = 0;
+        cumPhaseCurrentC = 0;
+        numReads = 0;
+    }
 
 }

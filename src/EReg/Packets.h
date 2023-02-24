@@ -10,6 +10,8 @@ namespace Packets {
     const uint8_t DIAGNOSTIC_ID = 3;
     const uint8_t STATE_TRANSITION_FAIL_ID = 4;
     const uint8_t FLOW_STATE = 5;
+    const uint8_t LIMIT_SWITCHES = 6;
+    const uint8_t PHASE_CURRENTS = 7;
 
     void sendTelemetry(
         float upstreamPressure,
@@ -27,4 +29,5 @@ namespace Packets {
     void sendStateTransitionError(uint8_t errorCode);
     void sendFlowState(uint8_t flowState);
     void broadcastAbort();
+    void sendPhaseCurrents();
 }

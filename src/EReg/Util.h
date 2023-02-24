@@ -27,7 +27,6 @@ namespace Util {
     void checkMotorDriverHealth();
     float max(float a, float b);
     float min(float a, float b);
-    void readPhaseCurrent();
     
     PIDController* getInnerController();
     PIDController* getOuterController();

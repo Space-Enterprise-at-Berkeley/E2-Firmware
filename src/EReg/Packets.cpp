@@ -39,6 +39,7 @@ namespace Packets {
         Comms::packetAddFloat(&packet, pressureControlI);
         Comms::packetAddFloat(&packet, pressureControlD);
         Comms::emitPacket(&packet);
+        sendPhaseCurrents();
         // Serial.printf("packet sent\n");
     }
 
@@ -116,6 +117,14 @@ namespace Packets {
     void broadcastAbort() { //TODO
         Comms::Packet packet = {.id = ABORT_ID};
         packet.len = 0;
+        Comms::emitPacket(&packet);
+    }
+
+
+    void sendPhaseCurrents() {
+        Comms::Packet packet = {.id = PHASE_CURRENTS};
+        packet.len = 0;
+        HAL::packetizePhaseCurrents(&packet);
         Comms::emitPacket(&packet);
     }
 

@@ -6,6 +6,8 @@
 #include "Util.h" 
 #include "SPI.h"
 #include "Common.h"
+#include "Packets.h"
+#include "EspComms.h"
 
 namespace HAL {
     
@@ -70,7 +72,7 @@ namespace HAL {
     void disableMotorDriver();
     void handleMotorDriverFault();
     void printMotorDriverFaultAndDisable();
-    float readPhaseCurrent(int phase);
+    float getPhaseCurrent(uint8_t phase);
     float readPTVoltage(uint8_t channel);
     float readUpstreamPT();
     float readDownstreamPT();
@@ -79,4 +81,6 @@ namespace HAL {
     void setEncoderCount(int i);
     int getEncoderCount();
     void setupEncoder();
+    void readPhaseCurrents();
+    void packetizePhaseCurrents(Comms::Packet* packet);
 }

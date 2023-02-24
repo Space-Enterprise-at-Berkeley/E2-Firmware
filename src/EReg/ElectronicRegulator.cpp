@@ -51,18 +51,18 @@ void pressurize(Comms::Packet packet, uint8_t ip) {
 
 
 void setup() {
+    
     delay(3000);
     Serial.begin(115200);
     Serial.printf("micros: %d\n", micros());
     Serial.printf("hi!!\n");
     if (HAL::init() == -1) {
         DEBUGF("HAL initialization failed\n");
-        while(1);
+        while(1){};
     } else {
         DEBUGF("HAL initialization success!\n");
     }
     Comms::init(HAL::ETH_CS, HAL::ETH_MISO, HAL::ETH_MOSI, HAL::ETH_SCLK, HAL::ETH_INTn);
-    Serial.printf("Comms init done!\n");
     StateMachine::enterIdleClosedState();
     zero(); 
     Comms::registerCallback(200, flow);
@@ -78,7 +78,7 @@ void setup() {
 void loop() {
     Comms::processWaitingPackets();
     Util::checkMotorDriverHealth();
-    Util::readPhaseCurrent();
+    HAL::readPhaseCurrents();
     switch (StateMachine::getCurrentState()) {
         case StateMachine::IDLE_CLOSED:
         idleClosedState->update();

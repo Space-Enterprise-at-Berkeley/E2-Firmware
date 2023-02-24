@@ -54,6 +54,7 @@ namespace StateMachine {
                 0,
                 0
             );
+            
             lastPrint_ = micros();
         }
     }
