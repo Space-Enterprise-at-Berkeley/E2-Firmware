@@ -30,7 +30,7 @@ namespace StateMachine {
 
         float upstreamPsi = HAL::readUpstreamPT();
         float downstreamPsi = HAL::readDownstreamPT();
-        Serial.printf("%.2f\n", downstreamPsi);
+        // Serial.printf("%.2f\n", downstreamPsi);
 
         float speed = 0;
 

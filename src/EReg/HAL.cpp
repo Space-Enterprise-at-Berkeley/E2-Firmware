@@ -3,9 +3,9 @@
 namespace HAL {
 
     int DRVSPISpeed = 1000000;
-    int ADCSPISpeed = 8000000;
+    int ADCSPISpeed = 1000000;
     volatile bool motorDriverFault = false;
-    int8_t SPIBUFF[2]; // spi buffer for all SPI except ethernet.
+    uint8_t SPIBUFF[2]; // spi buffer for all SPI except ethernet.
     SPIClass *motorSPI = NULL;
     SPIClass *dataSPI = NULL;
     volatile int encoderTicks = 0;
@@ -21,13 +21,15 @@ namespace HAL {
     int init() {
 
 
-        motorSPI = new SPIClass(FSPI);
-        dataSPI = new SPIClass(HSPI);
+        motorSPI = new SPIClass(HSPI);
+        dataSPI = new SPIClass(FSPI);
 
 
         motorSPI->begin(MOTOR_SCLK, MOTOR_MISO, MOTOR_MOSI);
         pinMode(MADC_CS, OUTPUT);
         digitalWrite(MADC_CS, HIGH);
+        pinMode(PTADC_CS, OUTPUT);
+        pinMode(PTADC_CS, HIGH);
         dataSPI->begin(ETH_SCLK, ETH_MISO, ETH_MOSI);
 
         setupEncoder();
@@ -106,7 +108,7 @@ namespace HAL {
         writeMotorDriverRegister(3);
 
         readMotorDriverRegister(2);
-        if ((SPIBUFF[0] != (int8_t) 0x00) || (SPIBUFF[1] != (int8_t) 0xc0)) {
+        if ((SPIBUFF[0] != (uint8_t) 0x00) || (SPIBUFF[1] != (uint8_t) 0xc0)) {
             Serial.printf("reg 2 bad :( %hhx, %hhx\n", SPIBUFF[0], SPIBUFF[1]);
             return -1;
         } else {
@@ -115,7 +117,7 @@ namespace HAL {
         // delay(10);
 
         readMotorDriverRegister(6);
-        if ((SPIBUFF[0] != (int8_t) 0x02) || (SPIBUFF[1] != (int8_t) 0x01)) {
+        if ((SPIBUFF[0] != (uint8_t) 0x02) || (SPIBUFF[1] != (uint8_t) 0x01)) {
             Serial.printf("reg 6 bad :( %hhx, %hhx\n", SPIBUFF[0], SPIBUFF[1]);
             return -1;
         } else {
@@ -124,7 +126,7 @@ namespace HAL {
         // delay(10);
 
         readMotorDriverRegister(3);
-        if ((SPIBUFF[0] != (int8_t) 0x03) || (SPIBUFF[1] != (int8_t) 0xEE)) {
+        if ((SPIBUFF[0] != (uint8_t) 0x03) || (SPIBUFF[1] != (uint8_t) 0xEE)) {
             Serial.printf("reg 3 bad :( %hhx, %hhx\n", SPIBUFF[0], SPIBUFF[1]);
             return -1;
         } else {
@@ -134,7 +136,7 @@ namespace HAL {
 
 
         readMotorDriverRegister(4);
-        if ((SPIBUFF[0] != (int8_t) 0x07) || (SPIBUFF[1] != (int8_t) 0xEE)) {
+        if ((SPIBUFF[0] != (uint8_t) 0x07) || (SPIBUFF[1] != (uint8_t) 0xEE)) {
             Serial.printf("reg 4 bad :( %hhx, %hhx\n", SPIBUFF[0], SPIBUFF[1]);
             return -1;
         } else {
@@ -143,7 +145,7 @@ namespace HAL {
         // printMotorDriverFaultAndDisable();
 
         readMotorDriverRegister(5);
-        if ((SPIBUFF[0] != (int8_t) 0x01) || (SPIBUFF[1] != (int8_t) 0x75)) {
+        if ((SPIBUFF[0] != (uint8_t) 0x01) || (SPIBUFF[1] != (uint8_t) 0x75)) {
             Serial.printf("reg 5 bad :( %hhx, %hhx\n", SPIBUFF[0], SPIBUFF[1]);
             return -1;
         } else {
@@ -211,14 +213,18 @@ namespace HAL {
         }
         SPIBUFF[0] = 0;
         SPIBUFF[0] |= (channel << 3);
-        SPIBUFF[0] &= 0b00111000;
+        SPIBUFF[0] &= 0b00011000;
         SPIBUFF[1] = 0;
         sendSPICommand(SPIBUFF, 2, spi, csPin, ADCSPISpeed, SPI_MODE0);
         uint16_t val = 0;
-        val += ((SPIBUFF[0] & 0b00001111) << 8) + SPIBUFF[1];
+        val = ((SPIBUFF[0] & 0b00001111) << 8) + SPIBUFF[1];
+        // if ((channel == 0) && (csPin = PTADC_CS)) {
+        //     Serial.printf("pt adc 0: %d\n", val);
+        // }
         float f = (((float) val) / 4096.0) * 5.0;
         return f;
     }  
+    
 
     float getPhaseCurrent(uint8_t phase) {
         if ((phase > 2) || (phase < 0)) {
@@ -226,6 +232,7 @@ namespace HAL {
             return 0;
         }
         float v = readADC(motorSPI, MADC_CS, phase);
+        
         return (2.5 - v) / (0.005*20);
     }
     

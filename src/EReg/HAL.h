@@ -74,6 +74,7 @@ namespace HAL {
     void printMotorDriverFaultAndDisable();
     float getPhaseCurrent(uint8_t phase);
     float readPTVoltage(uint8_t channel);
+    float readADC(SPIClass* spi, uint8_t csPin, int8_t channel);
     float readUpstreamPT();
     float readDownstreamPT();
     bool getMotorDriverFault();

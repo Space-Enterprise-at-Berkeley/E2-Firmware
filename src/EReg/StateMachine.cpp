@@ -91,7 +91,7 @@ namespace StateMachine {
         }
 
         total /= bufferSize;
-
+        return; //FIX THIS
         if (total > abortPressure) {
             // Packets::sendFlowState(0);
             Packets::broadcastAbort();
