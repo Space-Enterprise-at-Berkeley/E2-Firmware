@@ -4,9 +4,7 @@ namespace StateMachine {
 
     State currentState = IDLE_CLOSED;
     ValveAction currentMainValveState = MAIN_VALVE_CLOSE;
-    const int bufferSize = 100;
-    float overpressureBuffer[bufferSize];
-    uint8_t opBuffCnt;
+
 
     void enterFlowState() {
         if (currentState == IDLE_CLOSED) {
@@ -39,17 +37,12 @@ namespace StateMachine {
     }
 
     void enterDiagnosticState() {
-        float pressure = HAL::readUpstreamPT();
-        if (pressure > 200) {
-            Packets::sendStateTransitionError(3);
+        if (currentState == IDLE_CLOSED) {
+            currentState = DIAGNOSTIC;
+            getDiagnosticState()->init();
         } else {
-            if (currentState == IDLE_CLOSED) {
-                currentState = DIAGNOSTIC;
-                getDiagnosticState()->init();
-            } else {
-                // Illegal state transition
-                Packets::sendStateTransitionError(3);
-            }
+            // Illegal state transition
+            Packets::sendStateTransitionError(3);
         }
     }
 
@@ -81,17 +74,7 @@ namespace StateMachine {
 
     void checkAbortPressure(float currentPressure, float abortPressure) {
 
-        // overpressureBuffer[opBuffCnt] = currentPressure;
-        // opBuffCnt = (opBuffCnt + 1) % bufferSize;
 
-        // float total;
-
-        // for(uint8_t i = 0; i < bufferSize; i++) {
-        //     total += overpressureBuffer[i];
-        // }
-
-        // total /= bufferSize;
-        // return; //FIX THIS
         if (currentPressure > abortPressure) {
             // Packets::sendFlowState(0);
             Packets::broadcastAbort();

@@ -111,7 +111,9 @@ void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress g
 }
 
 bool EthernetClass::detectRead() {
-	if (INTnFlag) {
+	// Serial.printf("%d\n", digitalRead(35));
+	int pinVal = digitalRead(35);
+	if (!pinVal) {
 		W5500.writeSnIMR(0, 0x04);
 		W5500.writeSnIR(0, 0xff);
 		INTnFlag = false;

@@ -65,7 +65,7 @@ namespace HAL {
 
     int init();
     int initializeMotorDriver();
-    void sendSPICommand(void* dataBuffer, int numBytes, SPIClass* spi, int csPin, int clkSpeed, int spiMode);
+    void sendSPICommand(uint8_t* dataBuffer, int numBytes, SPIClass* spi, int csPin, int clkSpeed, int spiMode);
     void readMotorDriverRegister(int8_t addr);
     void writeMotorDriverRegister(int8_t addr);
     void enableMotorDriver();
@@ -82,10 +82,12 @@ namespace HAL {
     void setEncoderCount(int i);
     int getEncoderCount();
     void setupEncoder();
-    void readPhaseCurrents();
+    void monitorPhaseCurrent();
     void packetizePhaseCurrents(Comms::Packet* packet);
     void valveClosedLimitSwitchTrigger();
     void valveOpenLimitSwitchTrigger();
     int getOpenLimitSwitchState();
     int getClosedLimitSwitchState();
+    void packetizeTemperatures(Comms::Packet* packet);
+    bool getOvercurrentStatus();
 }

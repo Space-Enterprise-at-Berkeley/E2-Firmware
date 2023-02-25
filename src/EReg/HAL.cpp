@@ -3,7 +3,7 @@
 namespace HAL {
 
     int DRVSPISpeed = 1000000;
-    int ADCSPISpeed = 1000000;
+    int ADCSPISpeed = 5000000;
     volatile bool motorDriverFault = false;
     uint8_t SPIBUFF[2]; // spi buffer for all SPI except ethernet.
     SPIClass *motorSPI = NULL;
@@ -17,6 +17,20 @@ namespace HAL {
 
     int openLimitSwitchEngaged = 0;
     int closedLimitSwitchEngaged = 0;
+
+    uint32_t motorOvercurrentStartTime;
+    float overcurrentThreshold = 50; //amps
+    uint32_t overcurrentHysteresis = 100; //milliseconds
+
+    bool inOvercurrentCooldown = false;
+    uint32_t overcurrentSafingStartTime;
+    uint32_t overcurrentRetryTime = 1000;
+
+    bool motorDriverEnabled;
+
+    const uint32_t OCBufferSize = 10;
+    float overCurrentBuffer[OCBufferSize];
+    uint32_t overCurrentBufferPtr = 0;
 
     int init() {
 
@@ -49,6 +63,8 @@ namespace HAL {
         attachInterrupt(LIMIT_1, valveClosedLimitSwitchTrigger, CHANGE);
         attachInterrupt(LIMIT_2, valveOpenLimitSwitchTrigger, CHANGE);
 
+        pinMode(TEMPSENSE0, INPUT);
+        pinMode(TEMPSENSE1, INPUT);
 
         return 0;
     }
@@ -70,7 +86,7 @@ namespace HAL {
         delay(10);
 
 
-        int pwmFreq = 70000;
+        int pwmFreq = 50000;
         int pwmResolution = 8;
         ledcSetup(motorChannel, pwmFreq, pwmResolution);
         ledcAttachPin(INHA, 0);
@@ -176,7 +192,12 @@ namespace HAL {
         sendSPICommand(SPIBUFF, 2, motorSPI, DRV_CS, DRVSPISpeed, SPI_MODE1);
     }
 
-    void sendSPICommand(void* dataBuffer, int numBytes, SPIClass* spi, int csPin, int clkSpeed, int spiMode) {
+    void sendSPICommand(uint8_t* dataBuffer, int numBytes, SPIClass* spi, int csPin, int clkSpeed, int spiMode) {
+        uint8_t prevFirstByte = dataBuffer[0];
+        spi->beginTransaction(SPISettings(clkSpeed, MSBFIRST, spiMode));
+        spi->transfer(dataBuffer, 1);
+        spi->endTransaction();
+        dataBuffer[0] = prevFirstByte;
         spi->beginTransaction(SPISettings(clkSpeed, MSBFIRST, spiMode));
         digitalWrite(csPin, LOW);
         spi->transfer(dataBuffer, numBytes);
@@ -186,10 +207,12 @@ namespace HAL {
 
     void enableMotorDriver() {
         digitalWrite(DRV_EN, HIGH);
+        motorDriverEnabled = true;
     }
 
     void disableMotorDriver() {
         digitalWrite(DRV_EN, LOW);
+        motorDriverEnabled = false;
     }
 
     void handleMotorDriverFault() {
@@ -198,15 +221,35 @@ namespace HAL {
     }
 
     void printMotorDriverFaultAndDisable() {
+        
+        if (digitalRead(DRV_FAULT) == HIGH) {
+            Serial.printf("but the fault pin is high? so ignoring\n");
+            return;
+        }
         ledcWrite(motorChannel, 0);
-        delayMicroseconds(50);
+        delayMicroseconds(100);
         readMotorDriverRegister(0);
         Serial.printf("Fault:\n reg 0 <%hhx>, <%hhx>\n", SPIBUFF[0], SPIBUFF[1]);
         readMotorDriverRegister(1);
         Serial.printf("reg 1 <%hhx>, <%hhx>\n", SPIBUFF[0], SPIBUFF[1]);
+        readMotorDriverRegister(0);
+        if ((SPIBUFF[0] == 0x00) && (SPIBUFF[1] == 0x00)) {
+            Serial.printf("but both regs are 0? so ignoring\n");
+            return;
+        }
+    
+        delayMicroseconds(10);
         disableMotorDriver();
 
     }
+
+    float volt_to_motor_temp(float volt) {
+        float resist = (10000*volt) / (5-volt);
+        float denom = log(resist / (10000 * exp((-1*3380)/298.15)));
+        float kelv = 3380 / denom;
+        return kelv - 273.15;   
+    }
+
 
     float readADC(SPIClass* spi, uint8_t csPin, int8_t channel) {
         if ((channel > 3) || (channel < 0)) {
@@ -236,8 +279,10 @@ namespace HAL {
             return 0;
         }
         float v = readADC(motorSPI, MADC_CS, phase);
-        
-        return (2.5 - v) / (0.005*20);
+        if (!motorDriverEnabled) {
+            return 1.69;
+        }
+        return (2.5 - v) / (0.005*5);
     }
     
     float readPTVoltage(uint8_t channel) {
@@ -343,23 +388,89 @@ namespace HAL {
     }
 
  
-
-    void readPhaseCurrents() {
-        float p0 = getPhaseCurrent(0);
-        cumPhaseCurrentA += pow(p0, 2);
-        // cumPhaseCurrentB += pow(getPhaseCurrent(1), 2);
-        // cumPhaseCurrentC += pow(getPhaseCurrent(2), 2);
+    /**
+     * monitors phase current. return true if abort.
+     * @param action Desired valve state
+     */
+    void monitorPhaseCurrent() { 
+        float phaseCurA = getPhaseCurrent(0);
+        float phaseCurB = getPhaseCurrent(1);
+        float phaseCurC = getPhaseCurrent(2);
+        cumPhaseCurrentA += pow(phaseCurA, 2);
+        cumPhaseCurrentB += pow(phaseCurB, 2);
+        cumPhaseCurrentC += pow(phaseCurC, 2);
         numReads++;
+        // float maxCurrent = max(max(abs(phaseCurA), abs(phaseCurB)), abs(phaseCurC));
+
+        // overCurrentBuffer[overCurrentBufferPtr] = maxCurrent;
+        // overCurrentBufferPtr = ((overCurrentBufferPtr+1) % OCBufferSize);
+        // float total = 0;
+        // for (int i = 0; i < OCBufferSize; i++) {
+        //     total += overCurrentBuffer[i];
+        // }
+        // float OCThreshold = overcurrentThreshold*OCBufferSize;
+        // if ((total > OCThreshold) && !inOvercurrentCooldown) {
+
+        //     inOvercurrentCooldown = true;
+        //     overcurrentSafingStartTime = millis();
+            
+        //     // Serial.printf("motor overcurrent.. pA: %f, pB: %f, pC: %f, avg over x samples: %f, time: %d\n", phaseCurA, phaseCurB, phaseCurC, total, millis());
+        // } else {
+        //     // motorOvercurrentStartTime = 0;
+        //     // inOvercurrentCooldown = false;
+        // } 
+        // if (inOvercurrentCooldown) {
+        //     if (millis() > (overcurrentSafingStartTime + overcurrentRetryTime)) {
+        //         // Serial.printf("OC reset\n");
+        //         inOvercurrentCooldown = false;
+        //         overcurrentSafingStartTime = millis();
+        //     }
+        // }
     }
 
     void packetizePhaseCurrents(Comms::Packet* packet) {
+        
         packet->len = 0;
         if (numReads == 0) {
             numReads = 1;
         }
-        Comms::packetAddFloat(packet, sqrt(cumPhaseCurrentA / (float)numReads));
-        Comms::packetAddFloat(packet, sqrt(cumPhaseCurrentB / (float)numReads));
-        Comms::packetAddFloat(packet, sqrt(cumPhaseCurrentC / (float)numReads));
+        float curA = sqrt(cumPhaseCurrentA / (float)numReads);
+        float curB = sqrt(cumPhaseCurrentB / (float)numReads);
+        float curC = sqrt(cumPhaseCurrentC / (float)numReads);
+
+        // Serial.printf("PA: %f, PB:%f, PC: %f\n", curA, curB, curC);
+
+        float maxCurrent = max(max(abs(curA), abs(curB)), abs(curC));
+        overCurrentBuffer[overCurrentBufferPtr] = maxCurrent;
+        overCurrentBufferPtr = ((overCurrentBufferPtr+1) % OCBufferSize);
+
+        float total = 0;
+        for (int i = 0; i < OCBufferSize; i++) {
+            total += min(overCurrentBuffer[i], overcurrentThreshold) + 1;
+        }
+        float totalOCThresh = overcurrentThreshold*OCBufferSize;
+
+        if ((total > totalOCThresh) && !inOvercurrentCooldown) {
+
+            inOvercurrentCooldown = true;
+            overcurrentSafingStartTime = millis();
+            
+            Serial.printf("motor overcurrent.. pA: %f, pB: %f, pC: %f, avg over x samples: %f, time: %d\n", curA, curB, curC, total, millis());
+        } else {
+            // motorOvercurrentStartTime = 0;
+            // inOvercurrentCooldown = false;
+        } 
+        if (inOvercurrentCooldown) {
+            if (millis() > (overcurrentSafingStartTime + overcurrentRetryTime)) {
+                Serial.printf("OC reset\n");
+                inOvercurrentCooldown = false;
+                overcurrentSafingStartTime = millis();
+            }
+        }
+
+        Comms::packetAddFloat(packet, curA);
+        Comms::packetAddFloat(packet, curB);
+        Comms::packetAddFloat(packet, curC);
         // Serial.printf("total: %.2f, numReads: %d, time: %d\n", cumPhaseCurrentA, numReads, millis());
         cumPhaseCurrentA = 0;
         cumPhaseCurrentB = 0;
@@ -384,5 +495,18 @@ namespace HAL {
         return openLimitSwitchEngaged;
     }
 
+    void packetizeTemperatures(Comms::Packet* packet) {
+        float t1 = ((((float) analogRead(TEMPSENSE0)) * (3.3 / 4096.0)) - 0.4) / (0.0195);
+        float t2 = ((((float) analogRead(TEMPSENSE1)) * (3.3 / 4096.0)) - 0.4) / (0.0195);
+        float motorTemp = volt_to_motor_temp(readADC(motorSPI, MADC_CS, 3));
+
+        Comms::packetAddFloat(packet, t1);
+        Comms::packetAddFloat(packet, t2);
+        Comms::packetAddFloat(packet, motorTemp);
+    }
+
+    bool getOvercurrentStatus() {
+        return inOvercurrentCooldown;
+    }
 
 }

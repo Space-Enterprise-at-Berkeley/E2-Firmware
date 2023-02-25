@@ -39,6 +39,7 @@ namespace Packets {
         Comms::packetAddFloat(&packet, pressureControlI);
         Comms::packetAddFloat(&packet, pressureControlD);
         Comms::emitPacket(&packet);
+        sendTemperatures();
         sendPhaseCurrents();
         // Serial.printf("packet sent\n");
     }
@@ -125,6 +126,13 @@ namespace Packets {
         Comms::Packet packet = {.id = PHASE_CURRENTS};
         packet.len = 0;
         HAL::packetizePhaseCurrents(&packet);
+        Comms::emitPacket(&packet);
+    }
+
+    void sendTemperatures() {
+        Comms::Packet packet = {.id = TEMPS};
+        packet.len = 0;
+        HAL::packetizeTemperatures(&packet);
         Comms::emitPacket(&packet);
     }
 

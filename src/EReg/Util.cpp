@@ -131,6 +131,7 @@ namespace Util {
         return sin(1.5*(time/1.0e6));
     }
 
+    
     /**
      * Non-blocking function to run motors at specified speed. Note that motors will keep running at specified speed until this function is called again.
      * TODO: Implement better control (see DRV8871 documentation) that uses braking function (instead of coasting motors)
@@ -141,6 +142,11 @@ namespace Util {
         // ledcWrite(HAL::motor2Channel,max(0,speed));
         int closedLimitSwitchState = HAL::getClosedLimitSwitchState();
         int openLimitSwitchState = HAL::getOpenLimitSwitchState();
+        bool inOvercurrentCooldown = HAL::getOvercurrentStatus();
+        if (inOvercurrentCooldown) {
+            speed = 0;
+            // Serial.printf("oc flag on\n");
+        }
         if (closedLimitSwitchState == 1) {
             speed = max(0, speed);
         } 
@@ -152,11 +158,9 @@ namespace Util {
         if (pwmPower > Config::maximumMotorPower) {
             pwmPower = Config::maximumMotorPower;
         }
-
         if (pwmPower < Config::minimumMotorPower) {
             pwmPower = 0;
         }
-
         int brakePin = 0;
         if (pwmPower == 0) {
             brakePin = LOW;
@@ -167,7 +171,7 @@ namespace Util {
         ledcWrite(HAL::motorChannel, pwmPower);
         digitalWrite(HAL::INHC, motorDir);
         if (pwmPower != prevValue) {
-            // Serial.printf("Updating motor: pwm %d, direction pin %d, brake pin: %d, closeLimSw: %d, openLimSw: %d\n", pwmPower, motorDir, brakePin, closedLimitSwitchState, openLimitSwitchState);
+            // Serial.printf("Updating motor: pwm %d, direction pin %d, brake pin: %d, closeLimSw: %d, openLimSw: %d, ocflag: %d\n", pwmPower, motorDir, brakePin, closedLimitSwitchState, openLimitSwitchState, inOvercurrentCooldown);
             prevValue = pwmPower;
         }
     }
@@ -204,8 +208,6 @@ namespace Util {
     float min(float a, float b) {
         return (a < b) ? a : b;
     }
-
-
 
     
 }

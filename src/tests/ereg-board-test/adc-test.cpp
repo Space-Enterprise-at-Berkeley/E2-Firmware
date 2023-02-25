@@ -23,7 +23,7 @@ const int ETH_SCLK = 38;
 int DRVSPISpeed = 1000000;
 int ADCSPISpeed = 1000000;
 volatile bool motorDriverFault = false;
-int8_t SPIBUFF[2]; // spi buffer for all SPI except ethernet.
+uint8_t SPIBUFF[2]; // spi buffer for all SPI except ethernet.
 SPIClass *ethSPI = NULL;
 SPIClass *motorSPI = NULL;
 
@@ -42,21 +42,24 @@ void sendSPICommand(void* dataBuffer, int numBytes, SPIClass* spi, int csPin, in
 }
 
 float readADC(SPIClass* spi, uint8_t csPin, int8_t channel) {
-  if ((channel > 3) || (channel < 0)) {
-      Serial.println("bad channel index");
-      return 0;
-  }
-  SPIBUFF[0] = 0;
-  SPIBUFF[0] |= (channel << 3);
-  SPIBUFF[0] &= 0b00011000;
-  SPIBUFF[1] = 0;
-  sendSPICommand(SPIBUFF, 2, spi, csPin, ADCSPISpeed, SPI_MODE0);
+   if ((channel > 3) || (channel < 0)) {
+            Serial.printf("bad channel index\n");
+            return 0;
+        }
+        SPIBUFF[0] = 0;
+        SPIBUFF[0] |= (channel << 3);
+        SPIBUFF[0] &= 0b00011000;
+        SPIBUFF[1] = 0;
+        sendSPICommand(SPIBUFF, 2, spi, csPin, ADCSPISpeed, SPI_MODE2);
+        uint16_t val = 0;
+        val = ((SPIBUFF[0] & 0b00001111) << 8) + SPIBUFF[1];
+        // val = SPIBUFF[0];
 
-  int16_t val = ((SPIBUFF[0] & 0b00001111) << 8) + SPIBUFF[1];
-  
-  float f = (((float) val) / 4096.0) * 5.0;
-  f = (5 - f) / (20*0.005);
-  return f;
+        float f = (((float) val) / 4096.0) * 5.0;
+        // if ((channel == 0) && (csPin = PTADC_CS)) {
+        //     Serial.printf("output voltage: %f\n", f);
+        // }
+        return (float)f;
 }
 
 void setup()
@@ -91,13 +94,18 @@ void setup()
 
   Udp.beginPacket(groundStation1, port);
 }
-
+float volt_to_motor_temp(float volt) {
+  float resist = (10000*volt) / (5-volt);
+  float denom = log(resist / (10000 * exp((-1*3380)/298.15)));
+  float kelv = 3380 / denom;
+  return kelv - 273.15;
+}
 void loop()
 {
     Serial.printf("ADC 0: %f ", readADC(motorSPI, MADC_CS, 0));
     Serial.printf("ADC 1: %f ", readADC(motorSPI, MADC_CS, 1));
     Serial.printf("ADC 2: %f ", readADC(motorSPI, MADC_CS, 2));
-    Serial.printf("ADC 3: %f\n", readADC(motorSPI, MADC_CS, 3));
+    Serial.printf("ADC 3: %f\n", volt_to_motor_temp(readADC(motorSPI, MADC_CS, 3)));
 
     Udp.resetSendOffset();
     char tosend[] = "itimelckdatadatadatadata";

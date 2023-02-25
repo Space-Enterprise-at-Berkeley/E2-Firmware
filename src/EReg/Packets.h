@@ -12,6 +12,7 @@ namespace Packets {
     const uint8_t FLOW_STATE = 5;
     const uint8_t LIMIT_SWITCHES = 6;
     const uint8_t PHASE_CURRENTS = 7;
+    const uint8_t TEMPS = 8;
 
     void sendTelemetry(
         float upstreamPressure,
@@ -30,4 +31,5 @@ namespace Packets {
     void sendFlowState(uint8_t flowState);
     void broadcastAbort();
     void sendPhaseCurrents();
+    void sendTemperatures();
 }

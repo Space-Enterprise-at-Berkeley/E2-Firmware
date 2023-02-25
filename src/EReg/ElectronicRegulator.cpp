@@ -78,7 +78,7 @@ void setup() {
 void loop() {
     Comms::processWaitingPackets();
     Util::checkMotorDriverHealth();
-    HAL::readPhaseCurrents();
+    HAL::monitorPhaseCurrent();
     switch (StateMachine::getCurrentState()) {
         case StateMachine::IDLE_CLOSED:
         idleClosedState->update();
