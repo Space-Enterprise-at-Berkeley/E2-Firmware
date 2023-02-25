@@ -2,15 +2,15 @@
 
 namespace Ducers {
 
-    int16_t upstreamPT;
-    int16_t downstreamPT;
+    float upstreamPT;
+    float downstreamPT;
 
     void updateUpstreamPT() {
-        upstreamPT = HAL::readPTVoltage(2);
+        upstreamPT = HAL::readPTVoltage(0);
     }
 
     void updateDownstreamPT() {
-        downstreamPT = HAL::readPTVoltage(0);
+        downstreamPT = HAL::readPTVoltage(3);
     }
 
     float interpolate1000(double rawValue) {

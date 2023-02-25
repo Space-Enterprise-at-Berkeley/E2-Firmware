@@ -23,7 +23,7 @@ const int ETH_INTn = 35;
 
 
 int DRVSPISpeed = 1000000;
-int ADCSPISpeed = 1000000;
+int ADCSPISpeed = 5000000;
 volatile bool motorDriverFault = false;
 uint8_t SPIBUFF[2]; // spi buffer for all SPI except ethernet.
 SPIClass *ethSPI = NULL;
@@ -101,10 +101,10 @@ void loop()
     // Serial.printf("M  ADC 1: %f ", readADC(motorSPI, MADC_CS, 1));
     // Serial.printf("M  ADC 2: %f ", readADC(motorSPI, MADC_CS, 2));
     // Serial.printf("M  ADC 3: %f\n", readADC(motorSPI, MADC_CS, 3));
-    Serial.printf("PT ADC 0: %f \n", readADC(ethSPI, PTADC_CS, 0));
-    // Serial.printf("PT ADC 1: %f ", readADC(ethSPI, PTADC_CS, 1));
-    // Serial.printf("PT ADC 2: %f ", readADC(ethSPI, PTADC_CS, 2));
-    // Serial.printf("PT ADC 3: %f\n", readADC(ethSPI, PTADC_CS, 3));
+    Serial.printf("PT0: %f ", readADC(ethSPI, PTADC_CS, 0));
+    Serial.printf("PT1: %f ", readADC(ethSPI, PTADC_CS, 1));
+    Serial.printf("PT2: %f ", readADC(ethSPI, PTADC_CS, 2));
+    Serial.printf("PT3: %f\n", readADC(ethSPI, PTADC_CS, 3));
 
     Udp.resetSendOffset();
     char tosend[] = "itimelckdatadatadatadata";

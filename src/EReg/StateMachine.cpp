@@ -81,18 +81,18 @@ namespace StateMachine {
 
     void checkAbortPressure(float currentPressure, float abortPressure) {
 
-        overpressureBuffer[opBuffCnt] = currentPressure;
-        opBuffCnt = (opBuffCnt + 1) % bufferSize;
+        // overpressureBuffer[opBuffCnt] = currentPressure;
+        // opBuffCnt = (opBuffCnt + 1) % bufferSize;
 
-        float total;
+        // float total;
 
-        for(uint8_t i = 0; i < bufferSize; i++) {
-            total += overpressureBuffer[i];
-        }
+        // for(uint8_t i = 0; i < bufferSize; i++) {
+        //     total += overpressureBuffer[i];
+        // }
 
-        total /= bufferSize;
-        return; //FIX THIS
-        if (total > abortPressure) {
+        // total /= bufferSize;
+        // return; //FIX THIS
+        if (currentPressure > abortPressure) {
             // Packets::sendFlowState(0);
             Packets::broadcastAbort();
             StateMachine::enterIdleClosedState();

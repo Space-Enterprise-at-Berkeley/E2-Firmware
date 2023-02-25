@@ -29,8 +29,10 @@ namespace HAL {
         pinMode(MADC_CS, OUTPUT);
         digitalWrite(MADC_CS, HIGH);
         pinMode(PTADC_CS, OUTPUT);
-        pinMode(PTADC_CS, HIGH);
+        digitalWrite(PTADC_CS, HIGH);
+        // pinMode(ETH_CS, OUTPUT);
         dataSPI->begin(ETH_SCLK, ETH_MISO, ETH_MOSI);
+        // pinMode(ETH_CS, HIGH);
 
         setupEncoder();
 
@@ -215,14 +217,16 @@ namespace HAL {
         SPIBUFF[0] |= (channel << 3);
         SPIBUFF[0] &= 0b00011000;
         SPIBUFF[1] = 0;
-        sendSPICommand(SPIBUFF, 2, spi, csPin, ADCSPISpeed, SPI_MODE0);
+        sendSPICommand(SPIBUFF, 2, spi, csPin, ADCSPISpeed, SPI_MODE2);
         uint16_t val = 0;
         val = ((SPIBUFF[0] & 0b00001111) << 8) + SPIBUFF[1];
-        // if ((channel == 0) && (csPin = PTADC_CS)) {
-        //     Serial.printf("pt adc 0: %d\n", val);
-        // }
+        // val = SPIBUFF[0];
+
         float f = (((float) val) / 4096.0) * 5.0;
-        return f;
+        // if ((channel == 0) && (csPin = PTADC_CS)) {
+        //     Serial.printf("output voltage: %f\n", f);
+        // }
+        return (float)f;
     }  
     
 
@@ -241,7 +245,8 @@ namespace HAL {
             DEBUGF("bad channel index\n");
             return 0; 
         }
-        return readADC(dataSPI, PTADC_CS, channel);
+        float f = readADC(dataSPI, PTADC_CS, channel);
+        return f;
     }
 
     float readUpstreamPT() {

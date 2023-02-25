@@ -79,7 +79,6 @@ void loop() {
     Comms::processWaitingPackets();
     Util::checkMotorDriverHealth();
     HAL::readPhaseCurrents();
-    Serial.printf("pt adc 0: %.2f\n", HAL::readPTVoltage(0));
     switch (StateMachine::getCurrentState()) {
         case StateMachine::IDLE_CLOSED:
         idleClosedState->update();

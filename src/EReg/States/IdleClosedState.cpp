@@ -57,6 +57,7 @@ namespace StateMachine {
             );
             
             lastPrint_ = micros();
+            // Serial.printf("downstream pt: %f\n", downstreamPsi);
         }
     }
 
