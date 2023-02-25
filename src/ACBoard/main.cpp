@@ -1,19 +1,18 @@
 #include <Common.h>
 #include <EspComms.h>
+#include <Arduino.h>
 #include "ReadPower.h"
 
-#include <Arduino.h>
-
-uint32_t task_example() { 
-  
-  Serial.println("Hello World!");
-  return 1000 * 1000;
-  
-}
+#include "AC.h"
+#include "ChannelMonitor.h"
+#include "MCP23008.h"
+#include <Wire.h>
 
 Task taskTable[] = {
-  {task_example, 0, true},
-  {Power::task_readSendPower, 0, true}
+  {AC::actuationDaemon, 0, true},
+  {AC::actuatorStatesTask, 0, true},
+  {ChannelMonitor::readChannels, 0, true},
+  {Power::task_readSendPower, 0, true},
 };
 
 #define TASK_COUNT (sizeof(taskTable) / sizeof (struct Task))
@@ -21,8 +20,47 @@ Task taskTable[] = {
 void setup() {
   // setup stuff here
   Comms::init(); // takes care of Serial.begin()
+  AC::init();
   initWire();
   Power::init();
+  ChannelMonitor::init(41, 42, 47, 4, 5);
+
+
+
+  for (int i = 0; i < 8; i++) {
+    ChannelMonitor::getMCP1().digitalWrite(i, LOW); 
+    ChannelMonitor::getMCP2().digitalWrite(i, LOW); 
+  }
+      
+  for (int i = 0; i < 8; i+=2) {
+    ChannelMonitor::getMCP1().digitalWrite(i, HIGH); 
+    delay(250);
+  }
+
+  for (int i = 0; i < 8; i++) {
+    ChannelMonitor::getMCP1().digitalWrite(i, LOW); 
+  }
+
+  for (int i = 1; i < 8; i+=2) {
+    ChannelMonitor::getMCP1().digitalWrite(i, HIGH); 
+    delay(250);
+  }
+
+  for (int i = 0; i < 8; i+=2) {
+    ChannelMonitor::getMCP2().digitalWrite(i, HIGH); 
+    delay(250);
+  }
+
+  for (int i = 0; i < 8; i++) {
+    ChannelMonitor::getMCP2().digitalWrite(i, LOW); 
+  }
+
+  for (int i = 1; i < 8; i+=2) {
+    ChannelMonitor::getMCP2().digitalWrite(i, HIGH); 
+    delay(250);
+  }
+ 
+  
 
   while(1) {
     // main loop here to avoid arduino overhead
@@ -32,7 +70,7 @@ void setup() {
         taskTable[i].nexttime = ticks + taskTable[i].taskCall();
       }
     }
-    Comms::processWaitingPackets();
+    //Comms::processWaitingPackets();
   }
 }
 

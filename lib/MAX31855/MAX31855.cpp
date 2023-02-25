@@ -4,12 +4,19 @@ int MAX31855::init(SPIClass *spi, uint8_t chipSelect)
 { // assume that numSensors is < max Size of packet. Add some error checking here
     _chipSelect = chipSelect;
     _spi = spi;
+    //Serial.print("MAX init with chipSelect ");
+    //Serial.println(_chipSelect);
 
     _spi->begin();
-    _spi->beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
+    //Serial.println("mid spi done");
+    //_spi->beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
+
+    //Serial.println("MAX spi done");
 
     pinMode(_chipSelect, OUTPUT);
-    digitalWriteFast(_chipSelect, HIGH);
+    digitalWrite(_chipSelect, HIGH);
+
+    //Serial.println("MAX done done");
 
     return 0;
 }
@@ -18,9 +25,9 @@ float MAX31855::readCelsius()
 {
     int32_t v;
 
-    digitalWriteFast(_chipSelect, LOW);
+    digitalWrite(_chipSelect, LOW);
     v = spiread32();
-    digitalWriteFast(_chipSelect, HIGH);
+    digitalWrite(_chipSelect, HIGH);
 
     if (v & 0x7)
     {
