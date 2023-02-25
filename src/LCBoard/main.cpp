@@ -31,7 +31,7 @@ uint32_t LED_roll(){
 
 Task taskTable[] = {
   {ADS::task_sampleLC, 0, true},
-  //{ADS::printReadings, 0, true},
+  {ADS::printReadings, 0, true},
   {Power::task_readSendPower, 0, true},
   {LED_roll, 0, true},
 };
