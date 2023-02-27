@@ -39,8 +39,8 @@ namespace Packets {
         Comms::packetAddFloat(&packet, pressureControlI);
         Comms::packetAddFloat(&packet, pressureControlD);
         Comms::emitPacket(&packet);
-        sendTemperatures();
-        sendPhaseCurrents();
+        // sendTemperatures();
+        // sendPhaseCurrents();
         // Serial.printf("packet sent\n");
     }
 
@@ -115,7 +115,7 @@ namespace Packets {
     /**
      * Sends an abort command to all 4 ESPs
      */
-    void broadcastAbort() { //TODO
+    void broadcastAbort() { 
         Comms::Packet packet = {.id = ABORT_ID};
         packet.len = 0;
         Comms::emitPacket(&packet);

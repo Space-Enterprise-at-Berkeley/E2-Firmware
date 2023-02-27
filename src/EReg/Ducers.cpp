@@ -14,11 +14,11 @@ namespace Ducers {
     }
 
     float interpolate1000(double rawValue) {
-        return rawValue * 250.38 - 123.87;
+        return (rawValue - 0.5) * 250;
     }
 
     float interpolate5000(double rawValue) {
-        return rawValue * 1310.15 + 26.65;
+        return rawValue * 500;
     }
 
     float readPressurantPT() {

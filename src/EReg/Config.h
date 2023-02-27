@@ -23,10 +23,10 @@ namespace Config {
     #define ESP_ADDRESS_1 25
     #define ESP_ADDRESS_2 26
 
-    #define MAX_SPD 255
-    #define MIN_SPD -255
+    #define MAX_SPD 95
+    #define MIN_SPD -95
 
-    #define OPEN_LOOP_SPEED 100                                                                                                                                
+    #define OPEN_LOOP_SPEED 95                                                                                                                      
 
     #define INNER_BUFFER_SIZE 2
     #define DIAGNOSTIC_BUFFER_SIZE 5
@@ -34,7 +34,7 @@ namespace Config {
     const unsigned long telemetryInterval = 5 * 1000UL; // time in microseconds between telemetry packets
     const unsigned long telemetryIntervalIdle = 5 * 1000UL; // time in microseconds between telemetry packets
 
-    const unsigned long closeTime = 3UL * 1000UL; // time in milliseconds //CHANGE THIS BACK TO 3S
+    const unsigned long closeTime = 3UL * 1000UL; // time in milliseconds
 
     // flow duration
     const unsigned long flowDuration = 18UL * 1000UL * 1000UL; // time in microseconds TODO change to 5s

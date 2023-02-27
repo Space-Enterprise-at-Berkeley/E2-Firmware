@@ -59,6 +59,8 @@ namespace HAL {
     const int ETH_MOSI = 36;
     const int ETH_SCLK = 38;
 
+    const int SPARKMAX = 42;
+
     const int eregAbortID = 201;
 
 

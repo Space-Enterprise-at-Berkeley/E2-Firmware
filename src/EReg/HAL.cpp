@@ -35,33 +35,38 @@ namespace HAL {
     int init() {
 
 
-        motorSPI = new SPIClass(HSPI);
+        // motorSPI = new SPIClass(HSPI);
         dataSPI = new SPIClass(FSPI);
+        
 
 
-        motorSPI->begin(MOTOR_SCLK, MOTOR_MISO, MOTOR_MOSI);
-        pinMode(MADC_CS, OUTPUT);
-        digitalWrite(MADC_CS, HIGH);
+        // motorSPI->begin(MOTOR_SCLK, MOTOR_MISO, MOTOR_MOSI);
+        // pinMode(MADC_CS, OUTPUT);
+        // digitalWrite(MADC_CS, HIGH);
         pinMode(PTADC_CS, OUTPUT);
         digitalWrite(PTADC_CS, HIGH);
-        // pinMode(ETH_CS, OUTPUT);
         dataSPI->begin(ETH_SCLK, ETH_MISO, ETH_MOSI);
-        // pinMode(ETH_CS, HIGH);
 
         setupEncoder();
 
-        int motorDriverInitSuccess = initializeMotorDriver();
-        if (motorDriverInitSuccess == -1) {
-            disableMotorDriver();
-            return -1;
-        }
+        // int motorDriverInitSuccess = initializeMotorDriver();
+        // if (motorDriverInitSuccess == -1) {
+        //     disableMotorDriver();
+        //     return -1;
+        // }
 
-        pinMode(LIMIT_1, INPUT);
-        pinMode(LIMIT_2, INPUT);
-        closedLimitSwitchEngaged = digitalRead(LIMIT_1);
-        openLimitSwitchEngaged = digitalRead(LIMIT_2);
-        attachInterrupt(LIMIT_1, valveClosedLimitSwitchTrigger, CHANGE);
-        attachInterrupt(LIMIT_2, valveOpenLimitSwitchTrigger, CHANGE);
+        int pwmFreq = 50;
+        int pwmResolution = 12;
+        ledcSetup(motorChannel, pwmFreq, pwmResolution);
+        ledcAttachPin(SPARKMAX, 0);
+        ledcWrite(motorChannel, 307);
+
+        // pinMode(LIMIT_1, INPUT);
+        // pinMode(LIMIT_2, INPUT);
+        // closedLimitSwitchEngaged = digitalRead(LIMIT_1);
+        // openLimitSwitchEngaged = digitalRead(LIMIT_2);
+        // attachInterrupt(LIMIT_1, valveClosedLimitSwitchTrigger, CHANGE);
+        // attachInterrupt(LIMIT_2, valveOpenLimitSwitchTrigger, CHANGE);
 
         pinMode(TEMPSENSE0, INPUT);
         pinMode(TEMPSENSE1, INPUT);

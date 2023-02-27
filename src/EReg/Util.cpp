@@ -138,41 +138,14 @@ namespace Util {
      * @param speed Desired speed
      */
     void runMotors(float speed) {
-        // ledcWrite(HAL::motor1Channel,-min(0,speed));
-        // ledcWrite(HAL::motor2Channel,max(0,speed));
-        int closedLimitSwitchState = HAL::getClosedLimitSwitchState();
-        int openLimitSwitchState = HAL::getOpenLimitSwitchState();
-        bool inOvercurrentCooldown = HAL::getOvercurrentStatus();
-        if (inOvercurrentCooldown) {
-            speed = 0;
-            // Serial.printf("oc flag on\n");
-        }
-        if (closedLimitSwitchState == 1) {
-            speed = max(0, speed);
-        } 
-        if (openLimitSwitchState == 1) {
-            speed = min(0, speed);
-        }
-        int pwmPower = abs((int) speed);
-        int motorDir = (speed > 0) ? 1 : 0;
-        if (pwmPower > Config::maximumMotorPower) {
-            pwmPower = Config::maximumMotorPower;
-        }
-        if (pwmPower < Config::minimumMotorPower) {
-            pwmPower = 0;
-        }
-        int brakePin = 0;
-        if (pwmPower == 0) {
-            brakePin = LOW;
-        } else {
-            brakePin = HIGH;
-        }
-        digitalWrite(HAL::INLC, brakePin);
-        ledcWrite(HAL::motorChannel, pwmPower);
-        digitalWrite(HAL::INHC, motorDir);
-        if (pwmPower != prevValue) {
-            // Serial.printf("Updating motor: pwm %d, direction pin %d, brake pin: %d, closeLimSw: %d, openLimSw: %d, ocflag: %d\n", pwmPower, motorDir, brakePin, closedLimitSwitchState, openLimitSwitchState, inOvercurrentCooldown);
-            prevValue = pwmPower;
+        speed = -1 * speed;
+       speed = min(speed, 75.0);
+       speed = max(speed, -75.0);
+       uint32_t dutycycle = 307 + (speed);
+        ledcWrite(HAL::motorChannel, dutycycle);
+        if (dutycycle != prevValue) {
+            Serial.printf("Updating motor: pwm %d, time %d\n", dutycycle, millis());
+            prevValue = dutycycle;
         }
     }
 

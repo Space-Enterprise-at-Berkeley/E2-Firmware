@@ -62,9 +62,9 @@ namespace Comms {
       }
       else
       {
-        // DEBUG("ID ");
-        // DEBUG(packet->id);
-        // DEBUG(" does not have a registered callback function.\n");
+        DEBUG("ID ");
+        DEBUG(packet->id);
+        DEBUG(" does not have a registered callback function.\n");
       }
     }
     else
@@ -83,6 +83,7 @@ namespace Comms {
         if(Udp.remotePort() != port) return;
         Udp.read(packetBuffer, sizeof(Comms::Packet));
         Packet *packet = (Packet*) &packetBuffer;
+        Serial.printf("got packet #%d\n", packet->id);
         evokeCallbackFunction(packet, Udp.remoteIP()[3]);
       }
     }

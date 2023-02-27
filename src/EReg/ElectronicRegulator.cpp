@@ -20,7 +20,7 @@ void zero() {
     Util::runMotors(0); 
     // zero encoder value (so encoder readings range from -x (open) to 0 (closed))
     delay(1100);
-    HAL::setEncoderCount(-20);
+    HAL::setEncoderCount(0);
     DEBUG("encoder position after zero: ");
     DEBUGLN(HAL::getEncoderCount());
 }
@@ -52,7 +52,7 @@ void pressurize(Comms::Packet packet, uint8_t ip) {
 
 void setup() {
     
-    delay(3000);
+    delay(1000);
     Serial.begin(115200);
     Serial.printf("micros: %d\n", micros());
     Serial.printf("hi!!\n");
@@ -77,8 +77,8 @@ void setup() {
 
 void loop() {
     Comms::processWaitingPackets();
-    Util::checkMotorDriverHealth();
-    HAL::monitorPhaseCurrent();
+    // Util::checkMotorDriverHealth();
+    // HAL::monitorPhaseCurrent();
     switch (StateMachine::getCurrentState()) {
         case StateMachine::IDLE_CLOSED:
         idleClosedState->update();
