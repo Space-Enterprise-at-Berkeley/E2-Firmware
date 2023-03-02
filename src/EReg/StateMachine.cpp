@@ -73,7 +73,6 @@ namespace StateMachine {
     }
 
     void checkAbortPressure(float currentPressure, float abortPressure) {
-        return; //FIX THIS BRUH CHECK THIS
 
         if (currentPressure > abortPressure) {
             // Packets::sendFlowState(0);
