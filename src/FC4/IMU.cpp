@@ -1,16 +1,3 @@
-/**
- * @file IMU.cpp
- * @author Thanh T. Tran (thanhtran@berkeley.edu)
- * @brief 
- * @version 0.1
- * @date 2022-01-21
- * 
- * @copyright Copyright (c) 2022
- * @source: https://learn.adafruit.com/adafruit-bno055-absolute-orientation-sensor/arduino-code
- * @source: https://forums.adafruit.com/viewtopic.php?f=19&t=120348
- * @source: https://www.pjrc.com/teensy/pinout.html
- */
-
 #include "IMU.h"
 
 
