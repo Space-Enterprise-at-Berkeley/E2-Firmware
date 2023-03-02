@@ -193,11 +193,9 @@ namespace HAL {
     }
 
     void sendSPICommand(uint8_t* dataBuffer, int numBytes, SPIClass* spi, int csPin, int clkSpeed, int spiMode) {
-        uint8_t prevFirstByte = dataBuffer[0];
         spi->beginTransaction(SPISettings(clkSpeed, MSBFIRST, spiMode));
-        spi->transfer(dataBuffer, 1);
+        spi->transfer(0x00, 1);
         spi->endTransaction();
-        dataBuffer[0] = prevFirstByte;
         spi->beginTransaction(SPISettings(clkSpeed, MSBFIRST, spiMode));
         digitalWrite(csPin, LOW);
         spi->transfer(dataBuffer, numBytes);
@@ -222,10 +220,10 @@ namespace HAL {
 
     void printMotorDriverFaultAndDisable() {
         
-        if (digitalRead(DRV_FAULT) == HIGH) {
-            Serial.printf("but the fault pin is high? so ignoring\n");
-            return;
-        }
+        // if (digitalRead(DRV_FAULT) == HIGH) {
+        //     Serial.printf("but the fault pin is high? so ignoring\n");
+        //     return;
+        // }
         ledcWrite(motorChannel, 0);
         delayMicroseconds(100);
         readMotorDriverRegister(0);

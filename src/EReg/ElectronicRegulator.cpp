@@ -14,9 +14,17 @@ StateMachine::DiagnosticState *diagnosticState = StateMachine::getDiagnosticStat
 StateMachine::PressurizeState *pressurizeState = StateMachine::getPressurizeState();
 
 void zero() { 
+    delay(1000);
     DEBUGLN("starting zero command");
+    Serial.printf("fault pin: %d\n", digitalRead(12));
     Util::runMotors(-50);
-    delay(2000);
+    long startTime = millis();
+    while ((millis() - startTime) < 2000) {
+        if (!digitalRead(12)) {
+            Serial.printf("fault pin low, starttime %d, millis %d\n",  startTime, millis());
+            HAL::printMotorDriverFaultAndDisable();
+        }
+    }
     Util::runMotors(0); 
     // zero encoder value (so encoder readings range from -x (open) to 0 (closed))
     delay(1100);
@@ -74,6 +82,8 @@ void setup() {
     
     Packets::sendConfig();
 }
+
+
 
 void loop() {
     Comms::processWaitingPackets();
