@@ -4,7 +4,7 @@
 
 namespace Config {
 
-    #define MAX_ANGLE 650                                                    
+    #define MAX_ANGLE 650                                                
     #define MIN_ANGLE 0
     #define ANTIWINDUP_RANGE_LOWER 150
     #define ANTIWINDUP_RANGE_UPPER 650
@@ -14,7 +14,7 @@ namespace Config {
     // Controller Constants
     const double p_outer_nominal = 1.8, i_outer_nominal = 0.30e-6, d_outer_nominal = 0; // nominal is 4000 -> 500 psi flow
     // const double p_inner = 6, i_inner = 3.5e-6, d_inner = 0.10;
-    const double p_inner = 3, i_inner = 2e-6, d_inner = 0;
+    const double p_inner = 3, i_inner = 5e-6, d_inner = 0;
 
 
     // Flow Parameters

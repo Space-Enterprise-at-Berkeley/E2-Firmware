@@ -26,7 +26,7 @@ namespace Config {
     #define MAX_SPD 255
     #define MIN_SPD -255
 
-    #define OPEN_LOOP_SPEED 100                                                                                                                                
+    #define OPEN_LOOP_SPEED 40                                                                                                                                
 
     #define INNER_BUFFER_SIZE 2
     #define DIAGNOSTIC_BUFFER_SIZE 5

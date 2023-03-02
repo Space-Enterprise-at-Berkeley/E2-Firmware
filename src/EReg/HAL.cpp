@@ -28,7 +28,7 @@ namespace HAL {
 
     bool motorDriverEnabled;
 
-    const uint32_t OCBufferSize = 10;
+    const uint32_t OCBufferSize = 30;
     float overCurrentBuffer[OCBufferSize];
     uint32_t overCurrentBufferPtr = 0;
 
@@ -309,11 +309,15 @@ namespace HAL {
     }
 
     void setEncoderCount(int i) {
-        encoderTicks = (int) i;
+        if (i == 0) {
+            encoderTicks = 0;
+            return;
+        }
+        encoderTicks = (int) ((float) i) / 1.385;
     }
 
     int getEncoderCount() {
-        return encoderTicks;
+        return (int) ((float)encoderTicks * 1.385);
     }
 
 
@@ -364,22 +368,42 @@ namespace HAL {
             encoderTicks -= 1;
         }  
     }
+    void changeA() {
+        if (digitalRead(encA)) {
+            risingA();
+        } else {
+            fallingA();
+        }
+    }
+    
+    void changeB() {
+        if (digitalRead(encB)) {
+            risingB();
+        } else {
+            fallingB();
+        }
+    }
 
-
-
+    void changeC() {
+        if (digitalRead(encC)) {
+            risingC();
+        } else {
+            fallingC();
+        }
+    }
 
     void setupEncoder() {
         pinMode(encA, INPUT);
         pinMode(encB, INPUT);
         pinMode(encC, INPUT);
 
-        attachInterrupt(encA, risingA, RISING);
-        attachInterrupt(encB, risingB, RISING);
-        attachInterrupt(encC, risingC, RISING);
+        attachInterrupt(encA, changeA, CHANGE);
+        attachInterrupt(encB, changeB, CHANGE);
+        attachInterrupt(encC, changeC, CHANGE);
 
-        attachInterrupt(encA, fallingA, FALLING);
-        attachInterrupt(encB, fallingB, FALLING);
-        attachInterrupt(encC, fallingC, FALLING);
+        // attachInterrupt(encA, fallingA, FALLING);
+        // attachInterrupt(encB, fallingB, FALLING);
+        // attachInterrupt(encC, fallingC, FALLING);
 
         // Serial.printf("done setting up encoder. ticks: %d, prevEncoderState: %hhx\n", encoderTicks, prevEncoderState);
 
