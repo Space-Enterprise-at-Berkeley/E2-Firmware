@@ -107,7 +107,7 @@ namespace ADS {
         avg3 /= accumulatorSize;
         avg4 /= accumulatorSize;
         */
-        Serial.println("weight: " + String(lbs[0]) + " lbs" + " " + String(lbs[1]) + " lbs" + " " + String(lbs[2]) + " lbs" + " " + String(lbs[3]) + " lbs");
+        Serial.println("weight: " + String(lbs[0]) + " lbs" + " " + String(lbs[1]) + " lbs" + " " + String(lbs[2]) + " lbs" + " " + String(lbs[3]) + " lbs " + "sum: " + String(lbs[0] + lbs[1] + lbs[2] + lbs[3]) + " lbs");
         return 500 * 1000; //2Hz
     }
 
