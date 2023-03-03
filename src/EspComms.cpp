@@ -91,6 +91,8 @@ namespace Comms {
 
     if (Serial.available())
       {
+        //That was for reading full formed packets from the USB serial port
+        /*
         int cnt = 0;
         while (Serial.available() && cnt < sizeof(Packet))
         {
@@ -102,6 +104,53 @@ namespace Comms {
         // DEBUG(packet->id);
         // DEBUG('\n');
         evokeCallbackFunction(packet, 255); // 255 signifies a USB packet
+        */
+       //Instead I want to read commands in the form of "id data"
+       //And then make the packet and trigger the callback
+
+        int id = Serial.parseInt();
+        if (id == -1) return;
+        Packet packet = {.id = id, .len = 0};
+        while(Serial.available()){
+          if (Serial.peek() == ' ') Serial.read();
+          if (Serial.peek() == '\n') break;
+          //determine datatype of next value
+          if (Serial.peek() == 'f'){
+            Serial.read();
+            float val = Serial.parseFloat();
+            packetAddFloat(&packet, val);
+          }
+          else if (Serial.peek() == 'i'){
+            Serial.read();
+            int val = Serial.parseInt();
+            packetAddUint32(&packet, val);
+          }
+          else if (Serial.peek() == 's'){
+            Serial.read();
+            int val = Serial.parseInt();
+            packetAddUint16(&packet, val);
+          }
+          else if (Serial.peek() == 'b'){
+            Serial.read();
+            int val = Serial.parseInt();
+            packetAddUint8(&packet, val);
+          }
+          else if (Serial.peek() == 'a'){
+            Serial.read();
+            int len = Serial.parseInt();
+            float arr[len];
+            for (int i = 0; i < len; i++){
+              arr[i] = Serial.parseFloat();
+            }
+            packetAddFloatArray(&packet, arr, len);
+          }
+          else{
+            Serial.read();
+          }
+
+       }
+
+
       }
   }
 
