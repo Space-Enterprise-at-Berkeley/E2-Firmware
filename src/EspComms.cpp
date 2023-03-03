@@ -105,43 +105,48 @@ namespace Comms {
         // DEBUG('\n');
         evokeCallbackFunction(packet, 255); // 255 signifies a USB packet
         */
+       
        //Instead I want to read commands in the form of "id data"
        //And then make the packet and trigger the callback
 
+        Serial.println("Got a command");
         int id = (uint8_t)Serial.parseInt();
+        Serial.print("id" + String(id));
         if (id == -1) return;
         Packet packet = {.id = id, .len = 0};
         while(Serial.available()){
           if (Serial.peek() == ' ') Serial.read();
-          if (Serial.peek() == '\n') break;
+          if (Serial.peek() == '\n') {Serial.read(); break;}
           //determine datatype of next value
           if (Serial.peek() == 'f'){
             Serial.read();
             float val = Serial.parseFloat();
+            Serial.print(" float" + String(val));
             packetAddFloat(&packet, val);
           }
           else if (Serial.peek() == 'i'){
             Serial.read();
             int val = Serial.parseInt();
+            Serial.print(" int" + String(val));
             packetAddUint32(&packet, val);
           }
           else if (Serial.peek() == 's'){
             Serial.read();
             int val = Serial.parseInt();
+            Serial.print(" short" + String(val));
             packetAddUint16(&packet, val);
           }
           else if (Serial.peek() == 'b'){
             Serial.read();
             int val = Serial.parseInt();
+            Serial.print(" byte" + String(val));
             packetAddUint8(&packet, val);
           } else{
             Serial.read();
           }
-
-       }
+        }
+        Serial.println();
         evokeCallbackFunction(&packet, 255); // 255 signifies a USB packet
-
-
       }
   }
 

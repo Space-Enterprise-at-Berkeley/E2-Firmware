@@ -28,25 +28,6 @@ namespace ADS {
     */
 
 
-    void init(){
-        for(int i = 0; i < ADCsize; i++) {
-            adcs[i].init(clockPins[i],dataPins[i]);
-        }
-
-        Comms::registerCallback(100, zeroChannel);
-        //load offset from flash or set to 0
-        if (persistant_offset){
-            EEPROM.begin(ADCsize*sizeof(float));
-            for (int i = 0; i < ADCsize; i++){
-                EEPROM.get(i*sizeof(float),offset[i]);
-            }
-        } else {
-            for (int i = 0; i < ADCsize; i++){
-                offset[i] = 0;
-            }
-        }
-    }
-
     void refreshReadings(){
         for(int i = 0 ; i < ADCsize; i++){
             int ErrorValue = adcs[i].getValue(data[i]);
@@ -68,9 +49,29 @@ namespace ADS {
         }
     }
 
-    void onZeroCommand(Comms::Packet* packet, uint8_t ip){
-        int channel = Comms::packetGetUint8(packet, 0);
+    void onZeroCommand(Comms::Packet packet, uint8_t ip){
+        int channel = Comms::packetGetUint8(&packet, 0);
         zeroChannel(channel);
+        return;
+    }
+
+    void init(){
+        for(int i = 0; i < ADCsize; i++) {
+            adcs[i].init(clockPins[i],dataPins[i]);
+        }
+
+        Comms::registerCallback(100, onZeroCommand);
+        //load offset from flash or set to 0
+        if (persistant_offset){
+            EEPROM.begin(ADCsize*sizeof(float));
+            for (int i = 0; i < ADCsize; i++){
+                EEPROM.get(i*sizeof(float),offset[i]);
+            }
+        } else {
+            for (int i = 0; i < ADCsize; i++){
+                offset[i] = 0;
+            }
+        }
     }
 
     uint32_t printReadings(){
