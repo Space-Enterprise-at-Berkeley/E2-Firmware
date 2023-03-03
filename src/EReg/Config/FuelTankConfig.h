@@ -18,13 +18,13 @@ namespace Config {
 
 
     // Flow Parameters
-    const float pressureSetpoint = 550; // hotfire 7 was 495
+    const float pressureSetpoint = 40; // hotfire 7 was 495
     const unsigned long loxLead = 105UL * 1000UL; //time in microseconds
 
     // Diagnostic configs
     const int servoTestPoints = 5;
     const float servoTravelInterval = 100; // encoder counts
     const unsigned long servoSettleTime =  200UL * 1000UL; // micros
-    const float stopDiagnosticPressureThresh = 200; // diagnostic terminates if either tank exceeds this
+    const float stopDiagnosticPressureThresh = 40; // diagnostic terminates if either tank exceeds this
     const float diagnosticSpeed = 200;
 }

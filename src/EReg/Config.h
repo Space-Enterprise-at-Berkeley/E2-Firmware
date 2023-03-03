@@ -37,7 +37,7 @@ namespace Config {
     const unsigned long closeTime = 3UL * 1000UL; // time in milliseconds //CHANGE THIS BACK TO 3S
 
     // flow duration
-    const unsigned long flowDuration = 18UL * 1000UL * 1000UL; // time in microseconds TODO change to 5s
+    const unsigned long flowDuration = 5UL * 1000UL * 1000UL; // time in microseconds TODO change to 5s
     const unsigned long rampDuration = 500UL * 1000UL; // time in microseconds
     const unsigned long rampStart = 400; // psi
 
@@ -65,7 +65,7 @@ namespace Config {
 
     //motor configs
     const int minimumMotorPower = 15; //out of 256
-    const int maximumMotorPower = 65; //out of 256;
+    const int maximumMotorPower = 35; //out of 256;
     
 
 

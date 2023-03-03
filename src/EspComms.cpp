@@ -8,6 +8,7 @@ namespace Comms {
 
   byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, IP_ADDRESS_END};
   IPAddress groundStation1(10, 0, 0, 169);
+  IPAddress groundStation2(10, 0, 0, 170);
   IPAddress ip(10, 0, 0, IP_ADDRESS_END);
   int port = 42069;
 
@@ -18,6 +19,7 @@ namespace Comms {
     Udp.begin(port);
 
     Udp.beginPacket(groundStation1, port);
+    Udp.beginPacket(groundStation2, port);
   }
 
   void init() {
@@ -188,6 +190,14 @@ namespace Comms {
     // Send over UDP
     // Udp.resetSendOffset();
     Udp.beginPacket(groundStation1, port);
+    Udp.write(packet->id);
+    Udp.write(packet->len);
+    Udp.write(packet->timestamp, 4);
+    Udp.write(packet->checksum, 2);
+    Udp.write(packet->data, packet->len);
+    Udp.endPacket();
+
+    Udp.beginPacket(groundStation2, port);
     Udp.write(packet->id);
     Udp.write(packet->len);
     Udp.write(packet->timestamp, 4);

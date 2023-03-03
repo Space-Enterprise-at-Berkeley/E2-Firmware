@@ -14,7 +14,7 @@ namespace Ducers {
     }
 
     float interpolate1000(double rawValue) {
-        return rawValue * 250;
+        return (rawValue - 0.5) * 250;
     }
 
     float interpolate5000(double rawValue) {
