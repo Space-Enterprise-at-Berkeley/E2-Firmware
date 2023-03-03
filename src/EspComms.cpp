@@ -108,7 +108,7 @@ namespace Comms {
        //Instead I want to read commands in the form of "id data"
        //And then make the packet and trigger the callback
 
-        int id = Serial.parseInt();
+        int id = (uint8_t)Serial.parseInt();
         if (id == -1) return;
         Packet packet = {.id = id, .len = 0};
         while(Serial.available()){
@@ -134,21 +134,12 @@ namespace Comms {
             Serial.read();
             int val = Serial.parseInt();
             packetAddUint8(&packet, val);
-          }
-          else if (Serial.peek() == 'a'){
-            Serial.read();
-            int len = Serial.parseInt();
-            float arr[len];
-            for (int i = 0; i < len; i++){
-              arr[i] = Serial.parseFloat();
-            }
-            packetAddFloatArray(&packet, arr, len);
-          }
-          else{
+          } else{
             Serial.read();
           }
 
        }
+        evokeCallbackFunction(&packet, 255); // 255 signifies a USB packet
 
 
       }
