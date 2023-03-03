@@ -13,6 +13,8 @@ namespace Comms {
 
   void init(int cs, int spiMisoPin, int spiMosiPin, int spiSclkPin, int ETH_intN)
   {
+    Serial.begin(926100);
+    
     Ethernet.init(cs);
     Ethernet.begin((uint8_t *)mac, ip, spiMisoPin, spiMosiPin, spiSclkPin, ETH_intN);
     Udp.begin(port);

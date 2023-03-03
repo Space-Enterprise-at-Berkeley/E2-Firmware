@@ -23,5 +23,7 @@ namespace ADS {
 
     long unrefreshedSample(int i);
 
+    void zeroChannel(int i);
+
 
 }

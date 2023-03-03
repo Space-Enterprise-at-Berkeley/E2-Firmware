@@ -5,13 +5,14 @@
 
 #include <Arduino.h>
 
-//TODO - LEDs
+
 uint8_t LED1 = 14;
 uint8_t LED2 = 15;
 uint8_t LED3 = 16;
 uint8_t LED4 = 17;
 uint8_t LEDS[4] = {LED1, LED2, LED3, LED4};
 int roll = 0;
+
 
 void initLEDs() {
   for (int i = 0; i < 4; i++) {
