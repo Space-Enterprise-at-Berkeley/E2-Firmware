@@ -52,7 +52,7 @@ Task taskTable[] = {
   {LED_roll, 0, true},
   //{hello_packet, 0, true},
   {TC::task_sampleTCs, 0, true},
-  //{print_task, 0, true}
+  {print_task, 0, true}
 };
 
 #define TASK_COUNT (sizeof(taskTable) / sizeof (struct Task))
