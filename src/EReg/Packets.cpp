@@ -41,6 +41,7 @@ namespace Packets {
         Comms::emitPacket(&packet);
         sendTemperatures();
         sendPhaseCurrents();
+        sendLimitSwitches();
         // Serial.printf("packet sent\n");
     }
 
@@ -133,6 +134,20 @@ namespace Packets {
         Comms::Packet packet = {.id = TEMPS};
         packet.len = 0;
         HAL::packetizeTemperatures(&packet);
+        Comms::emitPacket(&packet);
+    }
+
+    void sendOvercurrentPacket() {
+        Comms::Packet packet = {.id = OVERCURRENT_ID};
+        packet.len = 0;
+        Comms::emitPacket(&packet);
+    }
+
+    void sendLimitSwitches() {
+        Comms::Packet packet = {.id = LIMIT_SWITCHES};
+        packet.len = 0;
+        Comms::packetAddFloat(&packet, HAL::getClosedLimitSwitchState());
+        Comms::packetAddFloat(&packet, HAL::getOpenLimitSwitchState());
         Comms::emitPacket(&packet);
     }
 

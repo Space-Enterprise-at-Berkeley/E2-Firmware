@@ -4,7 +4,6 @@
 
 namespace Packets {
 
-    const uint8_t ABORT_ID = 201;
     const uint8_t TELEMETRY_ID = 1;
     const uint8_t CONFIG_ID = 2;
     const uint8_t DIAGNOSTIC_ID = 3;
@@ -13,6 +12,8 @@ namespace Packets {
     const uint8_t LIMIT_SWITCHES = 6;
     const uint8_t PHASE_CURRENTS = 7;
     const uint8_t TEMPS = 8;
+    const uint8_t ABORT_ID = 9;
+    const uint8_t OVERCURRENT_ID = 10;
 
     void sendTelemetry(
         float upstreamPressure,
@@ -32,4 +33,6 @@ namespace Packets {
     void broadcastAbort();
     void sendPhaseCurrents();
     void sendTemperatures();
+    void sendOvercurrentPacket();
+    void sendLimitSwitches();
 }

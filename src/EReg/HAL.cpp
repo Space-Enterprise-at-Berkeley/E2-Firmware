@@ -422,32 +422,6 @@ namespace HAL {
         cumPhaseCurrentB += pow(phaseCurB, 2);
         cumPhaseCurrentC += pow(phaseCurC, 2);
         numReads++;
-        // float maxCurrent = max(max(abs(phaseCurA), abs(phaseCurB)), abs(phaseCurC));
-
-        // overCurrentBuffer[overCurrentBufferPtr] = maxCurrent;
-        // overCurrentBufferPtr = ((overCurrentBufferPtr+1) % OCBufferSize);
-        // float total = 0;
-        // for (int i = 0; i < OCBufferSize; i++) {
-        //     total += overCurrentBuffer[i];
-        // }
-        // float OCThreshold = overcurrentThreshold*OCBufferSize;
-        // if ((total > OCThreshold) && !inOvercurrentCooldown) {
-
-        //     inOvercurrentCooldown = true;
-        //     overcurrentSafingStartTime = millis();
-            
-        //     // Serial.printf("motor overcurrent.. pA: %f, pB: %f, pC: %f, avg over x samples: %f, time: %d\n", phaseCurA, phaseCurB, phaseCurC, total, millis());
-        // } else {
-        //     // motorOvercurrentStartTime = 0;
-        //     // inOvercurrentCooldown = false;
-        // } 
-        // if (inOvercurrentCooldown) {
-        //     if (millis() > (overcurrentSafingStartTime + overcurrentRetryTime)) {
-        //         // Serial.printf("OC reset\n");
-        //         inOvercurrentCooldown = false;
-        //         overcurrentSafingStartTime = millis();
-        //     }
-        // }
     }
 
     void packetizePhaseCurrents(Comms::Packet* packet) {
@@ -468,16 +442,15 @@ namespace HAL {
 
         float total = 0;
         for (int i = 0; i < OCBufferSize; i++) {
-            total += min(overCurrentBuffer[i], overcurrentThreshold) + 1;
+            total += overCurrentBuffer[i];
         }
         float totalOCThresh = overcurrentThreshold*OCBufferSize;
 
         if ((total > totalOCThresh) && !inOvercurrentCooldown) {
-
             inOvercurrentCooldown = true;
             overcurrentSafingStartTime = millis();
-            
             Serial.printf("motor overcurrent.. pA: %f, pB: %f, pC: %f, avg over x samples: %f, time: %d\n", curA, curB, curC, total, millis());
+            Packets::sendOvercurrentPacket();
         } else {
             // motorOvercurrentStartTime = 0;
             // inOvercurrentCooldown = false;
@@ -486,7 +459,7 @@ namespace HAL {
             if (millis() > (overcurrentSafingStartTime + overcurrentRetryTime)) {
                 Serial.printf("OC reset\n");
                 inOvercurrentCooldown = false;
-                overcurrentSafingStartTime = millis();
+                overcurrentSafingStartTime = 0;
             }
         }
 
