@@ -313,11 +313,11 @@ namespace HAL {
             encoderTicks = 0;
             return;
         }
-        encoderTicks = (int) ((float) i) / 1.385;
+        encoderTicks = (int) ((float) i) / 1.73;
     }
 
     int getEncoderCount() {
-        return (int) ((float)encoderTicks * 1.385);
+        return (int) ((float)encoderTicks * 1.73);
     }
 
 
