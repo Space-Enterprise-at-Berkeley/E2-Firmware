@@ -54,9 +54,9 @@ namespace Comms {
     uint16_t checksum = *(uint16_t *)&packet->checksum;
     if (checksum == computePacketChecksum(packet))
     {
-      // DEBUG("Packet with ID ");
-      // DEBUG(packet->id);
-      // DEBUG(" has correct checksum!\n");
+      Serial.print("Packet with ID ");
+      Serial.print(packet->id);
+      Serial.print(" has correct checksum!\n");
       // try to access function, checking for out of range exception
       if (callbackMap.count(packet->id))
       {
@@ -64,16 +64,16 @@ namespace Comms {
       }
       else
       {
-        // DEBUG("ID ");
-        // DEBUG(packet->id);
-        // DEBUG(" does not have a registered callback function.\n");
+        Serial.print("ID ");
+        Serial.print(packet->id);
+        Serial.print(" does not have a registered callback function.\n");
       }
     }
     else
     {
-      DEBUG("Packet with ID ");
-      DEBUG(packet->id);
-      DEBUG(" does not have correct checksum!\n");
+      Serial.print("Packet with ID ");
+      Serial.print(packet->id);
+      Serial.print(" does not have correct checksum!\n");
     }
   }
 
@@ -146,6 +146,17 @@ namespace Comms {
           }
         }
         Serial.println();
+            // add timestamp to struct
+        uint32_t timestamp = millis();
+        packet.timestamp[0] = timestamp & 0xFF;
+        packet.timestamp[1] = (timestamp >> 8) & 0xFF;
+        packet.timestamp[2] = (timestamp >> 16) & 0xFF;
+        packet.timestamp[3] = (timestamp >> 24) & 0xFF;
+
+        // calculate and append checksum to struct
+        uint16_t checksum = computePacketChecksum(&packet);
+        packet.checksum[0] = checksum & 0xFF;
+        packet.checksum[1] = checksum >> 8;
         evokeCallbackFunction(&packet, 255); // 255 signifies a USB packet
       }
   }

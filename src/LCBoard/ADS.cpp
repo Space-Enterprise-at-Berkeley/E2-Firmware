@@ -10,7 +10,7 @@ namespace ADS {
     long data[sizeof(ADCsize)];
     float lbs[sizeof(ADCsize)];
     float offset[sizeof(ADCsize)];
-    bool persistant_offset = false; // saves offset to flash
+    bool persistant_offset = true; // saves offset to flash
     uint32_t sampleRate = 12500; //80Hz
 
     float adc_to_lbs = 0.00025; // 3992 adc units = 1 lb
@@ -42,15 +42,19 @@ namespace ADS {
     }
 
     void zeroChannel(int i){
-        offset[i] = -lbs[i];
+        offset[i] = -lbs[i] + offset[i];
+        Serial.println("zeroed channel " + String(i) + " at " + String(lbs[i]) + " lbs");
         if(persistant_offset){
             //EEPROM takes 3.3 ms, we need different addresses for each channel. A float uses 4 bytes.
+            EEPROM.begin(ADCsize*sizeof(float));
             EEPROM.put(i*sizeof(float),offset[i]);
+            EEPROM.end();
         }
+
     }
 
     void onZeroCommand(Comms::Packet packet, uint8_t ip){
-        int channel = Comms::packetGetUint8(&packet, 0);
+        uint8_t channel = Comms::packetGetUint8(&packet, 0);
         zeroChannel(channel);
         return;
     }
@@ -66,7 +70,12 @@ namespace ADS {
             EEPROM.begin(ADCsize*sizeof(float));
             for (int i = 0; i < ADCsize; i++){
                 EEPROM.get(i*sizeof(float),offset[i]);
+                if (isnan(offset[i])){
+                    offset[i] = 0;
+                }
             }
+            EEPROM.end();
+
         } else {
             for (int i = 0; i < ADCsize; i++){
                 offset[i] = 0;
