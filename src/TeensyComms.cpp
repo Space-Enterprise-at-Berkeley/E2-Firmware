@@ -9,7 +9,7 @@ namespace Comms
   EthernetUDP Udp;
   char packetBuffer[sizeof(Packet)];
 
-  void initComms()
+  void init()
   {
     Ethernet.begin((uint8_t *)mac, ip);
     Udp.begin(port);
@@ -172,8 +172,8 @@ namespace Comms
    */
   void emitPacket(Packet *packet)
   {
-    emitPacket(packet, 69);
-    emitPacket(packet, 70);
+    emitPacket(packet, 169);
+    emitPacket(packet, 170);
   }
 
   void emitPacket(Packet *packet, uint8_t end)

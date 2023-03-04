@@ -4,6 +4,8 @@
 #include <Arduino.h>
 
 uint32_t task_example() { 
+
+  Serial.println("TEST");
   
   return 1000 * 1000;
   
@@ -15,9 +17,13 @@ Task taskTable[] = {
 
 #define TASK_COUNT (sizeof(taskTable) / sizeof (struct Task))
 
-void setup() {
+int main() {
   // setup stuff here
-  Comms::init(); // takes care of Serial.begin()
+  Serial.begin(115200);
+  #ifdef DEBUG_MODE
+  while(!Serial);
+  #endif
+  Comms::init();
 
   while(1) {
     // main loop here to avoid arduino overhead
@@ -27,8 +33,7 @@ void setup() {
         taskTable[i].nexttime = ticks + taskTable[i].taskCall();
       }
     }
-    //Comms::processWaitingPackets();
+    Comms::processWaitingPackets();
   }
+  return 0;
 }
-
-void loop() {}
