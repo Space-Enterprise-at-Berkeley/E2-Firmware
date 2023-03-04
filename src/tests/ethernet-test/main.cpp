@@ -31,9 +31,10 @@ void loop()
     if (Ethernet.detectRead()) {
       if (Udp.parsePacket()) {
         long bruh = micros();
+        // TODO Dump Buffer
         Udp.read(packetBuffer, sizeof(Comms::Packet));
         Serial.printf("Recieved: %s delta: %ld \n", packetBuffer, micros() -  bruh);
-        Udp.flush();
+        Udp.flush(); // Flush this maybe?
       }
     }
   }

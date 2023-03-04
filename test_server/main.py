@@ -12,12 +12,16 @@ if __name__ == "__main__":
     # socket.connect((remote, port))
     print("Sending data to", remote, ":", port)
     tsent = 0
+    bsent = 0
     while (True):
 
-        msg = bytes('ballsballsballsballsballsballs ' + str(tsent), 'utf-8')
+        msg = bytes('A ' + str(tsent), 'utf-8')
+        msg2 = bytes('B ' + str(bsent), 'utf-8')
         sent = sock.sendto(msg, (remote, port))
+        sent = sock.sendto(msg2, (remote, port))
         if (sent == 0):
             raise RuntimeError("Socket disconnected")
-        print(msg);
+        print(msg, msg2);
         time.sleep(0.001)
         tsent+=1
+        bsent+=1
