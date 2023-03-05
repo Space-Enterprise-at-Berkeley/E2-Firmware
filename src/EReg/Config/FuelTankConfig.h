@@ -14,7 +14,7 @@ namespace Config {
     // Controller Constants
 
     // const double p_outer_nominal = 1.8, i_outer_nominal = 0.30e-6, d_outer_nominal = 0; 
-    // from cryo flow march 4, ~8:30PM - ~1700PSI to 300PSI. Steady state offset of 20PSI. increased constants by 1.2x.
+    // from cryo flow march 4, ~8:30PM - ~1700PSI to 300PSI. Steady state offset of -20PSI. increased constants by 1.2x.
 
     const double p_outer_nominal = 2.2, i_outer_nominal = 0.4e-6, d_outer_nominal = 0; // nominal is 4000 -> 500 psi flow
 

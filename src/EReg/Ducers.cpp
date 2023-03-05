@@ -18,7 +18,7 @@ namespace Ducers {
     }
 
     float interpolate5000(double rawValue) {
-        return (rawValue * 1000 * 1.1882) - 83.5;
+        return (rawValue * 1000);
     }
 
     float readPressurantPT() {
