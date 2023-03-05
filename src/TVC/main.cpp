@@ -1,18 +1,19 @@
 #include <Common.h>
 #include <TeensyComms.h>
+#include "TVC.h"
 
 #include <Arduino.h>
 
 uint32_t task_example() { 
 
-  Serial.println("TEST");
-  
+  Serial.println("TEST");  
   return 1000 * 1000;
   
 }
 
 Task taskTable[] = {
-  {task_example, 0, true},
+  // {task_example, 0, true},
+  {TVC::updatePID, 0, true}
 };
 
 #define TASK_COUNT (sizeof(taskTable) / sizeof (struct Task))
@@ -24,6 +25,7 @@ int main() {
   while(!Serial);
   #endif
   Comms::init();
+  TVC::init();
 
   while(1) {
     // main loop here to avoid arduino overhead
