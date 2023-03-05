@@ -1,8 +1,8 @@
+#include <Arduino.h>
 #include <Common.h>
 #include <TeensyComms.h>
 #include "TVC.h"
 
-#include <Arduino.h>
 
 uint32_t task_example() { 
 
