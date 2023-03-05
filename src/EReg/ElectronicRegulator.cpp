@@ -50,6 +50,7 @@ void partialOpen(Comms::Packet packet, uint8_t ip) {
 }
 
 void runDiagnostics(Comms::Packet packet, uint8_t ip) {
+    
     StateMachine::enterDiagnosticState();
 }
 

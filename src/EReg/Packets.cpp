@@ -128,14 +128,8 @@ namespace Packets {
         packet.len = 0;
         Comms::emitPacket(&packet);
 
-        //open lox GEMS
+        //send abort to ACs
         Comms::Packet actuate = {.id = ACTUATE_IP, .len=0};
-        Comms::packetAddUint8(&actuate, 6);
-        Comms::packetAddUint8(&actuate, 4);
-        Comms::packetAddUint8(&actuate, 0);
-        Comms::emitPacket(&actuate, ac2_ip);
-
-        delay(5);
 
         //open fuel GEMS
         actuate.len = 0;
@@ -143,26 +137,34 @@ namespace Packets {
         Comms::packetAddUint8(&actuate, 4);
         Comms::packetAddUint8(&actuate, 0);
         Comms::emitPacket(&actuate, ac2_ip);
+        delay(30);
 
-        delay(5);
+        //open lox GEMS
+        actuate.len = 0;
+        Comms::packetAddUint8(&actuate, 6);
+        Comms::packetAddUint8(&actuate, 4);
+        Comms::packetAddUint8(&actuate, 0);
+        Comms::emitPacket(&actuate, ac2_ip);
+
+
+
+        delay(30);
 
         //open lox vent rbv
         actuate.len = 0;
         Comms::packetAddUint8(&actuate, 3);
         Comms::packetAddUint8(&actuate, 0);
         Comms::packetAddUint8(&actuate, 0);
-        Comms::emitPacket(&actuate, ac1_ip);
+        Comms::emitPacket(&actuate, ac2_ip);
 
-        delay(5);
+        delay(30);
 
         //open fuel vent rbv
         actuate.len = 0;
         Comms::packetAddUint8(&actuate, 4);
         Comms::packetAddUint8(&actuate, 0);
         Comms::packetAddUint8(&actuate, 0);
-        Comms::emitPacket(&actuate, ac1_ip);
-
-        delay(5);
+        Comms::emitPacket(&actuate, ac2_ip);
 
     }
 

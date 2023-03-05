@@ -58,6 +58,7 @@ namespace StateMachine {
         if (downstreamPsi > Config::pressurizationCutoff) {
             enterIdleClosedState();
         }
+        checkAbortPressure(downstreamPsi, Config::abortPressureThresh);
     }
     
 }

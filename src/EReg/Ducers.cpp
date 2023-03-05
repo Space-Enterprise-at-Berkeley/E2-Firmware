@@ -6,7 +6,7 @@ namespace Ducers {
     float downstreamPT;
 
     void updateUpstreamPT() {
-        upstreamPT = HAL::readPTVoltage(0);
+        upstreamPT = HAL::readPTVoltage(2);
     }
 
     void updateDownstreamPT() {
@@ -18,7 +18,7 @@ namespace Ducers {
     }
 
     float interpolate5000(double rawValue) {
-        return rawValue * 1000;
+        return (rawValue * 1000 * 1.1882) - 83.5;
     }
 
     float readPressurantPT() {
