@@ -19,10 +19,10 @@ namespace HAL {
         int pwmFreq = 50;
         int pwmResolution = 12;
 
-        ledcSetup(motorChannel, pwmFreq, pwmResolution);
-        ledcAttachPin(SPARKMAX, 0);
-        ledcWrite(motorChannel, 307);
-
+        // ledcSetup(motorChannel, pwmFreq, pwmResolution);
+        // ledcAttachPin(SPARKMAX, 0);
+        // ledcWrite(motorChannel, 307);
+// 
         return 0;
     }
 
@@ -32,19 +32,25 @@ namespace HAL {
 
         int pwmFreq = 50000;
         int pwmResolution = 8;
-        ledcSetup(motorChannel, pwmFreq, pwmResolution);
-        ledcAttachPin(INHA, 0);
-        ledcWrite(motorChannel, 0);
+        // ledcSetup(motorChannel, pwmFreq, pwmResolution);
+        // ledcAttachPin(INHA, 0);
+        // ledcWrite(motorChannel, 0);
 
         enableMotorDriver();
         delay(10);
-        printMotorDriverFaultAndDisable();
+        // printMotorDriverFaultAndDisable();
         enableMotorDriver();
         delay(10);
 
         delay(1);
         return 0;
 
+    }
+
+    uint32_t printEncoder() {
+        
+        Serial.println(getEncoderCount());
+        return 50 * 1000;
     }
 
 
@@ -74,6 +80,7 @@ namespace HAL {
         } else {
             encoderTicks -= 1;
         }
+        
     }
 
     void risingB() {
