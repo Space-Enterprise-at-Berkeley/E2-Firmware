@@ -16,6 +16,13 @@ namespace Packets {
      * - pressure control loop I term
      * - pressure control loop D term
      */
+
+
+    uint8_t ac1_ip = 11;
+    uint8_t ac2_ip = 12;
+    uint8_t ACTUATE_IP = 100;
+
+
     void sendTelemetry(
         float upstreamPressure,
         float downstreamPressure,
@@ -120,6 +127,43 @@ namespace Packets {
         Comms::Packet packet = {.id = ABORT_ID};
         packet.len = 0;
         Comms::emitPacket(&packet);
+
+        //open lox GEMS
+        Comms::Packet actuate = {.id = ACTUATE_IP, .len=0};
+        Comms::packetAddUint8(&actuate, 6);
+        Comms::packetAddUint8(&actuate, 4);
+        Comms::packetAddUint8(&actuate, 0);
+        Comms::emitPacket(&actuate, ac2_ip);
+
+        delay(5);
+
+        //open fuel GEMS
+        actuate.len = 0;
+        Comms::packetAddUint8(&actuate, 7);
+        Comms::packetAddUint8(&actuate, 4);
+        Comms::packetAddUint8(&actuate, 0);
+        Comms::emitPacket(&actuate, ac2_ip);
+
+        delay(5);
+
+        //open lox vent rbv
+        actuate.len = 0;
+        Comms::packetAddUint8(&actuate, 3);
+        Comms::packetAddUint8(&actuate, 0);
+        Comms::packetAddUint8(&actuate, 0);
+        Comms::emitPacket(&actuate, ac1_ip);
+
+        delay(5);
+
+        //open fuel vent rbv
+        actuate.len = 0;
+        Comms::packetAddUint8(&actuate, 4);
+        Comms::packetAddUint8(&actuate, 0);
+        Comms::packetAddUint8(&actuate, 0);
+        Comms::emitPacket(&actuate, ac1_ip);
+
+        delay(5);
+
     }
 
 

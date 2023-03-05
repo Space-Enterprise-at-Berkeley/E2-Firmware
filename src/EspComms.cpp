@@ -206,6 +206,33 @@ namespace Comms {
     Udp.endPacket();
   }
 
+  void emitPacket(Packet *packet, uint8_t ip)
+  {
+    // add timestamp to struct
+    uint32_t timestamp = millis();
+    packet->timestamp[0] = timestamp & 0xFF;
+    packet->timestamp[1] = (timestamp >> 8) & 0xFF;
+    packet->timestamp[2] = (timestamp >> 16) & 0xFF;
+    packet->timestamp[3] = (timestamp >> 24) & 0xFF;
+
+    // calculate and append checksum to struct
+    uint16_t checksum = computePacketChecksum(packet);
+    packet->checksum[0] = checksum & 0xFF;
+    packet->checksum[1] = checksum >> 8;
+
+
+
+    // Send over UDP
+    // Udp.resetSendOffset();
+    Udp.beginPacket(IPAddress(10,0,0,ip), port);
+    Udp.write(packet->id);
+    Udp.write(packet->len);
+    Udp.write(packet->timestamp, 4);
+    Udp.write(packet->checksum, 2);
+    Udp.write(packet->data, packet->len);
+    Udp.endPacket();
+  }
+
 
 
   bool verifyPacket(Packet *packet)
