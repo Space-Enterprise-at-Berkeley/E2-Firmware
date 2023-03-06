@@ -1,5 +1,5 @@
 #include "AC.h"
-#include "MAX22201.h"
+#include <MAX22201.h>
 #include <EspComms.h>
 #include "ChannelMonitor.h"
 
@@ -53,7 +53,7 @@ namespace AC {
     uint8_t cmd = packetGetUint8(&tmp, 1);
     uint32_t time = packetGetUint32(&tmp, 2);
 
-    DEBUG("Received command!");
+    Serial.println("Received command to actuate channel " + String(channel) + " with command " + String(cmd) + " w time " + String(time));
 
     // set states and timers of actuator
     actuators[channel].state = cmd;
@@ -127,6 +127,17 @@ namespace AC {
     }
     Comms::emitPacket(&acStates);
     return 1000 * 1000;
+  }
+
+  // prints every actuator state to serial
+  uint32_t printActuatorStatesTask() {
+    for (int i = 0; i < 8; i++) {
+      Serial.print("Actuator ");
+      Serial.print(i);
+      Serial.print(" state: ");
+      Serial.println(actuators[i].state);
+    }
+    return 2000 * 1000;
   }
 
 }

@@ -5,7 +5,7 @@
 
 #include "AC.h"
 #include "ChannelMonitor.h"
-#include "MCP23008.h"
+#include <MCP23008.h>
 #include <Wire.h>
 
 Task taskTable[] = {
@@ -13,6 +13,7 @@ Task taskTable[] = {
   {AC::actuatorStatesTask, 0, true},
   {ChannelMonitor::readChannels, 0, true},
   {Power::task_readSendPower, 0, true},
+  {AC::printActuatorStatesTask, 0, true},
 };
 
 #define TASK_COUNT (sizeof(taskTable) / sizeof (struct Task))
@@ -70,7 +71,7 @@ void setup() {
         taskTable[i].nexttime = ticks + taskTable[i].taskCall();
       }
     }
-    //Comms::processWaitingPackets();
+    Comms::processWaitingPackets();
   }
 }
 

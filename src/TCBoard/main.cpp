@@ -48,11 +48,11 @@ uint32_t hello_packet() {
 }
 
 Task taskTable[] = {
-  {Power::task_readSendPower,0,true},
+  //{Power::task_readSendPower,0,true},
   {LED_roll, 0, true},
   //{hello_packet, 0, true},
   {TC::task_sampleTCs, 0, true},
-  //{print_task, 0, true}
+  {print_task, 0, true}
 };
 
 #define TASK_COUNT (sizeof(taskTable) / sizeof (struct Task))
@@ -62,7 +62,7 @@ void setup() {
   Comms::init(); // takes care of Serial.begin()
   initWire();
   initLEDs();
-  Power::init();
+  //Power::init();
   TC::init();
 
   while(1) {

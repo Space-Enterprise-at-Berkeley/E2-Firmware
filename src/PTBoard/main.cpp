@@ -13,6 +13,7 @@ uint8_t LED_4 = 7;
 uint8_t LED_5 = 33;
 uint8_t LED_6 = 34;
 uint8_t LED_7 = 35;
+uint16_t min_pressure = -25;
 
 uint32_t print_task() { 
   
@@ -26,10 +27,10 @@ uint32_t LED_roll(){
   if (roll == 0){
     digitalWrite(LED_0, HIGH);
     digitalWrite(LED_4, HIGH);
-    if (Ducers::samplePT(3) < 0){
+    if (Ducers::noSamplePT(3) < min_pressure){
       digitalWrite(LED_3, LOW);
     }
-    if (Ducers::samplePT(7) < 0){
+    if (Ducers::noSamplePT(7) < min_pressure){
       digitalWrite(LED_7, LOW);
     }
     roll = 1;
@@ -37,10 +38,10 @@ uint32_t LED_roll(){
   else if (roll == 1){
     digitalWrite(LED_1, HIGH);
     digitalWrite(LED_5, HIGH);
-    if (Ducers::samplePT(0) < 0){
+    if (Ducers::noSamplePT(0) < min_pressure){
       digitalWrite(LED_0, LOW);
     }
-    if (Ducers::samplePT(4) < 0){
+    if (Ducers::noSamplePT(4) < min_pressure){
       digitalWrite(LED_4, LOW);
     }
     roll = 2;
@@ -48,10 +49,10 @@ uint32_t LED_roll(){
   else if (roll == 2){
     digitalWrite(LED_2, HIGH);
     digitalWrite(LED_6, HIGH);
-    if (Ducers::samplePT(1) < 0){
+    if (Ducers::noSamplePT(1) < min_pressure){
       digitalWrite(LED_1, LOW);
     }
-    if (Ducers::samplePT(5) < 0){
+    if (Ducers::noSamplePT(5) < min_pressure){
       digitalWrite(LED_5, LOW);
     }
     roll = 3;
@@ -59,10 +60,10 @@ uint32_t LED_roll(){
   else if (roll == 3){
     digitalWrite(LED_3, HIGH);
     digitalWrite(LED_7, HIGH);
-    if (Ducers::samplePT(2) < 0){
+    if (Ducers::noSamplePT(2) < min_pressure){
       digitalWrite(LED_2, LOW);
     }
-    if (Ducers::samplePT(6) < 0){
+    if (Ducers::noSamplePT(6) < min_pressure){
       digitalWrite(LED_6, LOW);
     }
     roll = 0;
@@ -98,7 +99,7 @@ Task taskTable[] = {
   // Ducers
   {Ducers::task_ptSample, 0, true},
   {Power::task_readSendPower, 0, true},
-  //{print_task, 0, true},
+  {print_task, 0, true},
   {LED_roll, 0, true},
 };
 

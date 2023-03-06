@@ -8,11 +8,14 @@ namespace Comms {
 
   byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, IP_ADDRESS_END};
   IPAddress groundStation1(10, 0, 0, 169);
+  IPAddress groundStation2(10, 0, 0, 170);
   IPAddress ip(10, 0, 0, IP_ADDRESS_END);
   int port = 42069;
 
   void init(int cs, int spiMisoPin, int spiMosiPin, int spiSclkPin, int ETH_intN)
   {
+    Serial.begin(926100);
+    
     Ethernet.init(cs);
     Ethernet.begin((uint8_t *)mac, ip, spiMisoPin, spiMosiPin, spiSclkPin, ETH_intN);
     Udp.begin(port);
@@ -52,9 +55,9 @@ namespace Comms {
     uint16_t checksum = *(uint16_t *)&packet->checksum;
     if (checksum == computePacketChecksum(packet))
     {
-      // DEBUG("Packet with ID ");
-      // DEBUG(packet->id);
-      // DEBUG(" has correct checksum!\n");
+      Serial.print("Packet with ID ");
+      Serial.print(packet->id);
+      Serial.print(" has correct checksum!\n");
       // try to access function, checking for out of range exception
       if (callbackMap.count(packet->id))
       {
@@ -62,16 +65,16 @@ namespace Comms {
       }
       else
       {
-        // DEBUG("ID ");
-        // DEBUG(packet->id);
-        // DEBUG(" does not have a registered callback function.\n");
+        Serial.print("ID ");
+        Serial.print(packet->id);
+        Serial.print(" does not have a registered callback function.\n");
       }
     }
     else
     {
-      DEBUG("Packet with ID ");
-      DEBUG(packet->id);
-      DEBUG(" does not have correct checksum!\n");
+      Serial.print("Packet with ID ");
+      Serial.print(packet->id);
+      Serial.print(" does not have correct checksum!\n");
     }
   }
 
@@ -89,6 +92,8 @@ namespace Comms {
 
     if (Serial.available())
       {
+        //That was for reading full formed packets from the USB serial port
+        /*
         int cnt = 0;
         while (Serial.available() && cnt < sizeof(Packet))
         {
@@ -100,6 +105,60 @@ namespace Comms {
         // DEBUG(packet->id);
         // DEBUG('\n');
         evokeCallbackFunction(packet, 255); // 255 signifies a USB packet
+        */
+       
+       //Instead I want to read commands in the form of "id data"
+       //And then make the packet and trigger the callback
+
+        Serial.println("Got a command");
+        int id = (uint8_t)Serial.parseInt();
+        Serial.print("id" + String(id));
+        if (id == -1) return;
+        Packet packet = {.id = id, .len = 0};
+        while(Serial.available()){
+          if (Serial.peek() == ' ') Serial.read();
+          if (Serial.peek() == '\n') {Serial.read(); break;}
+          //determine datatype of next value
+          if (Serial.peek() == 'f'){
+            Serial.read();
+            float val = Serial.parseFloat();
+            Serial.print(" float" + String(val));
+            packetAddFloat(&packet, val);
+          }
+          else if (Serial.peek() == 'i'){
+            Serial.read();
+            int val = Serial.parseInt();
+            Serial.print(" int" + String(val));
+            packetAddUint32(&packet, val);
+          }
+          else if (Serial.peek() == 's'){
+            Serial.read();
+            int val = Serial.parseInt();
+            Serial.print(" short" + String(val));
+            packetAddUint16(&packet, val);
+          }
+          else if (Serial.peek() == 'b'){
+            Serial.read();
+            int val = Serial.parseInt();
+            Serial.print(" byte" + String(val));
+            packetAddUint8(&packet, val);
+          } else{
+            Serial.read();
+          }
+        }
+        Serial.println();
+            // add timestamp to struct
+        uint32_t timestamp = millis();
+        packet.timestamp[0] = timestamp & 0xFF;
+        packet.timestamp[1] = (timestamp >> 8) & 0xFF;
+        packet.timestamp[2] = (timestamp >> 16) & 0xFF;
+        packet.timestamp[3] = (timestamp >> 24) & 0xFF;
+
+        // calculate and append checksum to struct
+        uint16_t checksum = computePacketChecksum(&packet);
+        packet.checksum[0] = checksum & 0xFF;
+        packet.checksum[1] = checksum >> 8;
+        evokeCallbackFunction(&packet, 255); // 255 signifies a USB packet
       }
   }
 
@@ -195,6 +254,14 @@ namespace Comms {
     // Send over UDP
     // Udp.resetSendOffset();
     Udp.beginPacket(groundStation1, port);
+    Udp.write(packet->id);
+    Udp.write(packet->len);
+    Udp.write(packet->timestamp, 4);
+    Udp.write(packet->checksum, 2);
+    Udp.write(packet->data, packet->len);
+    Udp.endPacket();
+
+    Udp.beginPacket(groundStation2, port);
     Udp.write(packet->id);
     Udp.write(packet->len);
     Udp.write(packet->timestamp, 4);

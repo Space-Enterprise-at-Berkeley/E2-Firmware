@@ -1,6 +1,6 @@
 #pragma once
 #include <Arduino.h>
-#include "MCP23008.h"
+#include <MCP23008.h>
 
 
 namespace ChannelMonitor {
