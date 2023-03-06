@@ -1,7 +1,7 @@
 #include "ChannelMonitor.h"
 #include <Arduino.h>
 #include <EspComms.h>
-#include "MCP23008.h"
+#include <MCP23008.h>
 
 // Channel Monitor monitors continuity and currents for each actuator channel
 // It also handles setting the LEDs for each of these things on the board as it reads

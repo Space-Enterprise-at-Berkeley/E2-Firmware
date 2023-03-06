@@ -5,7 +5,7 @@
 
 #include "AC.h"
 #include "ChannelMonitor.h"
-#include "MCP23008.h"
+#include <MCP23008.h>
 #include <Wire.h>
 
 Task taskTable[] = {
