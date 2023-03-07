@@ -10,6 +10,12 @@
 // 1: Extending 
 // 2: Off
 
+enum SendActuatorState {
+  RETRACTING = 0,
+  EXTENDING = 1,
+  OFF = 2,
+};
+
 // PACKET ID : 100, Actuate Actuator
 // 0: Retract fully 
 // 1: Extend fully 
@@ -18,9 +24,20 @@
 // 4: On 
 // 5: Off
 
+enum ActuatorCommand {
+  RETRACT_FULLY = 0,
+  EXTEND_FULLY = 1,
+  TIMED_RETRACT = 2,
+  TIMED_EXTEND = 3,
+  ON = 4,
+  OFF = 5,
+};
+
 // 0 and 2 correspond to actuator state 0
 // 1 and 3 and 4 correspond to actuator state 1
 // 5 corresponds to actuator state 5
+
+
 
 
 // current threshold for a fully extended actuator (i.e less that 0.1A means an actuator has hit its limit switch)
@@ -55,6 +72,10 @@ namespace AC {
 
     Serial.println("Received command to actuate channel " + String(channel) + " with command " + String(cmd) + " w time " + String(time));
 
+    actuate(channel, cmd, time);
+  }
+
+  void actuate(uint8_t channel, uint8_t cmd, uint32_t time) {
     // set states and timers of actuator
     actuators[channel].state = cmd;
     actuators[channel].timeLeft = time;
@@ -79,7 +100,7 @@ namespace AC {
       actuators[i].init(actuatorPins[2*i], actuatorPins[2*i+1]);
     }
     // Register the actuation task callback to packet 100
-    Comms::registerCallback(100, beginActuation);
+    Comms::registerCallback(ACTUATE_CMD, beginActuation);
   }
 
   // Daemon task which should be run frequently
@@ -115,13 +136,13 @@ namespace AC {
 
   // converts command from packet 100 to actuator state in packet 2
   uint8_t formatActuatorState(uint8_t state) {
-    uint8_t mapping[6] = {0, 1, 0, 1, 1, 2};
+    uint8_t mapping[6] = {RETRACTING, EXTENDING, RETRACTING, EXTENDING, EXTENDING, OFF};
     return mapping[state];
   }
 
   // gets every actuator state, formats it, and emits a packet
   uint32_t actuatorStatesTask() {
-    Comms::Packet acStates = {.id = 2};
+    Comms::Packet acStates = {.id = AC_STATE};
     for (int i = 0; i < 8; i++) {
       packetAddUint8(&acStates, formatActuatorState(actuators[i].state));
     }

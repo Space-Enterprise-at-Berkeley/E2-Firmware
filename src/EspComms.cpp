@@ -6,10 +6,10 @@ namespace Comms {
   EthernetUDP Udp;
   char packetBuffer[sizeof(Packet)];
 
-  byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, IP_ADDRESS_END};
-  IPAddress groundStation1(10, 0, 0, 169);
-  IPAddress groundStation2(10, 0, 0, 170);
-  IPAddress ip(10, 0, 0, IP_ADDRESS_END);
+  byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, ID};
+  const uint8_t groundStationCount = 3;
+  IPAddress groundStations[groundStationCount] = {IPAddress(10, 0, 0, GROUND1), IPAddress(10, 0, 0, GROUND2), IPAddress(10, 0, 0, GROUND3)};
+  IPAddress ip(10, 0, 0, ID);
   int port = 42069;
 
   void init(int cs, int spiMisoPin, int spiMosiPin, int spiSclkPin, int ETH_intN)
@@ -20,7 +20,7 @@ namespace Comms {
     Ethernet.begin((uint8_t *)mac, ip, spiMisoPin, spiMosiPin, spiSclkPin, ETH_intN);
     Udp.begin(port);
 
-    Udp.beginPacket(groundStation1, port);
+    Udp.beginPacket(groundStations[0], port);
   }
 
   void init() {
@@ -32,7 +32,7 @@ namespace Comms {
     DEBUG("sending firmware version packet\n");
     DEBUG_FLUSH();
 
-    Packet version = {.id = 0, .len = 7};
+    Packet version = {.id = FW_STATUS, .len = 7};
 
     char commit[] = FW_COMMIT;
     memcpy(&(version.data), &commit, 7);
@@ -87,6 +87,7 @@ namespace Comms {
         Udp.read(packetBuffer, sizeof(Comms::Packet));
         Packet *packet = (Packet*) &packetBuffer;
         evokeCallbackFunction(packet, Udp.remoteIP()[3]);
+        
       }
     }
 
@@ -253,21 +254,15 @@ namespace Comms {
 
     // Send over UDP
     // Udp.resetSendOffset();
-    Udp.beginPacket(groundStation1, port);
-    Udp.write(packet->id);
-    Udp.write(packet->len);
-    Udp.write(packet->timestamp, 4);
-    Udp.write(packet->checksum, 2);
-    Udp.write(packet->data, packet->len);
-    Udp.endPacket();
-
-    Udp.beginPacket(groundStation2, port);
-    Udp.write(packet->id);
-    Udp.write(packet->len);
-    Udp.write(packet->timestamp, 4);
-    Udp.write(packet->checksum, 2);
-    Udp.write(packet->data, packet->len);
-    Udp.endPacket();
+    for (int i = 0; i < groundStationCount; i++){
+      Udp.beginPacket(groundStations[i], port);
+      Udp.write(packet->id);
+      Udp.write(packet->len);
+      Udp.write(packet->timestamp, 4);
+      Udp.write(packet->checksum, 2);
+      Udp.write(packet->data, packet->len);
+      Udp.endPacket();
+    }
   }
 
 

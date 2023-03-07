@@ -13,7 +13,7 @@ uint8_t LED_4 = 7;
 uint8_t LED_5 = 33;
 uint8_t LED_6 = 34;
 uint8_t LED_7 = 35;
-uint16_t min_pressure = -25;
+float min_pressure = -25;
 
 uint32_t print_task() { 
   

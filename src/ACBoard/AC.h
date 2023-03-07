@@ -9,4 +9,5 @@ namespace AC {
   uint32_t actuatorStatesTask();
   uint32_t printActuatorStatesTask();
   uint32_t actuationDaemon();
+  void actuate(uint8_t channel, uint8_t cmd, uint32_t time);
 }
