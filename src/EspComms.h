@@ -11,10 +11,6 @@
 
 namespace Comms
 {
-  // const int port = 42069;
-  // const IPAddress ip(10, 0, 0, IP_ADDRESS_END);
-  // const IPAddress groundStation1(10, 0, 0, 69);
-  // const IPAddress groundStation2(10, 0, 0, 70);
 
   struct Packet
   {
@@ -62,6 +58,7 @@ namespace Comms
    * @param packet The packet in which the data is stored.
    */
   void emitPacket(Packet *packet);
+  void emitPacket(Packet *packet, uint8_t ip);
 
   bool verifyPacket(Packet *packet);
 

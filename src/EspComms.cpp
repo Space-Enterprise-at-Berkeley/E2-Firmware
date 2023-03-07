@@ -21,6 +21,11 @@ namespace Comms {
     Udp.begin(port);
 
     Udp.beginPacket(groundStation1, port);
+    Udp.beginPacket(groundStation2, port);
+  }
+
+  void init() {
+    init(10, -1, -1, -1, -1);
   }
 
   void init() {
@@ -90,83 +95,7 @@ namespace Comms {
       }
     }
 
-    if (Serial.available())
-      {
-        //That was for reading full formed packets from the USB serial port
-        /*
-        int cnt = 0;
-        while (Serial.available() && cnt < sizeof(Packet))
-        {
-          packetBuffer[cnt] = Serial.read();
-          cnt++;
-        }
-        Packet *packet = (Packet *)&packetBuffer;
-        // DEBUG("Got unverified packet with ID ");
-        // DEBUG(packet->id);
-        // DEBUG('\n');
-        evokeCallbackFunction(packet, 255); // 255 signifies a USB packet
-        */
-       
-       //Instead I want to read commands in the form of "id data"
-       //And then make the packet and trigger the callback
-
-        Serial.println("Got a command");
-        int id = (uint8_t)Serial.parseInt();
-        Serial.print("id" + String(id));
-        if (id == -1) return;
-        Packet packet = {.id = id, .len = 0};
-        while(Serial.available()){
-          if (Serial.peek() == ' ') Serial.read();
-          if (Serial.peek() == '\n') {Serial.read(); break;}
-          //determine datatype of next value
-          if (Serial.peek() == 'f'){
-            Serial.read();
-            float val = Serial.parseFloat();
-            Serial.print(" float" + String(val));
-            packetAddFloat(&packet, val);
-          }
-          else if (Serial.peek() == 'i'){
-            Serial.read();
-            int val = Serial.parseInt();
-            Serial.print(" int" + String(val));
-            packetAddUint32(&packet, val);
-          }
-          else if (Serial.peek() == 's'){
-            Serial.read();
-            int val = Serial.parseInt();
-            Serial.print(" short" + String(val));
-            packetAddUint16(&packet, val);
-          }
-          else if (Serial.peek() == 'b'){
-            Serial.read();
-            int val = Serial.parseInt();
-            Serial.print(" byte" + String(val));
-            packetAddUint8(&packet, val);
-          } else{
-            Serial.read();
-          }
-        }
-        Serial.println();
-            // add timestamp to struct
-        uint32_t timestamp = millis();
-        packet.timestamp[0] = timestamp & 0xFF;
-        packet.timestamp[1] = (timestamp >> 8) & 0xFF;
-        packet.timestamp[2] = (timestamp >> 16) & 0xFF;
-        packet.timestamp[3] = (timestamp >> 24) & 0xFF;
-
-        // calculate and append checksum to struct
-        uint16_t checksum = computePacketChecksum(&packet);
-        packet.checksum[0] = checksum & 0xFF;
-        packet.checksum[1] = checksum >> 8;
-        evokeCallbackFunction(&packet, 255); // 255 signifies a USB packet
-      }
-  }
-
-  void packetAddFloatArray(Packet *packet, float *arr, uint8_t len)
-  {
-    for (int i = 0; i < len; i ++){
-      packetAddFloat(packet, *(arr + i));
-    }
+    
   }
 
   void packetAddFloat(Packet *packet, float value)
