@@ -54,10 +54,11 @@ namespace StateMachine {
 
         // Packets::sendDiagnostic(true, "starting motor dir test");
 
-        float motorAngle = HAL::getEncoderCount()
-;
-        float upstreamPsi = Ducers::readUpstreamPT();
-        float downstreamPsi = Ducers::readDownstreamPT();
+        float motorAngle = HAL::getEncoderCount();
+
+        HAL::readAllDucers();
+        float upstreamPsi = Ducers::readPressurantPT1();
+        float downstreamPsi = Ducers::readTankPT1();
         
         unsigned long testTime = TimeUtil::timeInterval(timeTestStarted_, micros());
         float speed;
@@ -109,10 +110,11 @@ namespace StateMachine {
 
     void DiagnosticState::servoTestUpdate() {
 
-        float motorAngle = HAL::getEncoderCount()
-;
-        float upstreamPsi = HAL::readUpstreamPT();
-        float downstreamPsi = HAL::readDownstreamPT();
+        float motorAngle = HAL::getEncoderCount();
+
+        HAL::readAllDucers();
+        float upstreamPsi = Ducers::readPressurantPT1();
+        float downstreamPsi = Ducers::readTankPT1();
 
         unsigned long testTime = TimeUtil::timeInterval(timeTestStarted_, micros());
         
@@ -169,10 +171,11 @@ namespace StateMachine {
             Util::runMotors(-OPEN_LOOP_SPEED);
 
             if (TimeUtil::timeInterval(lastPrint_, micros()) > Config::telemetryInterval) {
-                float motorAngle = HAL::getEncoderCount()
-;
-                float upstreamPsi = HAL::readUpstreamPT();
-                float downstreamPsi = HAL::readDownstreamPT();
+                float motorAngle = HAL::getEncoderCount();
+
+                HAL::readAllDucers();
+                float upstreamPsi = Ducers::readPressurantPT1();
+                float downstreamPsi = Ducers::readTankPT1();
                 Packets::sendTelemetry(
                     upstreamPsi,
                     downstreamPsi,
@@ -210,10 +213,11 @@ namespace StateMachine {
             Util::runMotors(-OPEN_LOOP_SPEED);
 
             if (TimeUtil::timeInterval(lastPrint_, micros()) > Config::telemetryInterval) {
-                float motorAngle = HAL::getEncoderCount()
-;
-                float upstreamPsi = HAL::readUpstreamPT();
-                float downstreamPsi = HAL::readDownstreamPT();
+                float motorAngle = HAL::getEncoderCount();
+                
+                HAL::readAllDucers();
+                float upstreamPsi = Ducers::readPressurantPT1();
+                float downstreamPsi = Ducers::readTankPT1();
                 Packets::sendTelemetry(
                     upstreamPsi,
                     downstreamPsi,

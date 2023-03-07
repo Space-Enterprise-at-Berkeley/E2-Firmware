@@ -7,6 +7,7 @@
 #include "Ereg/Util.h"
 #include "Ereg/Packets.h"
 #include "Ereg/Config.h"
+#include "EReg/Ducers.h"
 
 namespace StateMachine {
 

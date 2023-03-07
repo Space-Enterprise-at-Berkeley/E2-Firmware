@@ -9,6 +9,7 @@
 #include "EReg/HAL.h"
 #include "EReg/Util.h"
 #include "EReg/Config.h"
+#include "EReg/Ducers.h"
 
 namespace StateMachine {
 

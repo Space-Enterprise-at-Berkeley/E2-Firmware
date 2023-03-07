@@ -62,7 +62,7 @@ namespace Config {
 
 
     //motor configs
-    const int minimumMotorPower = 15; //out of 256
+    const int minimumMotorPower = 10; //out of 256
     const int maximumMotorPower = 50; //out of 256;
     
 

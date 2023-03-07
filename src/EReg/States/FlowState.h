@@ -11,6 +11,7 @@
 #include "EReg/Config.h"
 #include "EReg/FlowProfiles.h"
 #include "EReg/Packets.h"
+#include "EReg/Ducers.h"
 
 namespace StateMachine {
     

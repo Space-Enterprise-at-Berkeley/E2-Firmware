@@ -8,6 +8,7 @@
 #include "EReg/Util.h"
 #include "EspComms.h"
 #include "Config.h"
+#include "EReg/Ducers.h"
 
 namespace StateMachine {
 

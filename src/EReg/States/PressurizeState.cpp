@@ -22,10 +22,11 @@ namespace StateMachine {
     }
 
     void PressurizeState::update() {
-        float motorAngle = HAL::getEncoderCount()
-;
-        float upstreamPsi = HAL::readUpstreamPT();
-        float downstreamPsi = HAL::readDownstreamPT();
+        float motorAngle = HAL::getEncoderCount();
+        
+        HAL::readAllDucers();
+        float upstreamPsi = Ducers::readPressurantPT1();
+        float downstreamPsi = Ducers::readTankPT1();
         unsigned long flowTime = TimeUtil::timeInterval(timeStarted_, micros());
         pressureSetpoint_ = FlowProfiles::pressurizationRamp(flowTime);
 

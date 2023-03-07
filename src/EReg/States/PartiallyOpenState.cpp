@@ -28,8 +28,9 @@ namespace StateMachine {
     void PartiallyOpenState::update() {
         float motorAngle = HAL::getEncoderCount();
 
-        float upstreamPsi = HAL::readUpstreamPT();
-        float downstreamPsi = HAL::readDownstreamPT();
+        HAL::readAllDucers();
+        float upstreamPsi = Ducers::readPressurantPT1();
+        float downstreamPsi = Ducers::readTankPT1();
 
         float speed = 0;
 

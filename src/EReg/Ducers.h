@@ -3,8 +3,15 @@
 #include "Util.h"
 
 namespace Ducers {
-    float readPressurantPT();
-    float readTankPT();
-    float readUpstreamPT();
-    float readDownstreamPT();
+    void readAllPTs();
+
+    void setDownstreamPT1(float downstreamPT1);
+    void setDownstreamPT2(float downstreamPT2);
+    void setUpstreamPT1(float upstreamPT1);
+    void setUpstreamPT2(float upstreamPT2);
+
+    float readPressurantPT1();
+    float readTankPT1();
+    float readPressurantPT2();
+    float readTankPT1();
 }

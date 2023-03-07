@@ -30,8 +30,9 @@ namespace StateMachine {
     void IdleClosedState::update() {
         float motorAngle = HAL::getEncoderCount();
 
-        float upstreamPsi = HAL::readUpstreamPT();
-        float downstreamPsi = HAL::readDownstreamPT();
+        HAL::readAllDucers();
+        float upstreamPsi = Ducers::readPressurantPT1();
+        float downstreamPsi = Ducers::readTankPT1();
         // Serial.printf("%.2f\n", downstreamPsi);
 
         //Compute Inner PID Servo loop

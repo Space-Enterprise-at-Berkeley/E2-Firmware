@@ -30,8 +30,10 @@ namespace StateMachine {
      */
     void FlowState::update() {
         float motorAngle = HAL::getEncoderCount();
-        float UpstreamPsi = HAL::readUpstreamPT();
-        float DownstreamPsi = HAL::readDownstreamPT();
+
+        HAL::readAllDucers();
+        float UpstreamPsi = Ducers::readPressurantPT1();
+        float DownstreamPsi = Ducers::readTankPT1();
         unsigned long flowTime = TimeUtil::timeInterval(timeStarted_, micros());
         float speed = 0;
 
