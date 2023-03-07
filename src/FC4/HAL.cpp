@@ -1,7 +1,6 @@
 #include "HAL.h"
 
 namespace HAL {
-    ADS8167 adc1;
 
     // // Sensors breakouts
     // BMP388_DEV bmp388;
@@ -9,31 +8,57 @@ namespace HAL {
     // SFE_UBLOX_GNSS neom9n;
 
     void initHAL() {
-        // initialize ADC 1
-        analogReadResolution(12); 
 
-        adc1.init(&SPI, 37, 25);
-        adc1.setAllInputsSeparate();
-        adc1.enableOTFMode();
+        pinMode(adcCS, OUTPUT);
+        pinMode(radioCS, OUTPUT);
+        pinMode(bbCS, OUTPUT);
 
-        // Initialize I2C buses
-        Wire.begin();
+        // initialize SPI
+        spi0 = new SPIClass(HSPI);
+        spi0->begin(sckPin, misoPin, mosiPin, adcCS);
+
+        // initialize I2C
+        Wire.begin(sdaPin, sclPin); 
         Wire.setClock(100000);
 
-        // // barometer
-        // bmp388.begin(0x76); // TODO check address
+        // initialize IO expanders
 
-        // // imu
-        // bno055.begin();
 
-        // // gps
-        // if(!neom9n.begin(SPI, gpsCSPin, 2000000)) {
-        //     DEBUG("GPS DIDN'T INIT");
-        //     DEBUG("\n");
-        // } else {
-        //     DEBUG("GPS INIT SUCCESSFUL");
-        //     DEBUG("\n");
-        // }
+        // initialize channels
+            // IO Expander pins 0..7
+            //  single pin interface
+            //  mode = INPUT, OUTPUT, INPUT_PULLUP (= same as INPUT)
+            // bool MCP23008::pinMode(uint8_t pin, uint8_t mode)
+        
+
+        // initialize ADC
+        adc.init(spi0, adcCS, adcRDY);
+        adc.setAllInputsSeparate();
+        adc.enableOTFMode();
+
+        // barometer
+        if (!bmp.begin_I2C(0x76)) {
+            Serial.println("Could not find a valid BMP3 sensor, check wiring!");
+            while (1);
+        }
+
+        // imu
+        if (!dso32.begin_I2C()) {
+            while (1) {
+            delay(10);
+            }
+        }
+
+        dso32.setAccelRange(LSM6DSO32_ACCEL_RANGE_16_G);
+        dso32.setGyroRange(LSM6DS_GYRO_RANGE_1000_DPS );
+        dso32.setAccelDataRate(LSM6DS_RATE_3_33K_HZ);
+        dso32.setGyroDataRate(LSM6DS_RATE_3_33K_HZ);
+
+
+        bmp.setIIRFilterCoeff(BMP3_IIR_FILTER_COEFF_3);
+        bmp.setOutputDataRate(BMP3_ODR_200_HZ);
+        bmp.performReading();
+        set_barometer_ground_altitude();  
 
     }
 };

@@ -15,7 +15,7 @@
 #include <Wire.h>
 #include <SPI.h>
 
-#include "Apogee.h"
+#include "FlightStatus.h"
 
 // 0: Ground, 1: Flight
 uint8_t vehicleState = 0; 
@@ -52,9 +52,6 @@ Task taskTable[] = {
 
     // Cap fill
     {CapFill::sampleCapFill, 0},
-
-    // Apogee
-    {Apogee::checkForApogee, 0},
 };
 
 #define TASK_COUNT (sizeof(taskTable) / sizeof (struct Task))

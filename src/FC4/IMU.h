@@ -1,9 +1,7 @@
 #pragma once
 
 #include "HAL.h"
-
 #include <EspComms.h>
-
 #include <Arduino.h>
 
 namespace IMU {

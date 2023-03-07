@@ -9,6 +9,7 @@
 #include <MCP23008.h>
 #include <Adafruit_LSM6DSO32.h>
 #include <SparkFun_u-blox_GNSS_Arduino_Library.h>
+#include <SparkFun_Qwiic_KX13X.h>
 
 #include <Arduino.h>
 #include <SPI.h>
@@ -19,6 +20,8 @@ namespace HAL {
     const uint8_t mosiPin = 6;
     const uint8_t misoPin = 7;
     const uint8_t sckPin = 8;
+
+    extern SPIClass spi0;
 
     // I2C
     const uint8_t sdaPin = 1;
@@ -35,14 +38,31 @@ namespace HAL {
     const uint8_t rx2P = 20;
 
     // Flight data
-    extern BMP388_DEV bmp388; 
-    extern Adafruit_LSM6DSO32 imu;
+    extern BMP388_DEV bmp; 
+    extern Adafruit_LSM6DSO32 ds032;
     extern SFE_UBLOX_GNSS neom9n;
-    extern KX134 imu_hg;
+    extern SparkFun_KX134 imu_hg;
 
     // IO Expander
     extern MCP23008 MCP0;
     extern MCP23008 MCP1;
+
+    // Valves, video, chutes, etc. 
+    // MCP0
+    const uint8_t valve0Pin = 0;
+    const uint8_t valve1Pin = 1;
+    const uint8_t valve2Pin = 2;
+    const uint8_t valve3Pin = 3;
+    const uint8_t chute0Pin = 4;
+    const uint8_t chute1Pin = 5;
+    const uint8_t video0Pin = 7;
+    const uint8_t video1Pin = 6;
+
+    // MCP1
+    const uint8_t valve4Pin = 4;
+    const uint8_t rbv0Pin = 7;
+    const uint8_t rbv1Pin = 6;
+
 
     // Multiplexer
     const uint8_t muxS0 = 40;
@@ -56,6 +76,8 @@ namespace HAL {
     const uint8_t adcRDY = 4;
     const uint8_t adcCS = 47;
 
+    extern ADS8167 adc;
+
     // Radio
     const uint8_t radioCS = 3;
     const uint8_t radioSDN = 9;
@@ -66,8 +88,6 @@ namespace HAL {
     // RTD
     const uint8_t rtd0CS = 45;
     const uint8_t rtd1CS = 46;
-
-
 
     void initHAL();
 };
