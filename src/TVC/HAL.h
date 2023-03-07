@@ -17,9 +17,9 @@ namespace HAL {
 
     //for now, only uses two encoders similar to quadrature. Less fine position control, meh
 
-    const int encA = 1; //encoder A
-    const int encB = 2; //encoder B
-    const int encC = 3; //encoder C
+    const int encA = 27; //encoder A
+    const int encB = 25; //encoder B
+    const int encC = 24; //encoder C
 
 
     // const int LIMIT_1 = 40;

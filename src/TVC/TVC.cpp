@@ -1,7 +1,7 @@
 #include "TVC.h"
 #include "EEPROM.h"
 
-#define X_PWM_PIN 0
+#define X_PWM_PIN 6
 
 namespace TVC {
 
@@ -10,11 +10,14 @@ namespace TVC {
     // define class variables    
 
     void init() {
-        //what are you running once?, nothing now        
+        //what are you running once?, nothing now 
+        pinMode(OUTPUT, X_PWM_PIN);   
+        analogWriteFrequency(X_PWM_PIN, 50);
+        analogWriteResolution(12);
     }
 
     uint32_t updatePID() {
-        analogWrite(X_PWM_PIN, 50);
+        analogWrite(X_PWM_PIN, 655);
         Serial.println("Running PWM");
         return tvcUpdatePeriod;
     }

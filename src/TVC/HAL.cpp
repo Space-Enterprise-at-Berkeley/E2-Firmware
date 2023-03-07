@@ -47,8 +47,7 @@ namespace HAL {
 
     }
 
-    uint32_t printEncoder() {
-        
+    uint32_t printEncoder() {        
         Serial.println(getEncoderCount());
         return 50 * 1000;
     }
@@ -123,20 +122,38 @@ namespace HAL {
         }  
     }
 
+    void changeA() {
+        if (digitalRead(encA)) {
+            risingA();
+        } else {
+            fallingA();
+        }
+    }
+    
+    void changeB() {
+        if (digitalRead(encB)) {
+            risingB();
+        } else {
+            fallingB();
+        }
+    }
+
+    void changeC() {
+        if (digitalRead(encC)) {
+            risingC();
+        } else {
+            fallingC();
+        }
+    }
 
     void setupEncoder() {
         pinMode(encA, INPUT);
         pinMode(encB, INPUT);
         pinMode(encC, INPUT);
 
-        attachInterrupt(encA, risingA, RISING);
-        attachInterrupt(encB, risingB, RISING);
-        attachInterrupt(encC, risingC, RISING);
-
-        attachInterrupt(encA, fallingA, FALLING);
-        attachInterrupt(encB, fallingB, FALLING);
-        attachInterrupt(encC, fallingC, FALLING);
-
+        attachInterrupt(encA, changeA, CHANGE);
+        attachInterrupt(encB, changeB, CHANGE);
+        attachInterrupt(encC, changeC, CHANGE);
         // Serial.printf("done setting up encoder. ticks: %d, prevEncoderState: %hhx\n", encoderTicks, prevEncoderState);
 
     }
