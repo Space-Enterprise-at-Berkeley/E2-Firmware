@@ -4,6 +4,12 @@
 #include "ReadPower.h"
 
 #include <Arduino.h>
+// #include <Comms.h>
+
+uint32_t task_example() { 
+  Serial.println("Hello World");
+  return 1000 * 1000; 
+}
 
 
 uint8_t LED1 = 14;
@@ -56,6 +62,7 @@ void setup() {
         taskTable[i].nexttime = ticks + taskTable[i].taskCall();
       }
     }
+
     Comms::processWaitingPackets();
   }
 }
