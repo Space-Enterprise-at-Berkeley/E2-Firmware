@@ -13,7 +13,7 @@ uint32_t task_example() {
 
 Task taskTable[] = {
   // {task_example, 0, true},
-  {TVC::updatePID, 0, true},
+  // {TVC::updatePID, 0, true},
   {HAL::printEncoder, 0, true }
 };
 

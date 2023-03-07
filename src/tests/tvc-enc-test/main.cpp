@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <Util.h>
 #define X_PWM_PIN 6
 
 volatile int encoderTicks = 0;
