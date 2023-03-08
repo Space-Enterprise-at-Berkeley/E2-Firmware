@@ -281,9 +281,11 @@ static void read_data(uint8_t s, uint16_t src, uint8_t *dst, uint16_t len)
 int EthernetClass::socketRecv(uint8_t s, uint8_t *buf, int16_t len)
 {
 	// Check how much data is available
-	int ret = state[s].RX_RSR;
+	int ret = state[s].RX_RSR; // Size of data recieved
 	SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
 	if (ret < len) {
+		// Less data received so far wrt length needed to read
+		// basically remove how much we have recieved so far
 		uint16_t rsr = getSnRX_RSR(s);
 		ret = rsr - state[s].RX_inc;
 		state[s].RX_RSR = ret;

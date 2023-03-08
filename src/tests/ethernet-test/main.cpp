@@ -29,13 +29,16 @@ void loop()
     Udp.resetSendOffset();
     // Read IO9
     if (Ethernet.detectRead()) {
-      if (Udp.parsePacket()) {
-        long bruh = micros();
-        // TODO Dump Buffer
-        Udp.read(packetBuffer, sizeof(Comms::Packet));
-        Serial.printf("Recieved: %s delta: %ld \n", packetBuffer, micros() -  bruh);
-        Udp.flush(); // Flush this maybe?
+      while (Udp.available()) {
+        if (Udp.parsePacket()) {
+          long bruh = micros();
+          // TODO Dump Buffer
+          Udp.read(packetBuffer, sizeof(Comms::Packet));
+          Serial.printf("Recieved: %s delta: %ld \n", packetBuffer, micros() -  bruh);
+          Udp.flush(); // Flush this maybe?
+        }
       }
+       
     }
   }
 }
