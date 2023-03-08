@@ -1,24 +1,36 @@
-#include <Common.h>
-#include <EspComms.h>
-
 #include <Arduino.h>
+#include <Common.h>
+#include <TeensyComms.h>
+#include "TVC.h"
+#include "HAL.h"
+
 
 uint32_t task_example() { 
-  
-  Serial.println("Hello World!");
+
+  Serial.println("TEST");  
   return 1000 * 1000;
-  
 }
 
 Task taskTable[] = {
-  {task_example, 0, true},
+  // {task_example, 0, true},
+  // {TVC::updatePID, 0, true},
+  {HAL::printEncoder, 0, true }
 };
 
 #define TASK_COUNT (sizeof(taskTable) / sizeof (struct Task))
 
-void setup() {
+int main() {
   // setup stuff here
-  Comms::init(); // takes care of Serial.begin()
+  Serial.begin(115200);
+  #ifdef DEBUG_MODE
+  while(!Serial);
+  #endif
+  Comms::init();
+  TVC::init();
+  HAL::init();
+  HAL::initializeMotorDriver();
+  HAL::setEncoderCount(0);
+  HAL::setupEncoder();
 
   while(1) {
     // main loop here to avoid arduino overhead
@@ -30,6 +42,5 @@ void setup() {
     }
     Comms::processWaitingPackets();
   }
+  return 0;
 }
-
-void loop() {}

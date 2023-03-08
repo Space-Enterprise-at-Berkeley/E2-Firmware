@@ -6,11 +6,22 @@
 #define DEBUG(val) Serial.print(val)
 #define DEBUG_FLUSH() Serial.flush()
 #define DEBUGLN(val) Serial.println(val)
+#define DEBUGF Serial.printf
 #else
-#define DEBUG(val)
-#define DEBUG_FLUSH()
-#define DEBUGLN(val)
+#define DEBUG(val) Serial.print(val)
+#define DEBUG_FLUSH() 
+#define DEBUGLN(val) Serial.println(val)
+#define DEBUGF Serial.printf
 #endif
+
+// #ifndef min
+// #define min(a,b) (((a) < (b)) ? (a) : (b))
+// #endif
+
+// #ifndef max
+// #define max(a,b) (((a) > (b)) ? (a) : (b))
+// #endif
+
 
 struct Task
 {
@@ -18,3 +29,6 @@ struct Task
   uint32_t nexttime;
   bool enabled;
 };
+
+#define initWire() Wire.setClock(400000); Wire.setPins(1,2); Wire.begin()
+
