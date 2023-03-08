@@ -13,7 +13,6 @@ namespace Comms
   {
     Ethernet.begin((uint8_t *)mac, ip);
     Udp.begin(port);
-
     registerCallback(0, sendFirmwareVersionPacket);
   }
 
@@ -27,6 +26,7 @@ namespace Comms
     char commit[] = FW_COMMIT;
     memcpy(&(version.data), &commit, 7);
     emitPacket(&version);
+    Serial.println("COOL");
   }
 
   void registerCallback(uint8_t id, commFunction function)

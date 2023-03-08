@@ -4,6 +4,7 @@
 
 #include <Arduino.h>
 #include <NativeEthernet.h>
+// #include <Ethernet.h>
 #include <NativeEthernetUdp.h>
 #include <map>
 #include <vector>

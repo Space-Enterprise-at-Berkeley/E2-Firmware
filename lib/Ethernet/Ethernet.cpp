@@ -39,8 +39,10 @@ void EthernetClass::begin(uint8_t *mac, IPAddress ip)
 {
 	// Assume the DNS server will be the machine on the same network as the local IP
 	// but with last octet being '1'
+	
 	IPAddress dns = ip;
 	dns[3] = 1;
+	
 	begin(mac, ip, dns);
 }
 
