@@ -29,6 +29,8 @@ namespace HAL {
 
     const int DRV_EN = 11;
 
+    extern volatile int encoderTicks;
+
 
     int init();
 

@@ -13,8 +13,8 @@ uint32_t task_example() {
 
 Task taskTable[] = {
   // {task_example, 0, true},
-  // {TVC::updatePID, 0, true},
-  {HAL::printEncoder, 0, true }
+  {TVC::updatePID, 0, true},
+  // {HAL::printEncoder, 0, true }
 };
 
 #define TASK_COUNT (sizeof(taskTable) / sizeof (struct Task))
@@ -28,7 +28,7 @@ int main() {
   Comms::init();
   TVC::init();
   HAL::init();
-  HAL::initializeMotorDriver();
+  // HAL::initializeMotorDriver();
   HAL::setEncoderCount(0);
   HAL::setupEncoder();
 

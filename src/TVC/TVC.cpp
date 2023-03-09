@@ -12,7 +12,7 @@ namespace TVC {
     uint32_t tvcUpdatePeriod = 50 * 1000;
     int x_motor_ticksp = 0;
     int y_motor_ticksp = 0;
-    float x_p = 0;
+    float x_p = 0.1;
     float x_i = 0;
     float x_d = 0;
     float y_p = 0;
@@ -21,8 +21,8 @@ namespace TVC {
     int MID_SPD = 307;
     int MAX_SPD = 20; //(4096 * (1500 / 200000)))
     int MIN_SPD = -20;
-    int INBER_BUFFER_SIZE = 2;
-    int x_tickSetpoint = 0;
+    int INNER_BUFFER_SIZE = 2;
+    // int x_tickSetpoint = 0;
     int y_tickSetpoint = 0;
     int speed_x;
     int speed_y;
@@ -41,22 +41,21 @@ namespace TVC {
         INNER_BUFFER_SIZE);
 
     void init() {
-        //what are you running once?, nothing now 
-        // Serial.begin(921600);
-        // while (!Serial);
-        setupEncoder();
         pinMode(OUTPUT, X_PWM_PIN);   
         analogWriteFrequency(X_PWM_PIN, 50);
         analogWriteResolution(12);  
         analogWrite(X_PWM_PIN, 307); 
-        x_Controller->reset();
-        y_Controller->reset();
+        x_Controller.reset();
+        y_Controller.reset();
         delay(3000); 
     }
 
     uint32_t updatePID() {
-        speed_x = x_Controller->update(x_motor_ticksp - x_tickSetpoint) + MID_SPD;
-        speed_y = y_Controller->update(y_motor_ticksp - y_tickSetpoint) + MID_SPD;
+        // speed_x = x_Controller.update(x_motor_ticksp - HAL::encoderTicks) + MID_SPD;
+        speed_x = -(x_motor_ticksp - HAL::encoderTicks)*x_p + MID_SPD;
+        Serial.println(speed_x);
+        Serial.println(x_motor_ticksp - HAL::encoderTicks);
+        speed_y = y_Controller.update(y_motor_ticksp - y_tickSetpoint) + MID_SPD;
 
         analogWrite(X_PWM_PIN, speed_x);
         analogWrite(Y_PWM_PIN, speed_y);
