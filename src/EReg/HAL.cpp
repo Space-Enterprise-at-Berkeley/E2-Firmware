@@ -33,6 +33,9 @@ namespace HAL {
     float overCurrentBuffer[OCBufferSize];
     uint32_t overCurrentBufferPtr = 0;
 
+    float phaseCurrents[4];
+    float motorTemp;
+
     int init() {
 
 
@@ -251,10 +254,10 @@ namespace HAL {
 
 
     
-    float phaseCurrents[4];
-    float motorTemp;
+ 
 
-    float readPhaseCurrents() {
+    void readPhaseCurrents() {
+
         for (uint8_t i = 0; i < 4; i++) {
             ADCSPIBuffer[2*i] = 0;
             ADCSPIBuffer[2*i] |= (i << 3);
@@ -263,7 +266,7 @@ namespace HAL {
         }
 
         sendSPICommand(ADCSPIBuffer, 10, motorSPI, MADC_CS, ADCSPISpeed, SPI_MODE0);
-        for (int i = 0; i < 4; i++) {
+        for (uint8_t i = 0; i < 4; i++) {
             uint16_t val = 0;
             val = ((ADCSPIBuffer[2*(i+1)] & 0b00001111) << 8) + ADCSPIBuffer[(2*(i+1)) + 1];
             float f = (((float) val) / 4096.0) * 5.0;
@@ -275,6 +278,7 @@ namespace HAL {
         for (int i = 0; i < 3; i++) {
             phaseCurrents[i] = (phaseCurrents[i] - 2.5) / (0.005 * 5);
         }
+        // Serial.printf("hi here\n");
         motorTemp = volt_to_motor_temp(phaseCurrents[3]);
     }
 
@@ -294,6 +298,7 @@ namespace HAL {
             float f = (((float) val) / 4096.0) * 5.0;
             PTs[i] = f;
         }
+
         Ducers::setDownstreamPT1(PTs[0]);
         Ducers::setDownstreamPT2(PTs[1]);
         Ducers::setUpstreamPT1(PTs[2]);
@@ -495,11 +500,11 @@ namespace HAL {
     void packetizeTemperatures(Comms::Packet* packet) {
         float t1 = ((((float) analogRead(TEMPSENSE0)) * (3.3 / 4096.0)) - 0.4) / (0.0195);
         float t2 = ((((float) analogRead(TEMPSENSE1)) * (3.3 / 4096.0)) - 0.4) / (0.0195);
-        float motorTemp = volt_to_motor_temp(motorTemp);
+        float mt = volt_to_motor_temp(motorTemp);
 
         Comms::packetAddFloat(packet, t1);
         Comms::packetAddFloat(packet, t2);
-        Comms::packetAddFloat(packet, motorTemp);
+        Comms::packetAddFloat(packet, mt);
     }
 
     bool getOvercurrentStatus() {

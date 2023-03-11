@@ -23,9 +23,9 @@ namespace Config {
 
 
     // Flow Parameters
-    const float pressureSetpoint = 300; // hotfire 7 was 495
+    const float pressureSetpoint = 500; // hotfire 7 was 495
     const unsigned long rampStart = 0.7 * pressureSetpoint; // psi
-    const unsigned long loxLead = 105UL * 1000UL; //time in microseconds
+    const unsigned long loxLead = 0; //time in microseconds, used to be 105ms
 
     // Diagnostic configs
     const int servoTestPoints = 5;

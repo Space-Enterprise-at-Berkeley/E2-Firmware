@@ -93,9 +93,16 @@ void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress g
 
 void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress gateway, IPAddress subnet, int spiMisoPin, int spiMosiPin, int spiSclkPin, int ETH_intN)
 {
-	if (W5500.init(spiMisoPin, spiMosiPin, spiSclkPin) == 0) return;
+	if (W5500.init(spiMisoPin, spiMosiPin, spiSclkPin) == 0) {
+		Serial.printf("W5500 init failed\n");
+		return;
+	} else {
+		Serial.printf("W5500 init success!\n");
+
+	}
 	W5500.softReset();
 	SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
+	Serial.printf("phycfgr: %x\n", W5500.readVERSIONR());
 	W5500.setMACAddress(mac);
 	W5500.setIPAddress(ip._address.bytes);
 	W5500.setGatewayIp(gateway._address.bytes);

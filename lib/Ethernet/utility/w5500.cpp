@@ -100,8 +100,8 @@ uint8_t W5500Class::softReset(void)
 	// then wait for soft reset to complete
 	do {
 		uint8_t mr = readMR();
-		//Serial.print("mr=");
-		//Serial.println(mr, HEX);
+		// Serial.print("mr=");
+		// Serial.println(mr, HEX);
 		if (mr == 0) return 1;
 		delay(1);
 	} while (++count < 20);

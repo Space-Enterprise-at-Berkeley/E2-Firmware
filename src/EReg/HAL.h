@@ -72,7 +72,7 @@ namespace HAL {
     void disableMotorDriver();
     void handleMotorDriverFault();
     void printMotorDriverFaultAndDisable();
-    float readPhaseCurrents();
+    void readPhaseCurrents();
 
     void readAllDucers();
     
