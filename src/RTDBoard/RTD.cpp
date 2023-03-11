@@ -7,11 +7,11 @@ namespace RTD {
   int sendRate = 100 * 1000; // 100ms
 
   void init() {
-    Serial.println("Initializing RTDs...");
+    // Serial.println("Initializing RTDs...");
 
     rtd0.begin(MAX31865_3WIRE);
 
-    Serial.println("RTD initialized");
+    // Serial.println("RTD initialized");
   }
 
   float sample0() { 
@@ -19,6 +19,7 @@ namespace RTD {
   }
 
   uint32_t task_sampleRTD() {
+    rtdPacket.len = 0;
     Comms::packetAddFloat(&rtdPacket, sample0());
     Comms::emitPacket(&rtdPacket);
     return sendRate;
