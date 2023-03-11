@@ -60,12 +60,12 @@ float flowStartWeight[4] = {0, 0, 0, 0};
 
 
 uint32_t abortDaemon(){
-  //check if sum over -100 from flow start weight for 0.5 seconds
+  //check if sum less than min thrust from flow start weight for 0.5 seconds
   float sum = 0;
   for (int i = 0; i < 4; i++){
     sum += ADS::unrefreshedSample(i) - flowStartWeight[i];
   }
-  if (sum > -minThrust){
+  if (sum < minThrust){
     if (timeSinceBad == 0){
       timeSinceBad = millis();
     }

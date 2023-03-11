@@ -33,14 +33,119 @@ enum Actuators {
 
 
 Comms::Packet heart = {.id = HEARTBEAT, .len = 0};
-uint8_t counter = 0;
+//uint8_t counter = 0;
 uint32_t task_heartbeat() {
   heart.len = 0;
   Comms::packetAddUint8(&heart, ID);
-  Comms::packetAddUint8(&heart, counter++);
+  //Comms::packetAddUint8(&heart, counter++);
   Comms::emitPacket(&heart);
-  return 250 * 1000; //1 sec
+  Serial.println("Heartbeat");
+  return 1000 * 1000; //1 sec
 }
+
+Mode systemMode = HOTFIRE;
+uint8_t launchStep = 0;
+uint32_t flowLength;
+
+uint32_t launchDaemon(){
+  if (ID == AC1){
+    switch(launchStep){
+      case 0:
+      {
+        // Light igniter and wait for 0.5 sec
+        if (systemMode == HOTFIRE || systemMode == LAUNCH){
+          Serial.println("launch step 0, igniter on");
+          AC::actuate(IGNITER, AC::ON, 0);
+          launchStep++;
+          return 500 * 1000;
+        } else {
+          Serial.println("launch step 0, not hotfire, skip");
+          launchStep++;
+          return 10;
+        }
+        
+      }
+      case 1:
+      {
+        if (systemMode == HOTFIRE || systemMode == LAUNCH){
+          //igniter off
+          Serial.println("launch step 1, igniter off");
+          AC::actuate(IGNITER, AC::OFF, 0);
+
+          //Throw abort if breakwire still has continuity
+          ChannelMonitor::readChannels();
+          if (ChannelMonitor::isChannelContinuous(BREAKWIRE)){
+            Serial.println("breakwire still has continuity, aborting");
+/*             Comms::Packet abort = {.id = 43, .len = 0};
+            Comms::packetAddUint8(&abort, systemMode);
+            Comms::packetAddUint8(&abort, BREAKWIRE_NO_BURNT);
+            Comms::emitPacket(&abort, ALL); */
+            Comms::sendAbort(systemMode, BREAKWIRE_NO_BURNT);
+            launchStep = 0;
+            return 0;
+          }
+        }
+
+        //send packet for eregs
+        Comms::Packet launch = {.id = STARTFLOW, .len = 0};
+        Comms::packetAddUint8(&launch, systemMode);
+        Comms::packetAddUint32(&launch, flowLength);
+        Comms::emitPacket(&launch, ALL);
+
+        //arm and open main valves
+        AC::actuate(ARM, AC::ON, 0);
+        AC::actuate(LOX_MAIN_VALVE, AC::ON, 0);
+        AC::actuate(FUEL_MAIN_VALVE, AC::ON, 0);
+        AC::delayedActuate(ARM, AC::OFF, 0, 1000);
+        AC::delayedActuate(ARM_VENT, AC::ON, 0, 1050);
+        AC::delayedActuate(ARM_VENT, AC::OFF, 0, 1500);
+        launchStep++;
+        return flowLength * 1000;
+      }
+      case 2:
+      {
+        //end flow
+
+        //end packet for eregs
+        Comms::Packet endFlow = {.id = ENDFLOW, .len = 0};
+        Comms::emitPacket(&endFlow, ALL);
+
+        //arm and close main valves
+        AC::actuate(ARM, AC::ON, 0);
+        AC::actuate(LOX_MAIN_VALVE, AC::OFF, 0);
+        AC::actuate(FUEL_MAIN_VALVE, AC::OFF, 0);
+        AC::delayedActuate(ARM, AC::OFF, 0, 1000);
+        AC::delayedActuate(ARM_VENT, AC::ON, 0, 1050);
+        AC::delayedActuate(ARM_VENT, AC::OFF, 0, 1500);
+
+
+
+        //open lox and fuel gems via abort only to AC2
+        delay(100); // temporary to give time to eth chip to send the packet
+        Comms::Packet openGems = {.id = ABORT, .len = 0};
+        Comms::packetAddUint8(&openGems, systemMode);
+        Comms::packetAddUint8(&openGems, LC_UNDERTHRUST);
+        Comms::emitPacket(&openGems, AC2);
+
+        launchStep = 0;
+        return 0;  
+      }
+    }
+  }
+  return 0;
+}
+
+Task taskTable[] = {
+  {launchDaemon, 0, false}, //do not move from index 0
+  {AC::actuationDaemon, 0, true},
+  {AC::task_actuatorStates, 0, true},
+  {ChannelMonitor::readChannels, 0, true},
+  {Power::task_readSendPower, 0, true},
+  {AC::task_printActuatorStates, 0, true},
+  {task_heartbeat, 0, true},
+};
+
+#define TASK_COUNT (sizeof(taskTable) / sizeof (struct Task))
 
 // ABORT behaviour - 
 // switch(abort_reason)
@@ -67,6 +172,14 @@ uint32_t task_heartbeat() {
 void onAbort(Comms::Packet packet, uint8_t ip) {
   Mode systemMode = (Mode)packetGetUint8(&packet, 0);
   AbortReason abortReason = (AbortReason)packetGetUint8(&packet, 1);
+
+  if (launchStep != 0){
+    Serial.println("mid-flow abort");
+    launchStep = 0;
+    AC::actuate(IGNITER, AC::OFF, 0);
+    taskTable[0].enabled = false;
+  }
+
 
   switch(abortReason) {
     case TANK_OVERPRESSURE:
@@ -134,109 +247,21 @@ void onAbort(Comms::Packet packet, uint8_t ip) {
   }
 }
 
-Mode systemMode = HOTFIRE;
-uint8_t launchStep = 0;
-uint32_t flowLength;
-
-uint32_t launchDaemon(){
-  if (ID == AC1){
-    switch(launchStep){
-      case 0:
-      {
-        // Light igniter and wait for 0.5 sec
-        if (systemMode == HOTFIRE || systemMode == LAUNCH){
-          Serial.println("launch step 0, igniter on");
-          AC::actuate(IGNITER, AC::ON, 0);
-          launchStep++;
-          return 500 * 1000;
-        } else {
-          Serial.println("launch step 0, not hotfire, skip");
-          launchStep++                    ;
-          return 10;
-        }
-        
-      }
-      case 1:
-      {
-        if (systemMode == HOTFIRE || systemMode == LAUNCH){
-          //igniter off
-          Serial.println("launch step 1, igniter off");
-          AC::actuate(IGNITER, AC::OFF, 0);
-
-          //Throw abort if breakwire still has continuity
-          ChannelMonitor::readChannels();
-          if (ChannelMonitor::isChannelContinuous(BREAKWIRE)){
-            Serial.println("breakwire still has continuity, aborting");
-            Comms::Packet abort = {.id = 43, .len = 0};
-            Comms::packetAddUint8(&abort, systemMode);
-            Comms::packetAddUint8(&abort, BREAKWIRE_NO_BURNT);
-            Comms::emitPacket(&abort, ALL);
-            //Comms::sendAbort(systemMode, BREAKWIRE_NO_BURNT);
-            launchStep = 0;
-            return 0;
-          }
-        }
-
-        //send packet for eregs
-        Comms::Packet launch = {.id = STARTFLOW, .len = 0};
-        Comms::packetAddUint8(&launch, systemMode);
-        Comms::packetAddUint32(&launch, flowLength);
-        Comms::emitPacket(&launch, ALL);
-
-        //arm and open main valves
-        AC::actuate(ARM, AC::ON, 0);
-        AC::actuate(LOX_MAIN_VALVE, AC::ON, 0);
-        AC::actuate(FUEL_MAIN_VALVE, AC::ON, 0);
-        AC::delayedActuate(ARM, AC::OFF, 0, 1000);
-        AC::delayedActuate(ARM_VENT, AC::ON, 0, 1050);
-        AC::delayedActuate(ARM_VENT, AC::OFF, 0, 1500);
-        launchStep++;
-        return flowLength * 1000;
-      }
-      case 2:
-      {
-        //end flow
-
-        //end packet for eregs
-        Comms::Packet endFlow = {.id = ENDFLOW, .len = 0};
-        Comms::emitPacket(&endFlow, ALL);
-
-        //arm and close main valves
-        AC::actuate(ARM, AC::ON, 0);
-        AC::actuate(LOX_MAIN_VALVE, AC::OFF, 0);
-        AC::actuate(FUEL_MAIN_VALVE, AC::OFF, 0);
-        AC::delayedActuate(ARM, AC::OFF, 0, 1000);
-        AC::delayedActuate(ARM_VENT, AC::ON, 0, 1050);
-        AC::delayedActuate(ARM_VENT, AC::OFF, 0, 1500);
-
-        //open lox and fuel gems via abort only to AC2
-        Comms::Packet openGems = {.id = ABORT, .len = 0};
-        Comms::packetAddUint8(&openGems, systemMode);
-        Comms::packetAddUint8(&openGems, LC_UNDERTHRUST);
-        Comms::emitPacket(&openGems, AC2);
-
-        launchStep = 0;
-        return 0;  
-      }
-    }
+void onEndFlow(Comms::Packet packet, uint8_t ip) {
+  if (ID == AC2){
+    //open lox and fuel gems
+    AC::actuate(LOX_GEMS, AC::ON, 0);
+    AC::actuate(FUEL_GEMS, AC::ON, 0);
   }
-  return 0;
 }
 
-Task taskTable[] = {
-  //{launchDaemon, 0, false}, //do not move from index 0
-  //{AC::actuationDaemon, 0, true},
-  //{AC::task_actuatorStates, 0, true},
-  //{ChannelMonitor::readChannels, 0, true},
-  //{Power::task_readSendPower, 0, true},
-  //{AC::task_printActuatorStates, 0, true},
-  {task_heartbeat, 0, true},
-};
-
-#define TASK_COUNT (sizeof(taskTable) / sizeof (struct Task))
 
 void onLaunchQueue(Comms::Packet packet, uint8_t ip){
   if(ID == AC1){
+    if(launchStep != 0){
+      Serial.println("launch command recieved, but launch already in progress");
+      return;
+    }
     systemMode = (Mode)packetGetUint8(&packet, 0);
     flowLength = packetGetUint32(&packet, 1);
 
@@ -273,6 +298,8 @@ void setup() {
   Comms::registerCallback(ABORT, onAbort);
   //launch register
   Comms::registerCallback(LAUNCH_QUEUE, onLaunchQueue);
+  //endflow register
+  Comms::registerCallback(ENDFLOW, onEndFlow);
 
 
   for (int i = 0; i < 8; i++) {

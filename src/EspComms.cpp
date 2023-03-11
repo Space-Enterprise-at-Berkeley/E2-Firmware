@@ -5,10 +5,14 @@ namespace Comms {
 
   EthernetUDP Udp;
   char packetBuffer[sizeof(Packet)];
+  bool multicast = false;
 
   byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, ID};
-  const uint8_t groundStationCount = 3;
-  IPAddress groundStations[groundStationCount] = {IPAddress(10, 0, 0, GROUND1), IPAddress(10, 0, 0, GROUND2), IPAddress(10, 0, 0, GROUND3)};
+
+  const uint8_t groundStationCount = 1;
+  //IPAddress groundStations[groundStationCount] = {IPAddress(10, 0, 0, GROUND1), IPAddress(10, 0, 0, GROUND2), IPAddress(10, 0, 0, GROUND3)};
+  IPAddress groundStations[groundStationCount] = {IPAddress(10, 0, 0, GROUND1)};
+  IPAddress multiGround(224, 0, 5, ID);
   IPAddress ip(10, 0, 0, ID);
   int port = 42069;
 
@@ -18,9 +22,14 @@ namespace Comms {
     
     Ethernet.init(cs);
     Ethernet.begin((uint8_t *)mac, ip, spiMisoPin, spiMosiPin, spiSclkPin, ETH_intN);
-    Udp.begin(port);
+    if (multicast) {
+      Udp.beginMulticast(multiGround, port);
+      Udp.beginPacket(multiGround, port);
 
-    Udp.beginPacket(groundStations[0], port);
+    } else {
+      Udp.begin(port);
+      Udp.beginPacket(groundStations[0], port);
+    }
   }
 
   void init() {
@@ -257,14 +266,25 @@ namespace Comms {
 
     // Send over UDP
     // Udp.resetSendOffset();
-    for (int i = 0; i < groundStationCount; i++){
-      Udp.beginPacket(groundStations[i], port);
+    if (multicast){
+      Udp.beginPacket(multiGround, port);
       Udp.write(packet->id);
       Udp.write(packet->len);
       Udp.write(packet->timestamp, 4);
       Udp.write(packet->checksum, 2);
       Udp.write(packet->data, packet->len);
       Udp.endPacket();
+
+    } else {
+      for (int i = 0; i < groundStationCount; i++){
+        Udp.beginPacket(groundStations[i], port);
+        Udp.write(packet->id);
+        Udp.write(packet->len);
+        Udp.write(packet->timestamp, 4);
+        Udp.write(packet->checksum, 2);
+        Udp.write(packet->data, packet->len);
+        Udp.endPacket();
+      }
     }
   }
   void emitPacket(Packet *packet, uint8_t ip){
@@ -273,13 +293,13 @@ namespace Comms {
 
     // Send over UDP
     // Udp.resetSendOffset();
-    Serial.print(Udp.beginPacket(IPAddress(10,0,0,ip), port));
+    Udp.beginPacket(IPAddress(10,0,0,ip), port);
     Udp.write(packet->id);
     Udp.write(packet->len);
     Udp.write(packet->timestamp, 4);
     Udp.write(packet->checksum, 2);
     Udp.write(packet->data, packet->len);
-    Serial.println(Udp.endPacket());
+    Udp.endPacket();
   }
 
 
@@ -326,7 +346,7 @@ namespace Comms {
     Packet packet = {.id = ABORT, .len = 0};
     packetAddUint8(&packet, systemMode);
     packetAddUint8(&packet, abortReason);
-    emitPacket(&packet, 12);
-    Serial.println("Abort sent, mode " + String(systemMode) + " reason " + String(abortReason));
+    emitPacket(&packet, ALL);
+    Serial.println("Abort sent, mode " + String((Mode)systemMode) + " reason " + String((AbortReason)abortReason));
   }
 };
