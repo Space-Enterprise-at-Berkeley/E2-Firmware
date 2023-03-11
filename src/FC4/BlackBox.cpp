@@ -1,131 +1,65 @@
-// #include "BlackBox.h"
+#include "BlackBox.h"
 
-// namespace BlackBox {
+namespace BlackBox {
 
-//     const char* filePath = "data.txt";
+    uint16_t expectedDeviceID=0xEF40;
+    SPIFlash flash(1, expectedDeviceID);
+    uint32_t addr;
+    bool erasing = false;
 
-//     Comms::Packet blackBoxPacket = {.id = 30};
+    bool enable = false;
 
-//     uint32_t bbUpdatePeriod = 100 * 1000;
+    void init() {
+        pinMode(1, OUTPUT);
+        if (flash.initialize()) {
+            Serial.println("Init OK!");
+        } else {
+            Serial.print("Init FAIL, expectedDeviceID(0x");
+            Serial.print(expectedDeviceID, HEX);
+            Serial.print(") mismatched the read value: 0x");
+            Serial.println(flash.readDeviceId(), HEX);
+        }
 
-//     LittleFS_QSPIFlash blackBox;
+        Comms::registerCallback(200, packetHandler);
+    }
 
-//     EthernetUDP Udp;
+    void packetHandler(Comms::Packet packet) {
+        startEraseAndRecord();
+    }
 
-//     int bufferIndex = 0;
-//     uint8_t buffer[256] = {0};
+    void writePacket(Comms::Packet packet) {
+        if (erasing && flash.busy()) {
+            return;
+        }
+        // Serial.printf("busy: %d, erasing: %d, addr: %d, enable: %d, writing\n", flash.busy(), erasing, addr, enable);
+        if (enable && addr < (FLASH_SIZE * 0.99)) {
+            uint16_t len = 8 + packet.len;
+            flash.writeBytes(addr, &packet, len);
+            addr += len;
+        }
+    }
 
-//     bool writeEnabled = false;
+    bool getData(uint32_t byteAddress, Comms::Packet* packet) {
+        // Comms::Packet packet;
+        flash.readBytes(byteAddress, packet, sizeof(Comms::Packet));
+        return Comms::verifyPacket(packet);
+    }
 
-//     void init() {
-//         DEBUG("Initializing black box\n");
-//         Comms::registerEmitter(&writePacket);
-//         // Comms::registerCallback(153, &getData);
-//         Comms::registerCallback(29, &beginWrite); // Begin writing to flash chip when Flight Mode packet sent
-//         Comms::registerCallback(153, &erase);
+    void startEraseAndRecord() {
+        Serial.println("starting chip erase");
+        flash.chipErase();
+        erasing = true;
+        enable = true;
+        addr = 0;
+    }
 
-//         blackBox.begin();
+    void getAllData() {
+        for(int i = 0; i < addr; i++) {
+            Serial.write(flash.readByte(addr));
+        }
+    }
 
-//         //check for previous data, else initialize data
-//         bool hasData = blackBox.exists(filePath);
-
-//         if(!hasData) {
-//             DEBUG("BLACKBOX: NO PREVIOUS DATA DETECTED");
-//             DEBUG("\n");
-//         } else {
-//             DEBUG("BLACKBOX: PREVIOUS DATA DETECTED");
-//             DEBUG("\n");
-//         }
-//     }
-
-//     void beginWrite() {
-//         DEBUG("BLACKBOX: WRITE ENABLED");
-//         writeEnabled = true;
-//     }
-
-//     uint32_t reportBlackBoxStatus() {
-//         uint32_t storageUsed = blackBox.usedSize();
-
-//         Comms::packetAddUint32(&blackBoxPacket, storageUsed);
-//         Comms::packetAddUint8(&blackBoxPacket, writeEnabled);
-//         Comms::emitPacket(&blackBoxPacket);
-//         // return the next execution time
-//         return bbUpdatePeriod;
-
-//     }
-
-//     void writePacket(Comms::Packet packet) {
-//         if (writeEnabled && blackBox.usedSize() + 50 <= blackBox.totalSize()) {
-
-//             //check if buffer full
-//             if (bufferIndex + 8 + packet.len > 256) {
-//                 DEBUG("WRITING BYTES TO BOX");
-//                 DEBUG("\n");
-//                 writeBuffer();
-//             }
-
-//             DEBUG("WRITING PACKET TO BUFFER");
-//             DEBUG("\n");
-
-//             //write metadata
-//             buffer[bufferIndex] = packet.id;
-//             buffer[bufferIndex + 1] = packet.len;
-//             buffer[bufferIndex + 2] = packet.timestamp[0];
-//             buffer[bufferIndex + 3] = packet.timestamp[1];
-//             buffer[bufferIndex + 4] = packet.timestamp[2];
-//             buffer[bufferIndex + 5] = packet.timestamp[3];
-//             buffer[bufferIndex + 6] = packet.checksum[1];
-//             buffer[bufferIndex + 7] = packet.checksum[2];
-
-//             bufferIndex += 8;
-
-//             for (int i = 0; i < packet.len; i++) {
-//                 buffer[bufferIndex] = packet.data[i];
-//                 bufferIndex += 1;
-//             }
-//         }
-//     }
-
-//     /**
-//      * @brief writes and clears the packet buffer
-//      * 
-//      */
-//     void writeBuffer() {
-//         File dataFile = blackBox.open(filePath, FILE_WRITE);
-//         DEBUG("BLACKBOX: WRITING TO BLACKBOX");
-//         DEBUG("\n");
-//         dataFile.write(buffer, 256);
-//         dataFile.close();
-//         //reset buffer
-//         std::fill_n(buffer, 256, 0);
-//         bufferIndex = 0;
-//     }
-
-//     void erase(Comms::Packet packet) {
-//         blackBox.remove(filePath);
-//         writeEnabled = false;
-//         DEBUG("BLACKBOX: DATA ERASED");
-//         DEBUG("\n");
-//     }
-
-//     void getData(Comms::Packet packet) {
-        
-//         uint8_t readBuffer[256] = {0};
-//         //UDP BEGIN
-//         if (blackBox.exists(filePath)) {
-//             File dataFile = blackBox.open(filePath, FILE_READ);
-//             while(dataFile.read(readBuffer, 256) > 0) {
-//                 for (int i = 0; i < 256; i++) {
-//                     Serial.write(readBuffer[i]);
-//                     // Udp.write(readBuffer[i]);
-//                 }
-//             }
-//             // Udp.endPacket();
-//             dataFile.close();
-//             writeEnabled = false;
-//         } else {
-//             DEBUG("BLACKBOX: FILE DOESN'T EXIST");
-//             DEBUG("\n");
-//         }
-//     }
-// }
+    uint32_t getAddr() {
+        return addr;
+    }
+}
