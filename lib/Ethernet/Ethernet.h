@@ -143,7 +143,7 @@ private:
 	uint16_t _port; // local port to listen on
 	IPAddress _remoteIP; // remote IP address for the incoming packet whilst it's being processed
 	uint16_t _remotePort; // remote port for the incoming packet whilst it's being processed
-	uint16_t _offset; // offset into the packet being sent
+	uint16_t _offset[MAX_SOCK_NUM]; // offset into the packet being sent
 
 protected:
 	uint8_t sockindex;

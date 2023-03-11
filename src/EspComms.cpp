@@ -242,7 +242,6 @@ namespace Comms {
     Udp.write(socket, packet->timestamp, 4);
     Udp.write(socket, packet->checksum, 2);
     Udp.write(socket, packet->data, packet->len);
-    
     Udp.endPacket();
   }
 

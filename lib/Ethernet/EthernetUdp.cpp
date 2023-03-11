@@ -65,20 +65,20 @@ int EthernetUDP::beginPacket(const char *host, uint16_t port)
 
 int EthernetUDP::beginPacket(IPAddress ip, uint16_t port)
 {
-	_offset = 0;
+	_offset[sockindex] = 0;
 	//Serial.printf("UDP beginPacket\n");
 	return Ethernet.socketStartUDP(sockindex, rawIPAddress(ip), port);
 }
 
 int EthernetUDP::beginPacket(int s, IPAddress ip, uint16_t port)
 {
-	_offset = 0;
+	_offset[s] = 0;
 	//Serial.printf("UDP beginPacket\n");
 	return Ethernet.socketStartUDP(s, rawIPAddress(ip), port);
 }
 
 void EthernetUDP::resetSendOffset() {
-	_offset = 0;
+	_offset[sockindex]= 0;
 }
 
 int EthernetUDP::endPacket()
@@ -94,8 +94,8 @@ size_t EthernetUDP::write(uint8_t byte)
 size_t EthernetUDP::write(const uint8_t *buffer, size_t size)
 {
 	//Serial.printf("UDP write %d\n", size);
-	uint16_t bytes_written = Ethernet.socketBufferData(sockindex, _offset, buffer, size);
-	_offset += bytes_written;
+	uint16_t bytes_written = Ethernet.socketBufferData(sockindex, _offset[sockindex], buffer, size);
+	_offset[sockindex] += bytes_written;
 	return bytes_written;
 }
 
@@ -107,8 +107,8 @@ size_t EthernetUDP::write(int s, uint8_t byte)
 size_t EthernetUDP::write(int s, const uint8_t *buffer, size_t size)
 {
 	//Serial.printf("UDP write %d\n", size);
-	uint16_t bytes_written = Ethernet.socketBufferData(s, _offset, buffer, size);
-	_offset += bytes_written;
+	uint16_t bytes_written = Ethernet.socketBufferData(s, _offset[s], buffer, size);
+	_offset[s] += bytes_written;
 	return bytes_written;
 }
 

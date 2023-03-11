@@ -12,6 +12,6 @@ if __name__ == "__main__":
         while True:
             ready_sockets,_,_ = select.select(sockets, [], [])
             for e, s in enumerate(ready_sockets):
-                data, addy = sockets[e].recv(1024)
+                data, addy = sockets[e].recvfrom(1024)
 
     print("Finished socket setup...")
