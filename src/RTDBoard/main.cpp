@@ -21,7 +21,7 @@ uint32_t hello_packet() {
 
 Task taskTable[] = {
   {RTD::task_sampleRTD, 0, true},
-  {print_task, 0, true}
+  // {print_task, 0, true}
 };
 
 #define TASK_COUNT (sizeof(taskTable) / sizeof (struct Task))
