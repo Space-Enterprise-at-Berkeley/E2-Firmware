@@ -11,7 +11,10 @@
 //Actuators
 enum Actuators {
   //AC1
-  N2_FLOW = 0,
+  IGNITER = 0,
+  BREAKWIRE = 1,
+
+  ARM_VENT = 2,
   ARM = 3,
   LOX_MAIN_VALVE = 4,
   FUEL_MAIN_VALVE = 5,
@@ -19,7 +22,8 @@ enum Actuators {
   //AC2
   N2_FILL = 0,
   N2_VENT = 1,
-  IGNITER = 2,
+  N2_FLOW = 2,
+  N2_RQD = 3,
 
   LOX_VENT_RBV = 4,
   FUEL_VENT_RBV = 5,
@@ -27,19 +31,14 @@ enum Actuators {
   FUEL_GEMS = 7,
 };
 
-uint32_t loxDelayTime = 500; //500 ms
-uint32_t closeLox(); //for delayed abort close lox
 
-Task taskTable[] = {
-  {closeLox, 0, false}, // keep this first, only enabled with abort
-  {AC::actuationDaemon, 0, true},
-  {AC::actuatorStatesTask, 0, true},
-  {ChannelMonitor::readChannels, 0, true},
-  {Power::task_readSendPower, 0, true},
-  {AC::printActuatorStatesTask, 0, true},
-};
-
-#define TASK_COUNT (sizeof(taskTable) / sizeof (struct Task))
+Comms::Packet heart = {.id = HEARTBEAT, .len = 0};
+uint32_t task_heartbeat() {
+  heart.len = 0;
+  Comms::packetAddUint8(&heart, ID);
+  Comms::emitPacket(&heart);
+  return 1000 * 1000; //1 sec
+}
 
 // ABORT behaviour - 
 // switch(abort_reason)
@@ -56,7 +55,12 @@ Task taskTable[] = {
 // case MANUAL/DASHBOARD ABORT:
 //    1. Open LOX and FUEL GEMS
 //    2. ARM and close LOX and FUEL Main Valves
-
+// case IGNITER NO CONTINUITY:
+//    1. Open LOX and FUEL GEMS
+//    2. ARM and close LOX and FUEL Main Valves
+// case BREAKWIRE CONTINUITY:
+//    1. Open LOX and FUEL GEMS
+//    2. ARM and close LOX and FUEL Main Valves
 
 void onAbort(Comms::Packet packet, uint8_t ip) {
   Mode systemMode = (Mode)packetGetUint8(&packet, 0);
@@ -68,59 +72,164 @@ void onAbort(Comms::Packet packet, uint8_t ip) {
         //leave main valves in current state
       } else if (ID == AC2){
         //open lox and fuel gems
-        AC::actuate(LOX_GEMS, ON, 0);
-        AC::actuate(FUEL_GEMS, ON, 0);
+        AC::actuate(LOX_GEMS, AC::ON, 0);
+        AC::actuate(FUEL_GEMS, AC::ON, 0);
         //open lox and fuel vent rbvs
-        AC::actuate(LOX_VENT_RBV, RETRACT_FULLY, 0);
-        AC::actuate(FUEL_VENT_RBV, RETRACT_FULLY, 0);
+        AC::actuate(LOX_VENT_RBV, AC::RETRACT_FULLY, 0);
+        AC::actuate(FUEL_VENT_RBV, AC::RETRACT_FULLY, 0);
       }
       break;
     case ENGINE_OVERTEMP:
       if(ID == AC1){
         //arm and close main valves
-        AC::actuate(ARM, ON, 0);
-        AC::actuate(LOX_MAIN_VALVE, RETRACT_FULLY, 0);
-        AC::actuate(FUEL_MAIN_VALVE, RETRACT_FULLY, 0);
+        AC::actuate(ARM, AC::ON, 0);
+        AC::actuate(LOX_MAIN_VALVE, AC::OFF, 0);
+        AC::actuate(FUEL_MAIN_VALVE, AC::OFF, 0);
+        AC::delayedActuate(ARM, AC::OFF, 0, 1000);
+        AC::delayedActuate(ARM_VENT, AC::ON, 0, 1050);
+        AC::delayedActuate(ARM_VENT, AC::OFF, 0, 1500);
       } else if (ID == AC2){
         //open lox and fuel gems
-        AC::actuate(LOX_GEMS, ON, 0);
-        AC::actuate(FUEL_GEMS, ON, 0);
+        AC::actuate(LOX_GEMS, AC::ON, 0);
+        AC::actuate(FUEL_GEMS, AC::ON, 0);
       }
       break;
     case LC_UNDERTHRUST:
       if(ID == AC1){
         //arm and close main valves
-        AC::actuate(ARM, ON, 0);
-        AC::actuate(FUEL_MAIN_VALVE, RETRACT_FULLY, 0);
+        AC::actuate(ARM, AC::ON, 0);
+        AC::actuate(FUEL_MAIN_VALVE, AC::OFF, 0);
         //trigger delayed execution of lox valve closure
-        taskTable[0].enabled = true;
-        taskTable[0].nexttime = micros() + loxDelayTime * 1000;
+        AC::delayedActuate(LOX_MAIN_VALVE, AC::OFF, 0, 500);
+        AC::delayedActuate(ARM, AC::OFF, 0, 1500);
+        AC::delayedActuate(ARM_VENT, AC::ON, 0, 1550);
+        AC::delayedActuate(ARM_VENT, AC::OFF, 0, 2000);
 
       } else if (ID == AC2){
         //open lox and fuel gems
-        AC::actuate(LOX_GEMS, ON, 0);
-        AC::actuate(FUEL_GEMS, ON, 0);
+        AC::actuate(LOX_GEMS, AC::ON, 0);
+        AC::actuate(FUEL_GEMS, AC::ON, 0);
       }    
       break;
     case MANUAL_ABORT:
+    case IGNITER_NO_CONTINUITY:
+    case BREAKWIRE_NO_CONTINUITY:
+    case BREAKWIRE_NO_BURNT:
       if(ID == AC1){
         //arm and close main valves
-        AC::actuate(ARM, ON, 0);
-        AC::actuate(LOX_MAIN_VALVE, RETRACT_FULLY, 0);
-        AC::actuate(FUEL_MAIN_VALVE, RETRACT_FULLY, 0);
+        AC::actuate(ARM, AC::ON, 0);
+        AC::actuate(LOX_MAIN_VALVE, AC::OFF, 0);
+        AC::actuate(FUEL_MAIN_VALVE, AC::OFF, 0);
+        AC::delayedActuate(ARM, AC::OFF, 0, 1000);
+        AC::delayedActuate(ARM_VENT, AC::ON, 0, 1050);
+        AC::delayedActuate(ARM_VENT, AC::OFF, 0, 1500);
       } else if (ID == AC2){
         //open lox and fuel gems
-        AC::actuate(LOX_GEMS, ON, 0);
-        AC::actuate(FUEL_GEMS, ON, 0);
+        AC::actuate(LOX_GEMS, AC::ON, 0);
+        AC::actuate(FUEL_GEMS, AC::ON, 0);
       }
       break;
   }
 }
-//only for abort, to allow delayed execution of actuation
-uint32_t closeLox(){
-  AC::actuate(LOX_MAIN_VALVE, RETRACT_FULLY, 0);
-  taskTable[0].enabled = false;
-  return 5000*1000; // will never run again, just to satisfy the function signature
+
+Mode systemMode = HOTFIRE;
+uint8_t launchStep = 0;
+uint32_t flowLength;
+
+uint32_t launchDaemon(){
+  if (ID == AC1){
+    switch(launchStep){
+      case 0:
+        // Light igniter and wait for 0.5 sec
+        AC::actuate(IGNITER, AC::ON, 0);
+        launchStep++;
+        return 500 * 1000;
+
+      case 1:
+        //igniter off
+        AC::actuate(IGNITER, AC::OFF, 0);
+      
+        //Throw abort if breakwire still has continuity
+        ChannelMonitor::readChannels();
+        if (ChannelMonitor::isChannelContinuous(BREAKWIRE)){
+          Comms::sendAbort(BREAKWIRE_NO_BURNT);
+          launchStep = 0;
+          return 0;
+        }
+
+        //send packet for eregs
+        Comms::Packet launch = {.id = LAUNCH, .len = 0};
+        Comms::packetAddUint8(&launch, systemMode);
+        Comms::packetAddUint32(&launch, flowLength);
+        Comms::emitPacket(&launch, ALL);
+
+        //arm and open main valves
+        AC::actuate(ARM, AC::ON, 0);
+        AC::actuate(LOX_MAIN_VALVE, AC::ON, 0);
+        AC::actuate(FUEL_MAIN_VALVE, AC::ON, 0);
+        AC::delayedActuate(ARM, AC::OFF, 0, 1000);
+        AC::delayedActuate(ARM_VENT, AC::ON, 0, 1050);
+        AC::delayedActuate(ARM_VENT, AC::OFF, 0, 1500);
+        launchStep++;
+        return flowLength;
+
+      case 2:
+        //end flow
+
+        //end packet for eregs
+        Comms::Packet endFlow = {.id = ENDFLOW, .len = 0};
+        Comms::emitPacket(&endFlow, ALL);
+
+        //arm and close main valves
+        AC::actuate(ARM, AC::ON, 0);
+        AC::actuate(LOX_MAIN_VALVE, AC::OFF, 0);
+        AC::actuate(FUEL_MAIN_VALVE, AC::OFF, 0);
+        AC::delayedActuate(ARM, AC::OFF, 0, 1000);
+        AC::delayedActuate(ARM_VENT, AC::ON, 0, 1050);
+        AC::delayedActuate(ARM_VENT, AC::OFF, 0, 1500);
+        launchStep++;
+        return 0;
+        
+    }
+  }
+}
+
+Task taskTable[] = {
+  {launchDaemon, 0, false}, //do not move from index 0
+  {AC::actuationDaemon, 0, true},
+  {AC::task_actuatorStates, 0, true},
+  {ChannelMonitor::readChannels, 0, true},
+  {Power::task_readSendPower, 0, true},
+  {AC::task_printActuatorStates, 0, true},
+  {task_heartbeat, 0, true},
+};
+
+#define TASK_COUNT (sizeof(taskTable) / sizeof (struct Task))
+
+void onLaunchQueue(Comms::Packet packet, uint8_t ip){
+  if(ID == AC1){
+    systemMode = (Mode)packetGetUint8(&packet, 0);
+    flowLength = packetGetUint32(&packet, 1);
+
+    if (systemMode == LAUNCH || systemMode == HOTFIRE){
+      // check igniter and breakwire continuity
+      // if no continuity, abort
+      // if continuity, start launch daemon
+      ChannelMonitor::readChannels();
+      if (!ChannelMonitor::isChannelContinuous(IGNITER)){
+        Comms::sendAbort(IGNITER_NO_CONTINUITY);
+        return;
+      } else if (!ChannelMonitor::isChannelContinuous(BREAKWIRE)){
+        Comms::sendAbort(BREAKWIRE_NO_CONTINUITY);
+        return;
+      }
+    } 
+
+    //start launch daemon
+    launchStep = 0;
+    taskTable[0].enabled = true;
+
+  }
 }
 
 void setup() {
@@ -168,13 +277,19 @@ void setup() {
   }
  
   
-
+  uint32_t ticks;
+  uint32_t nextTime;
   while(1) {
     // main loop here to avoid arduino overhead
     for(uint32_t i = 0; i < TASK_COUNT; i++) { // for each task, execute if next time >= current time
-      uint32_t ticks = micros(); // current time in microseconds
+      ticks = micros(); // current time in microseconds
       if (taskTable[i].nexttime - ticks > UINT32_MAX / 2 && taskTable[i].enabled) {
-        taskTable[i].nexttime = ticks + taskTable[i].taskCall();
+        nextTime = taskTable[i].taskCall();
+        if (nextTime == 0) {
+          taskTable[i].enabled = false;
+        } else {
+          taskTable[i].nexttime = ticks + nextTime;
+        }
       }
     }
     Comms::processWaitingPackets();

@@ -132,6 +132,10 @@ float* getContinuities() {
     return continuities;
 }
 
+bool isChannelContinuous(uint8_t channel) {
+    return continuities[channel] > CONT_THRESHOLD;
+}
+
 MCP23008 getMCP1() {
     return MCP1;
 }

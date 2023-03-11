@@ -236,8 +236,8 @@ namespace Comms {
    *
    * @param packet Packet to be sent.
    */
-  void emitPacket(Packet *packet)
-  {
+
+  void finishPacket(Packet *packet){
     // add timestamp to struct
     uint32_t timestamp = millis();
     packet->timestamp[0] = timestamp & 0xFF;
@@ -250,7 +250,10 @@ namespace Comms {
     packet->checksum[0] = checksum & 0xFF;
     packet->checksum[1] = checksum >> 8;
 
-
+  }
+  void emitPacket(Packet *packet)
+  {
+    finishPacket(packet);
 
     // Send over UDP
     // Udp.resetSendOffset();
@@ -263,6 +266,19 @@ namespace Comms {
       Udp.write(packet->data, packet->len);
       Udp.endPacket();
     }
+  }
+  void emitPacket(Packet *packet, uint8_t ip){
+    finishPacket(packet);
+
+    // Send over UDP
+    // Udp.resetSendOffset();
+    Udp.beginPacket(IPAddress(10,0,0,ip), port);
+    Udp.write(packet->id);
+    Udp.write(packet->len);
+    Udp.write(packet->timestamp, 4);
+    Udp.write(packet->checksum, 2);
+    Udp.write(packet->data, packet->len);
+    Udp.endPacket();
   }
 
 

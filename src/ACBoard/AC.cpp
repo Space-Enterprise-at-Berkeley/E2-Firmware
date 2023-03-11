@@ -10,12 +10,6 @@
 // 1: Extending 
 // 2: Off
 
-enum SendActuatorState {
-  RETRACTING = 0,
-  EXTENDING = 1,
-  OFF = 2,
-};
-
 // PACKET ID : 100, Actuate Actuator
 // 0: Retract fully 
 // 1: Extend fully 
@@ -23,15 +17,6 @@ enum SendActuatorState {
 // 3: Timed extend
 // 4: On 
 // 5: Off
-
-enum ActuatorCommand {
-  RETRACT_FULLY = 0,
-  EXTEND_FULLY = 1,
-  TIMED_RETRACT = 2,
-  TIMED_EXTEND = 3,
-  ON = 4,
-  OFF = 5,
-};
 
 // 0 and 2 correspond to actuator state 0
 // 1 and 3 and 4 correspond to actuator state 1
@@ -43,6 +28,13 @@ enum ActuatorCommand {
 // current threshold for a fully extended actuator (i.e less that 0.1A means an actuator has hit its limit switch)
 float FULLY_EXTENDED_CURRENT = 0.1;
 int FULLY_EXTENDED_MIN_TIME = 100;
+
+//for delayed actuation
+uint8_t delayedActuationsChannel[16];
+uint8_t delayedActuationsCmd[16];
+uint32_t delayedActuationsTime[16];
+uint32_t delayedActuationsDelay[16];
+uint8_t delayedActuationCount = 0;
 
 
 namespace AC {
@@ -76,6 +68,10 @@ namespace AC {
   }
 
   void actuate(uint8_t channel, uint8_t cmd, uint32_t time) {
+    //do not actuate breakwire
+    if (ID == AC1 && channel == 1) {
+      return;
+    }
     // set states and timers of actuator
     actuators[channel].state = cmd;
     actuators[channel].timeLeft = time;
@@ -92,6 +88,14 @@ namespace AC {
       actuators[channel].stop();
     }
     return;
+  }
+
+  void delayedActuate(uint8_t channel, uint8_t cmd, uint32_t time, uint32_t delay) {
+    // add to list of delayed actuations
+    delayedActuationsChannel[delayedActuationCount] = channel;
+    delayedActuationsCmd[delayedActuationCount] = cmd;
+    delayedActuationsTime[delayedActuationCount] = time;
+    delayedActuationsDelay[delayedActuationCount] = delay + millis();
   }
 
   void init() {
@@ -130,18 +134,33 @@ namespace AC {
       // don't need to touch anything for commands 4 and 5 - actuator stays on/off
     }
 
+    // check for any delayed actuations
+    for (int i = 0; i < delayedActuationCount; i++) {
+      if (millis() > delayedActuationsDelay[i]) {
+        actuate(delayedActuationsChannel[i], delayedActuationsCmd[i], delayedActuationsTime[i]);
+        // remove from list
+        for (int j = i; j < delayedActuationCount - 1; j++) {
+          delayedActuationsChannel[j] = delayedActuationsChannel[j+1];
+          delayedActuationsCmd[j] = delayedActuationsCmd[j+1];
+          delayedActuationsTime[j] = delayedActuationsTime[j+1];
+          delayedActuationsDelay[j] = delayedActuationsDelay[j+1];
+        }
+        delayedActuationCount--;
+      }
+    }
+
     // run every 10ms, could maybe less time as this is essentially the timing resolution of an actuation
     return 1000 * 10;
   }
 
   // converts command from packet 100 to actuator state in packet 2
   uint8_t formatActuatorState(uint8_t state) {
-    uint8_t mapping[6] = {RETRACTING, EXTENDING, RETRACTING, EXTENDING, EXTENDING, OFF};
+    uint8_t mapping[6] = {RETRACTING, EXTENDING, RETRACTING, EXTENDING, EXTENDING, INACTIVE};
     return mapping[state];
   }
 
   // gets every actuator state, formats it, and emits a packet
-  uint32_t actuatorStatesTask() {
+  uint32_t task_actuatorStates() {
     Comms::Packet acStates = {.id = AC_STATE};
     for (int i = 0; i < 8; i++) {
       packetAddUint8(&acStates, formatActuatorState(actuators[i].state));
@@ -151,7 +170,7 @@ namespace AC {
   }
 
   // prints every actuator state to serial
-  uint32_t printActuatorStatesTask() {
+  uint32_t task_printActuatorStates() {
     for (int i = 0; i < 8; i++) {
       Serial.print("Actuator ");
       Serial.print(i);

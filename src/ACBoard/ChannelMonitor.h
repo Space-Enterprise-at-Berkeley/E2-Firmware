@@ -13,6 +13,7 @@ namespace ChannelMonitor {
     
     float* getCurrents();
     float* getContinuities();
+    bool isChannelContinuous(uint8_t channel);
 
     MCP23008 getMCP1();
     MCP23008 getMCP2();

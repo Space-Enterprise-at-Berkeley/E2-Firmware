@@ -41,6 +41,7 @@ enum BoardID
   GROUND3 = 171,
   LOX_INJ_EREG = 28,
   FUEL_INJ_EREG = 27,
+  ALL = 255,
 };
 
 //Define Packet ID Enum
@@ -50,6 +51,9 @@ enum PacketID {
   MODE_CMD = 251,
   PWR_DATA = 1,
   ABORT = 133,
+  LAUNCH_QUEUE = 149,
+  LAUNCH = 150,
+  ENDFLOW = 151,
   //Does not include FC or EREG
   //PT
   PT_DATA = 2,
@@ -70,9 +74,9 @@ enum PacketID {
 //Define Use Mode Enum
 enum Mode {
   LAUNCH = 0,
-  HOTFIRE = 0,
-  COLDFLOW = 1,
-  GASFLOW = 2,
+  HOTFIRE = 1,
+  COLDFLOW = 2,
+  GASFLOW = 3,
 };
 
 //Define Abort Reason Enum
@@ -81,6 +85,9 @@ enum AbortReason {
   ENGINE_OVERTEMP = 1,
   LC_UNDERTHRUST = 2,
   MANUAL_ABORT = 3,
+  IGNITER_NO_CONTINUITY = 4,
+  BREAKWIRE_NO_CONTINUITY = 5,
+  BREAKWIRE_NO_BURNT = 6,
 };
 
   //BY FC
