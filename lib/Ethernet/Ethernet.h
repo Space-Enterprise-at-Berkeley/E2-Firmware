@@ -158,6 +158,9 @@ public:
 	// Start building up a packet to send to the remote host specific in ip and port
 	// Returns 1 if successful, 0 if there was a problem with the supplied IP address or port
 	virtual int beginPacket(IPAddress ip, uint16_t port);
+	// Start building up a packet to send to the remote host specific in ip, port, and socket s
+	// Returns 1 if successful, 0 if there was a problem with the supplied IP address or port
+	virtual int beginPacket(int x, IPAddress ip, uint16_t port);
 	// Start building up a packet to send to the remote host specific in host and port
 	// Returns 1 if successful, 0 if there was a problem resolving the hostname or port
 	virtual int beginPacket(const char *host, uint16_t port);
@@ -169,6 +172,11 @@ public:
 	virtual size_t write(uint8_t);
 	// Write size bytes from buffer into the packet
 	virtual size_t write(const uint8_t *buffer, size_t size);
+
+	// Write a single byte into the packet with specified socket s
+	virtual size_t write(int s, uint8_t);
+	// Write size bytes from buffer into the packet with specified socket s
+ 	virtual size_t write(int s, const uint8_t *buffer, size_t size);
 	using Print::write;
 
 	// Start processing the next available incoming packet

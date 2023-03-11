@@ -3,22 +3,32 @@
 namespace Comms {
   std::map<uint8_t, commFunction> callbackMap;
 
+  // Define 3 UDP instances
   EthernetUDP Udp;
   char packetBuffer[sizeof(Packet)];
 
   byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, IP_ADDRESS_END};
+  // Define groundstation ips
   IPAddress groundStation1(10, 0, 0, 169);
+  IPAddress groundStation2(10, 0, 0, 170);
+  IPAddress groundStation3(10, 0, 0, 171);
+
   IPAddress ip(10, 0, 0, IP_ADDRESS_END);
+  // Define multiple ports
   int port = 42069;
+  int port1 = 42070;
+  int port2 = 42071;
 
   void init()
   {
     Serial.begin(921600);
     Ethernet.init(10);
     Ethernet.begin((uint8_t *)mac, ip);
-    Udp.begin(port);
 
-    Udp.beginPacket(groundStation1, port);
+    // Configure W5500 pins destination/ports
+    Udp.beginPacket(0, groundStation1, port);
+    Udp.beginPacket(1, groundStation2, port1);
+    Udp.beginPacket(2, groundStation3, port2);
   }
 
   void sendFirmwareVersionPacket(Packet unused, uint8_t ip)
@@ -184,12 +194,12 @@ namespace Comms {
 
     // Send over serial, but disable if in debug mode
     #ifndef DEBUG_MODE
-    Serial.write(packet->id);
-    Serial.write(packet->len);
-    Serial.write(packet->timestamp, 4);
-    Serial.write(packet->checksum, 2);
-    Serial.write(packet->data, packet->len);
-    Serial.write('\n');
+      Serial.write(packet->id);
+      Serial.write(packet->len);
+      Serial.write(packet->timestamp, 4);
+      Serial.write(packet->checksum, 2);
+      Serial.write(packet->data, packet->len);
+      Serial.write('\n');
     #endif
 
     // Send over UDP
@@ -199,6 +209,40 @@ namespace Comms {
     Udp.write(packet->timestamp, 4);
     Udp.write(packet->checksum, 2);
     Udp.write(packet->data, packet->len);
+    Udp.endPacket();
+  }
+
+  void emitPacket(int socket, Packet *packet) {
+    // add timestamp to struct
+    uint32_t timestamp = millis();
+    packet->timestamp[0] = timestamp & 0xFF;
+    packet->timestamp[1] = (timestamp >> 8) & 0xFF;
+    packet->timestamp[2] = (timestamp >> 16) & 0xFF;
+    packet->timestamp[3] = (timestamp >> 24) & 0xFF;
+
+    // calculate and append checksum to struct
+    uint16_t checksum = computePacketChecksum(packet);
+    packet->checksum[0] = checksum & 0xFF;
+    packet->checksum[1] = checksum >> 8;
+
+    // Send over serial, but disable if in debug mode
+    #ifndef DEBUG_MODE
+      Serial.write(packet->id);
+      Serial.write(packet->len);
+      Serial.write(packet->timestamp, 4);
+      Serial.write(packet->checksum, 2);
+      Serial.write(packet->data, packet->len);
+      Serial.write('\n');
+    #endif
+
+    // Send over UDP
+    Udp.resetSendOffset();
+    Udp.write(socket, packet->id);
+    Udp.write(socket, packet->len);
+    Udp.write(socket, packet->timestamp, 4);
+    Udp.write(socket, packet->checksum, 2);
+    Udp.write(socket, packet->data, packet->len);
+    
     Udp.endPacket();
   }
 

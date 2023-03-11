@@ -62,6 +62,14 @@ namespace Comms
    */
   void emitPacket(Packet *packet);
 
+  /**
+   * @brief Sends packet data over ethernet and serial towards a specific ip labeled socketNum
+   *  Basically a refactoring of the earlier function.
+   * @param packet 
+   * @param socketNum 
+   */
+  void emitPacket(int socketNum, Packet *packet);
+
   bool verifyPacket(Packet *packet);
 
   uint16_t computePacketChecksum(Packet *packet);
