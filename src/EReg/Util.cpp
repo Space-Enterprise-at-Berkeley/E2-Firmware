@@ -154,7 +154,7 @@ namespace Util {
             speed = min(0, speed);
         }
         int pwmPower = abs((int) speed);
-        int motorDir = (speed > 0) ? 0 : 1;
+        int motorDir = (speed > 0) ? 1 : 0;
         if (pwmPower > Config::maximumMotorPower) {
             pwmPower = Config::maximumMotorPower;
         }

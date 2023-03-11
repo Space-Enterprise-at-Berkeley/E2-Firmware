@@ -328,49 +328,49 @@ namespace HAL {
 
     void risingA() {
         if (digitalRead(encC)) {
-            encoderTicks += 1;
-        } else {
             encoderTicks -= 1;
+        } else {
+            encoderTicks += 1;
         }
     }
 
     void risingB() {
         if (digitalRead(encA)) {
-            encoderTicks += 1;
-        } else {
             encoderTicks -= 1;
+        } else {
+            encoderTicks += 1;
         } 
     }
 
     void risingC() {
         if (digitalRead(encB)) {
-            encoderTicks += 1;
-        } else {
             encoderTicks -= 1;
+        } else {
+            encoderTicks += 1;
         } 
     }
 
     void fallingA() {
         if (digitalRead(encB)) {
-            encoderTicks += 1;
-        } else {
             encoderTicks -= 1;
+        } else {
+            encoderTicks += 1;
         }  
     }
 
     void fallingB() {
         if (digitalRead(encC)) {
-            encoderTicks += 1;
-        } else {
             encoderTicks -= 1;
+        } else {
+            encoderTicks += 1;
         }  
     }
 
     void fallingC() {
         if (digitalRead(encA)) {
-            encoderTicks += 1;
-        } else {
             encoderTicks -= 1;
+        } else {
+            encoderTicks += 1;
         }  
     }
     void changeA() {

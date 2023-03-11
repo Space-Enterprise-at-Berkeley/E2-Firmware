@@ -65,11 +65,16 @@ void setup() {
     Serial.begin(115200);
     Serial.printf("micros: %d\n", micros());
     Serial.printf("hi!!\n");
-    if (HAL::init() == -1) {
-        DEBUGF("HAL initialization failed\n");
-        while(1){};
-    } else {
-        DEBUGF("HAL initialization success!\n");
+    // HAL::init();
+    bool cont = true;
+    while (cont) {
+        if (HAL::init() == 0) {
+            Serial.printf("HAL init success\n");
+            cont = false;
+        } else {
+            Serial.printf("HAL init failed\n");
+            delay(5000);
+        }
     }
     Comms::init(HAL::ETH_CS, HAL::ETH_MISO, HAL::ETH_MOSI, HAL::ETH_SCLK, HAL::ETH_INTn);
     StateMachine::enterIdleClosedState();
