@@ -15,9 +15,9 @@ namespace Comms {
 
   IPAddress ip(10, 0, 0, IP_ADDRESS_END);
   // Define multiple ports
-  int port = 42069;
-  int port1 = 42070;
-  int port2 = 42071;
+  int port1 = 42069;
+  int port2 = 42070;
+  int port3 = 42071;
 
   void init()
   {
@@ -26,9 +26,9 @@ namespace Comms {
     Ethernet.begin((uint8_t *)mac, ip);
 
     // Configure W5500 pins destination/ports
-    Udp.beginPacket(0, groundStation1, port);
-    Udp.beginPacket(1, groundStation2, port1);
-    Udp.beginPacket(2, groundStation3, port2);
+    Udp.beginPacket(0, groundStation1, port1);
+    Udp.beginPacket(1, groundStation2, port2);
+    Udp.beginPacket(2, groundStation3, port3);
   }
 
   void sendFirmwareVersionPacket(Packet unused, uint8_t ip)

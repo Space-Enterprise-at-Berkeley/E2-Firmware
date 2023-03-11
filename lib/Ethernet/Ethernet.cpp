@@ -81,7 +81,7 @@ void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress g
 	W5500.setIPAddress(ip._address.bytes);
 	W5500.setGatewayIp(gateway._address.bytes);
 	W5500.setSubnetMask(subnet._address.bytes);
-	W5500.writeSIMR(0xFF);
+	W5500.writeSIMR(0x01);
 	// Set Interupprt
 	attachInterrupt(9, setRecvFlag, FALLING);
 	SPI.endTransaction();
