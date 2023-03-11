@@ -181,28 +181,6 @@ namespace FlightStatus {
 
     uint32_t flightDataUpdate = 100 * 1000;
 
-    void sampleValve(Valve *valve) {
-        valve->current = valve->muxChannel->readChannel1();
-        valve->voltage = valve->muxChannel->readChannel2();
-        DEBUG("Valve current: ");
-        DEBUG(valve->current);
-        DEBUG("\n");
-        DEBUG("Continuity: ");
-        DEBUG(valve->voltage);
-        DEBUG("\n");
-        DEBUG_FLUSH();
-        Comms::Packet tmp = {.id = valve->statusPacketID};
-        if (valve->current > valve->ocThreshold) {
-
-            closeValve(valve, 1);
-        }
-        Comms::packetAddFloat(&tmp, valve->voltage);
-        Comms::packetAddFloat(&tmp, valve->current);
-        
-        Comms::emitPacket(&tmp);
-        Comms::emitPacket(&tmp, &RADIO_SERIAL, "\r\n\n", 3);
-    }
-
     uint32_t updateFlight() {
 
         // TODO: Read IMUs, barometers, GPS, and send packets

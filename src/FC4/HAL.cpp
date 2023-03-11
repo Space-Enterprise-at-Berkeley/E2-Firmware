@@ -2,11 +2,6 @@
 
 namespace HAL {
 
-    // // Sensors breakouts
-    // BMP388_DEV bmp388;
-    // BNO055 bno055(28);
-    // SFE_UBLOX_GNSS neom9n;
-
     void initHAL() {
 
         pinMode(adcCS, OUTPUT);
@@ -21,15 +16,11 @@ namespace HAL {
         Wire.begin(sdaPin, sclPin); 
         Wire.setClock(100000);
 
-        // initialize IO expanders
-
-
-        // initialize channels
-            // IO Expander pins 0..7
-            //  single pin interface
-            //  mode = INPUT, OUTPUT, INPUT_PULLUP (= same as INPUT)
-            // bool MCP23008::pinMode(uint8_t pin, uint8_t mode)
-        
+        // initialize IO expanders and channels
+        MCP0.begin();
+        MCP1.begin();
+        MCP0.pinMode8(0x00);  // 0 = output , 1 = input
+        MCP1.pinMode8(0x00);  // 0 = output , 1 = input
 
         // initialize ADC
         adc.init(spi0, adcCS, adcRDY);

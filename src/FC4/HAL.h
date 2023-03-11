@@ -44,8 +44,8 @@ namespace HAL {
     extern SparkFun_KX134 imu_hg;
 
     // IO Expander
-    extern MCP23008 MCP0;
-    extern MCP23008 MCP1;
+    extern MCP23008 MCP0(0x27);
+    extern MCP23008 MCP1(0x20);
 
     // Valves, video, chutes, etc. 
     // MCP0
@@ -88,6 +88,9 @@ namespace HAL {
     // RTD
     const uint8_t rtd0CS = 45;
     const uint8_t rtd1CS = 46;
+
+    extern MAX31865 rtd0(rtd0CS, spi0);
+    extern MAX31865 rtd1(rtd1CS, spi1);
 
     void initHAL();
 };
