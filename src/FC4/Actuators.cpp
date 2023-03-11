@@ -11,32 +11,32 @@ namespace Actuators {
                     .current = 0.0,
                     .period = 100 * 1000,
                     .state = 0,
-                    .pin1 = HAL::hBridge1Pin1,
-                    .pin2 = HAL::hBridge1Pin2,
+                    .pin0 = HAL::rbv0Pin,
+                    .pin1 = HAL::rbv1Pin,
                     .stop = NULL, 
-                    .muxChannel = &HAL::muxChan13};
+                    };
   
     void driveForwards(Actuator *actuator){
-        digitalWriteFast(actuator->pin1, HIGH);
-        digitalWriteFast(actuator->pin2, LOW);
+        digitalWriteFast(actuator->pin0, HIGH);
+        digitalWriteFast(actuator->pin1, LOW);
         actuator->state = 1;
     }
 
     void driveBackwards(Actuator *actuator){
-        digitalWriteFast(actuator->pin1, LOW);
-        digitalWriteFast(actuator->pin2, HIGH);
+        digitalWriteFast(actuator->pin0, LOW);
+        digitalWriteFast(actuator->pin1, HIGH);
         actuator->state = 2;
     }
 
     void stopAct(Actuator *actuator){
+        digitalWriteFast(actuator->pin0, LOW);
         digitalWriteFast(actuator->pin1, LOW);
-        digitalWriteFast(actuator->pin2, LOW);
         actuator->state = 0;
     }
 
     void brakeAct(Actuator *actuator){
+        digitalWriteFast(actuator->pin0, HIGH);
         digitalWriteFast(actuator->pin1, HIGH);
-        digitalWriteFast(actuator->pin2, HIGH);
         actuator->state = 4; // Probably won't brake
     }
 

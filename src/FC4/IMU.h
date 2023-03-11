@@ -17,4 +17,13 @@ namespace IMU {
 
     void initIMU();
     uint32_t imuSample();
+
+    float get_acceleration_x();
+    float get_acceleration_y();
+    float get_acceleration_z();
+
+    float get_gyro_x();
+    float get_gyro_y();
+    float get_gyro_z();
+
 };

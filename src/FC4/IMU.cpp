@@ -2,8 +2,16 @@
 
 
 namespace IMU {
-   
+
     
+    
+    void initIMU() { 
+
+    }
+
+    uint32_t imuSample() { 
+
+    }
 
     float get_acceleration_x() {
         float output;

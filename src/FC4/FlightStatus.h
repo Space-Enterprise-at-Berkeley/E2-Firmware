@@ -5,7 +5,7 @@
 #include "IMU.h"
 #include "GPS.h"
 #include "IMUHighG.h"
- 
+#include <Common.h>
 
 namespace FlightStatus {
 
@@ -13,7 +13,15 @@ namespace FlightStatus {
     // kalman filter params
     // handle read sensors
     // handle send flight sensor packets
+    
+    uint8_t launched = 0;
+    uint8_t burnout = 0;
+    uint8_t apogee = 0;
+    uint8_t main_parachute = 0;
+    uint8_t deploy_vel = 0;
 
     uint32_t updateFlight();
+
+    
 
 };
