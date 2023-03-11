@@ -268,17 +268,18 @@ namespace Comms {
     }
   }
   void emitPacket(Packet *packet, uint8_t ip){
+    Serial.println("Emitting packet to " + String(ip));
     finishPacket(packet);
 
     // Send over UDP
     // Udp.resetSendOffset();
-    Udp.beginPacket(IPAddress(10,0,0,ip), port);
+    Serial.print(Udp.beginPacket(IPAddress(10,0,0,ip), port));
     Udp.write(packet->id);
     Udp.write(packet->len);
     Udp.write(packet->timestamp, 4);
     Udp.write(packet->checksum, 2);
     Udp.write(packet->data, packet->len);
-    Udp.endPacket();
+    Serial.println(Udp.endPacket());
   }
 
 
@@ -325,6 +326,7 @@ namespace Comms {
     Packet packet = {.id = ABORT, .len = 0};
     packetAddUint8(&packet, systemMode);
     packetAddUint8(&packet, abortReason);
-    emitPacket(&packet, ALL);
+    emitPacket(&packet, 12);
+    Serial.println("Abort sent, mode " + String(systemMode) + " reason " + String(abortReason));
   }
 };

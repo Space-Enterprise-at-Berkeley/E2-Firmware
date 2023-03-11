@@ -33,11 +33,13 @@ enum Actuators {
 
 
 Comms::Packet heart = {.id = HEARTBEAT, .len = 0};
+uint8_t counter = 0;
 uint32_t task_heartbeat() {
   heart.len = 0;
   Comms::packetAddUint8(&heart, ID);
+  Comms::packetAddUint8(&heart, counter++);
   Comms::emitPacket(&heart);
-  return 1000 * 1000; //1 sec
+  return 250 * 1000; //1 sec
 }
 
 // ABORT behaviour - 
@@ -142,21 +144,37 @@ uint32_t launchDaemon(){
       case 0:
       {
         // Light igniter and wait for 0.5 sec
-        AC::actuate(IGNITER, AC::ON, 0);
-        launchStep++;
-        return 500 * 1000;
+        if (systemMode == HOTFIRE || systemMode == LAUNCH){
+          Serial.println("launch step 0, igniter on");
+          AC::actuate(IGNITER, AC::ON, 0);
+          launchStep++;
+          return 500 * 1000;
+        } else {
+          Serial.println("launch step 0, not hotfire, skip");
+          launchStep++                    ;
+          return 10;
+        }
+        
       }
       case 1:
       {
-        //igniter off
-        AC::actuate(IGNITER, AC::OFF, 0);
-      
-        //Throw abort if breakwire still has continuity
-        ChannelMonitor::readChannels();
-        if (ChannelMonitor::isChannelContinuous(BREAKWIRE)){
-          Comms::sendAbort(systemMode, BREAKWIRE_NO_BURNT);
-          launchStep = 0;
-          return 0;
+        if (systemMode == HOTFIRE || systemMode == LAUNCH){
+          //igniter off
+          Serial.println("launch step 1, igniter off");
+          AC::actuate(IGNITER, AC::OFF, 0);
+
+          //Throw abort if breakwire still has continuity
+          ChannelMonitor::readChannels();
+          if (ChannelMonitor::isChannelContinuous(BREAKWIRE)){
+            Serial.println("breakwire still has continuity, aborting");
+            Comms::Packet abort = {.id = 43, .len = 0};
+            Comms::packetAddUint8(&abort, systemMode);
+            Comms::packetAddUint8(&abort, BREAKWIRE_NO_BURNT);
+            Comms::emitPacket(&abort, ALL);
+            //Comms::sendAbort(systemMode, BREAKWIRE_NO_BURNT);
+            launchStep = 0;
+            return 0;
+          }
         }
 
         //send packet for eregs
@@ -173,7 +191,7 @@ uint32_t launchDaemon(){
         AC::delayedActuate(ARM_VENT, AC::ON, 0, 1050);
         AC::delayedActuate(ARM_VENT, AC::OFF, 0, 1500);
         launchStep++;
-        return flowLength;
+        return flowLength * 1000;
       }
       case 2:
       {
@@ -206,12 +224,12 @@ uint32_t launchDaemon(){
 }
 
 Task taskTable[] = {
-  {launchDaemon, 0, false}, //do not move from index 0
-  {AC::actuationDaemon, 0, true},
-  {AC::task_actuatorStates, 0, true},
-  {ChannelMonitor::readChannels, 0, true},
-  {Power::task_readSendPower, 0, true},
-  {AC::task_printActuatorStates, 0, true},
+  //{launchDaemon, 0, false}, //do not move from index 0
+  //{AC::actuationDaemon, 0, true},
+  //{AC::task_actuatorStates, 0, true},
+  //{ChannelMonitor::readChannels, 0, true},
+  //{Power::task_readSendPower, 0, true},
+  //{AC::task_printActuatorStates, 0, true},
   {task_heartbeat, 0, true},
 };
 
@@ -239,6 +257,7 @@ void onLaunchQueue(Comms::Packet packet, uint8_t ip){
     //start launch daemon
     launchStep = 0;
     taskTable[0].enabled = true;
+    Serial.println("launch command recieved, starting sequence");
 
   }
 }

@@ -28,7 +28,7 @@ void initLEDs() {
 }
 
 uint32_t LED_roll(){
-  if (ADS::unrefreshedSample(roll) < -1000){
+  if (ADS::unrefreshedSample(roll) < 0){
     digitalWrite(LEDS[roll], LOW);
   }
   roll = (roll + 1) % 4;
@@ -76,6 +76,7 @@ uint32_t abortDaemon(){
   } else {
     timeSinceBad = 0;
   }
+  return 75*1000;
 }
 
 void onFlowStart(Comms::Packet packet, uint8_t ip) {
