@@ -158,7 +158,7 @@ uint32_t launchDaemon(){
         }
 
         //send packet for eregs
-        Comms::Packet launch = {.id = LAUNCH, .len = 0};
+        Comms::Packet launch = {.id = LAUNCH_CMD, .len = 0};
         Comms::packetAddUint8(&launch, systemMode);
         Comms::packetAddUint32(&launch, flowLength);
         Comms::emitPacket(&launch, ALL);

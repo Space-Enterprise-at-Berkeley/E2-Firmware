@@ -51,7 +51,7 @@ enum PacketID {
   PWR_DATA = 1,
   ABORT = 133,
   LAUNCH_QUEUE = 149,
-  LAUNCH = 150,
+  LAUNCH_CMD = 150,
   ENDFLOW = 151,
   //Does not include FC or EREG
   //PT
