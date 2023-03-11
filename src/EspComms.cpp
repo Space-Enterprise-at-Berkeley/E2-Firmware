@@ -112,7 +112,7 @@ namespace Comms {
        //And then make the packet and trigger the callback
 
         Serial.println("Got a command");
-        int id = (uint8_t)Serial.parseInt();
+        uint8_t id = (uint8_t)Serial.parseInt();
         Serial.print("id" + String(id));
         if (id == -1) return;
         Packet packet = {.id = id, .len = 0};
@@ -319,5 +319,12 @@ namespace Comms {
       sum2 = sum2 + sum1;
     }
     return (((uint16_t)sum2) << 8) | (uint16_t)sum1;
+  }
+
+  void sendAbort(uint8_t systemMode, uint8_t abortReason){
+    Packet packet = {.id = ABORT, .len = 0};
+    packetAddUint8(&packet, systemMode);
+    packetAddUint8(&packet, abortReason);
+    emitPacket(&packet, ALL);
   }
 };

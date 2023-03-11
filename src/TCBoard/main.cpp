@@ -38,17 +38,26 @@ uint32_t print_task() {
   return 1000 * 1000;
 }
 
-uint32_t hello_packet() {
-  Comms::Packet hello = {.id = 1};
-  Comms::packetAddFloat(&hello, 69);
-  Comms::packetAddFloat(&hello, 69);
-  Comms::packetAddFloat(&hello, 69);
-  Comms::emitPacket(&hello);
-  return 1000 * 1000;
+// TC abort triggers when over 200 C for 0.5 seconds, and only during a hotfire
+uint32_t maxTemp = 200;
+uint32_t abortTime = 500;
+
+void onFlowStart(Comms::Packet packet, uint8_t ip) {
+  Mode systemMode = (Mode)Comms::packetGetUint8(&packet, 0);
+  if (systemMode != HOTFIRE) {
+    return;
+  }
+  //start TC abort check when hotfire starts
+  TC::setAbort(true, maxTemp, abortTime);
+
+}
+void onAbortOrEndFlow(Comms::Packet packet, uint8_t ip){
+  //stop TC abort check when abort or endflow is received
+  TC::setAbort(false);
 }
 
 Task taskTable[] = {
-  //{Power::task_readSendPower,0,true},
+  {Power::task_readSendPower,0,true},
   {LED_roll, 0, true},
   //{hello_packet, 0, true},
   {TC::task_sampleTCs, 0, true},
@@ -64,6 +73,9 @@ void setup() {
   initLEDs();
   //Power::init();
   TC::init();
+  Comms::registerCallback(STARTFLOW, onFlowStart);
+  Comms::registerCallback(ABORT, onAbortOrEndFlow);
+  Comms::registerCallback(ENDFLOW, onAbortOrEndFlow);
 
   while(1) {
     // main loop here to avoid arduino overhead

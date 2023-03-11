@@ -140,25 +140,27 @@ uint32_t launchDaemon(){
   if (ID == AC1){
     switch(launchStep){
       case 0:
+      {
         // Light igniter and wait for 0.5 sec
         AC::actuate(IGNITER, AC::ON, 0);
         launchStep++;
         return 500 * 1000;
-
+      }
       case 1:
+      {
         //igniter off
         AC::actuate(IGNITER, AC::OFF, 0);
       
         //Throw abort if breakwire still has continuity
         ChannelMonitor::readChannels();
         if (ChannelMonitor::isChannelContinuous(BREAKWIRE)){
-          Comms::sendAbort(BREAKWIRE_NO_BURNT);
+          Comms::sendAbort(systemMode, BREAKWIRE_NO_BURNT);
           launchStep = 0;
           return 0;
         }
 
         //send packet for eregs
-        Comms::Packet launch = {.id = LAUNCH_CMD, .len = 0};
+        Comms::Packet launch = {.id = STARTFLOW, .len = 0};
         Comms::packetAddUint8(&launch, systemMode);
         Comms::packetAddUint32(&launch, flowLength);
         Comms::emitPacket(&launch, ALL);
@@ -172,8 +174,9 @@ uint32_t launchDaemon(){
         AC::delayedActuate(ARM_VENT, AC::OFF, 0, 1500);
         launchStep++;
         return flowLength;
-
+      }
       case 2:
+      {
         //end flow
 
         //end packet for eregs
@@ -187,11 +190,19 @@ uint32_t launchDaemon(){
         AC::delayedActuate(ARM, AC::OFF, 0, 1000);
         AC::delayedActuate(ARM_VENT, AC::ON, 0, 1050);
         AC::delayedActuate(ARM_VENT, AC::OFF, 0, 1500);
-        launchStep++;
-        return 0;
-        
+
+        //open lox and fuel gems via abort only to AC2
+        Comms::Packet openGems = {.id = ABORT, .len = 0};
+        Comms::packetAddUint8(&openGems, systemMode);
+        Comms::packetAddUint8(&openGems, LC_UNDERTHRUST);
+        Comms::emitPacket(&openGems, AC2);
+
+        launchStep = 0;
+        return 0;  
+      }
     }
   }
+  return 0;
 }
 
 Task taskTable[] = {
@@ -217,10 +228,10 @@ void onLaunchQueue(Comms::Packet packet, uint8_t ip){
       // if continuity, start launch daemon
       ChannelMonitor::readChannels();
       if (!ChannelMonitor::isChannelContinuous(IGNITER)){
-        Comms::sendAbort(IGNITER_NO_CONTINUITY);
+        Comms::sendAbort(systemMode, IGNITER_NO_CONTINUITY);
         return;
       } else if (!ChannelMonitor::isChannelContinuous(BREAKWIRE)){
-        Comms::sendAbort(BREAKWIRE_NO_CONTINUITY);
+        Comms::sendAbort(systemMode, BREAKWIRE_NO_CONTINUITY);
         return;
       }
     } 
@@ -241,6 +252,8 @@ void setup() {
   ChannelMonitor::init(41, 42, 47, 4, 5);
   //abort register
   Comms::registerCallback(ABORT, onAbort);
+  //launch register
+  Comms::registerCallback(LAUNCH_QUEUE, onLaunchQueue);
 
 
   for (int i = 0; i < 8; i++) {

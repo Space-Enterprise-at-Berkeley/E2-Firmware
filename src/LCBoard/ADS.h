@@ -21,9 +21,9 @@ namespace ADS {
     void refreshReadings();
     uint32_t task_sampleLC();
 
-    long unrefreshedSample(int i);
+    float unrefreshedSample(uint8_t channel);
 
-    void zeroChannel(int i);
+    void zeroChannel(uint8_t i);
 
 
 }

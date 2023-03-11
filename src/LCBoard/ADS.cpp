@@ -41,7 +41,7 @@ namespace ADS {
         }
     }
 
-    void zeroChannel(int i){
+    void zeroChannel(uint8_t i){
         offset[i] = -lbs[i] + offset[i];
         Serial.println("zeroed channel " + String(i) + " at " + String(lbs[i]) + " lbs");
         if(persistant_offset){
@@ -124,8 +124,8 @@ namespace ADS {
 
     }
 
-    long unrefreshedSample(int i){
-        return data[i];
+    float unrefreshedSample(uint8_t channel){
+        return lbs[channel];
     }
 
 }

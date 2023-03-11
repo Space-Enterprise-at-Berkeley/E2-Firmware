@@ -57,12 +57,25 @@ namespace Comms
   uint32_t packetGetUint8(Packet *packet, uint8_t index);
 
   /**
+   * @brief Adds time and checksum to packet.
+   *
+   * @param packet Packet to be processed.
+   */
+  void finishPacket(Packet *packet);
+
+  /**
    * @brief Sends packet data over ethernet and serial.
    *
    * @param packet The packet in which the data is stored.
    */
   void emitPacket(Packet *packet);
-  void finishPacket(Packet *packet);
+
+  /**
+   * @brief Sends packet data over ethernet and serial.
+   *
+   * @param packet The packet in which the data is stored.
+   * @param ip The IP address of the groundstation to send the packet to.
+   */
   void emitPacket(Packet *packet, uint8_t ip);
 
   bool verifyPacket(Packet *packet);
@@ -75,4 +88,12 @@ namespace Comms
    * @param _ unused
    */
   void sendFirmwareVersionPacket(Packet unused, uint8_t ip);
+
+  /**
+   * @brief Broadcasts an abort packet with the current system mode and abort reason.
+   *
+   * @param systemMode The current system mode. Follows enum in Common.h.
+   * @param abortReason The current abort reason. Follows enum in Common.h.
+   */
+  void sendAbort(uint8_t systemMode, uint8_t abortReason);
 };
