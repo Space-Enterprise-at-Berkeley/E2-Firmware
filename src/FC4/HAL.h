@@ -4,85 +4,93 @@
 
 
 #include <ADS8167.h>
-#include <MCP9600.h>
-
 #include <BMP388_DEV.h>
-#include <BNO055.h>
+#include <MAX31865.h>
+#include <MCP23008.h>
+#include <Adafruit_LSM6DSO32.h>
 #include <SparkFun_u-blox_GNSS_Arduino_Library.h>
+#include <SparkFun_Qwiic_KX13X.h>
 
 #include <Arduino.h>
 #include <SPI.h>
 #include <Wire.h>
-#include <MuxChannel.h>
-
 namespace HAL {    
+        
+    // SPI
+    const uint8_t mosiPin = 6;
+    const uint8_t misoPin = 7;
+    const uint8_t sckPin = 8;
+
+    extern SPIClass spi0;
+
+    // I2C
+    const uint8_t sdaPin = 1;
+    const uint8_t sclPin = 2;
+
+    // Serial 
+    const uint8_t tx0P = 35;
+    const uint8_t rx0P = 34;
     
-    #define RS485_SERIAL Serial8
-    #define RADIO_SERIAL Serial7
+    const uint8_t tx1P = 33;
+    const uint8_t rx1P = 26;
 
-    extern ADS8167 adc1;
+    const uint8_t tx2P = 21;
+    const uint8_t rx2P = 20;
 
-    const uint8_t RS485SwitchPin = 27;  
-    
-    const float valveMuxCurrentScalingFactor = ((1.0 / 20.0) / 0.02) * 3.3 / 4096.0; // current
-    const float valveMuxContinuityScalingFactor = (11.0) / 4096.0; // "voltage" reading, TODO will this value need to change
+    // Flight data
+    extern BMP388_DEV bmp; 
+    extern Adafruit_LSM6DSO32 ds032;
+    extern SFE_UBLOX_GNSS neom9n;
+    extern SparkFun_KX134 imu_hg;
 
-    const float chanShuntR = 0.02; // Orig. 0.033 but now 20 mOhm on v2
-    const float chanCurrMax = 4.0;
+    // IO Expander
+    extern MCP23008 MCP0(0x27);
+    extern MCP23008 MCP1(0x20);
 
-    // Sensor Breakouts
-    extern BMP388_DEV bmp388; // barometer
-    extern BNO055 bno055; // imu
-    extern SFE_UBLOX_GNSS neom9n; // gps
+    // Valves, video, chutes, etc. 
+    // MCP0
+    const uint8_t valve0Pin = 0;
+    const uint8_t valve1Pin = 1;
+    const uint8_t valve2Pin = 2;
+    const uint8_t valve3Pin = 3;
+    const uint8_t chute0Pin = 4;
+    const uint8_t chute1Pin = 5;
+    const uint8_t video0Pin = 7;
+    const uint8_t video1Pin = 6;
 
-    const uint8_t gpsCSPin = 38;
+    // MCP1
+    const uint8_t valve4Pin = 4;
+    const uint8_t rbv0Pin = 7;
+    const uint8_t rbv1Pin = 6;
 
-    // Pin Mappings for Flight Stack
-    // Flight v3 Channels
-    const uint8_t chute1Pin = 30; 
-    const uint8_t chute2Pin = 31;
-    const uint8_t camPin = 39;
-    const uint8_t amp1Pin = 32; // not flying amp but keeping the name for ref to schematic
-    const uint8_t radio1Pin = 8;
-    
 
-    // E-1 Extension Channels
-    const uint8_t valve1Pin = 7; // LOX GEMS
-    const uint8_t valve2Pin = 24; // FUEL GEMS
-    const uint8_t valve3Pin = 2; 
-    const uint8_t valve4Pin = 23; 
-    const uint8_t valve5Pin = 9;
-    const uint8_t valve6Pin = 14; 
-    const uint8_t hBridge1Pin1 = 0; 
-    const uint8_t hBridge1Pin2 = 1; 
-    const uint8_t hBridge2Pin1 = 15; // PRESS FLOW 1
-    const uint8_t hBridge2Pin2 = 36; // PRESS FLOW 2
-    const uint8_t hBridge3Pin1 = 21; 
-    const uint8_t hBridge3Pin2 = 22; 
+    // Multiplexer
+    const uint8_t muxS0 = 40;
+    const uint8_t muxS1 = 39;
+    const uint8_t muxS2 = 38;
+    const uint8_t contPin = 41;
+    const uint8_t currPin = 42;
+    const uint8_t expMuxPin = 36;
 
-    extern MCP9600 tcAmp0;
-    extern MCP9600 tcAmp1;
-    extern MCP9600 tcAmp2;
-    extern MCP9600 tcAmp3;
+    // ADC
+    const uint8_t adcRDY = 4;
+    const uint8_t adcCS = 47;
 
-    extern MuxChannel muxChan0; // Chute1
-    extern MuxChannel muxChan1; // Chute2
-    extern MuxChannel muxChan2; // Cam1/NA
-    extern MuxChannel muxChan3; // Amp/NA
-    extern MuxChannel muxChan4; // Cam2/Break1
-    extern MuxChannel muxChan5; // Radio/Break2
-    extern MuxChannel muxChan6; // NA/Break3
-    extern MuxChannel muxChan7; // Valve1
-    extern MuxChannel muxChan8; // Valve2
-    extern MuxChannel muxChan9; // Valve3
-    extern MuxChannel muxChan10; // Valve4
-    extern MuxChannel muxChan11; // Valve5
-    extern MuxChannel muxChan12; // Valve6
-    extern MuxChannel muxChan13; // HBridge1
-    extern MuxChannel muxChan14; // HBridge2
-    extern MuxChannel muxChan15; // HBridge3
+    extern ADS8167 adc;
 
-    // void setWireClockLow();
-    // void resetWireClock();
+    // Radio
+    const uint8_t radioCS = 3;
+    const uint8_t radioSDN = 9;
+
+    // Flash chip
+    const uint8_t bbCS = 37;
+
+    // RTD
+    const uint8_t rtd0CS = 45;
+    const uint8_t rtd1CS = 46;
+
+    extern MAX31865 rtd0(rtd0CS, spi0);
+    extern MAX31865 rtd1(rtd1CS, spi1);
+
     void initHAL();
 };

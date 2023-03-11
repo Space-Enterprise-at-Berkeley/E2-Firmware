@@ -3,7 +3,7 @@
 #include "HAL.h"
 #include <Arduino.h>
 
-#include <Comms.h>
+#include <EspComms.h>
 #include <SparkFun_u-blox_GNSS_Arduino_Library.h>
 #include <SPI.h>
 
