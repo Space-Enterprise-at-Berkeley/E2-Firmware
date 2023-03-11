@@ -18,10 +18,6 @@ namespace Packets {
      */
 
 
-    uint8_t ac1_ip = 11;
-    uint8_t ac2_ip = 12;
-    uint8_t ACTUATE_IP = 100;
-
 
     void sendTelemetry(
         float upstreamPressure,
@@ -120,52 +116,12 @@ namespace Packets {
     }
 
 
-    /**
-     * Sends an abort command to all 4 ESPs
-     */
-    void broadcastAbort() { //TODO
+    void broadcastAbort(uint8_t abortReason) { //TODO
         Comms::Packet packet = {.id = ABORT_ID};
         packet.len = 0;
-        Comms::emitPacket(&packet);
-
-        //send abort to ACs
-        Comms::Packet actuate = {.id = ACTUATE_IP, .len=0};
-
-        //open fuel GEMS
-        actuate.len = 0;
-        Comms::packetAddUint8(&actuate, 7);
-        Comms::packetAddUint8(&actuate, 4);
-        Comms::packetAddUint8(&actuate, 0);
-        Comms::emitPacket(&actuate, ac2_ip);
-        delay(30);
-
-        //open lox GEMS
-        actuate.len = 0;
-        Comms::packetAddUint8(&actuate, 6);
-        Comms::packetAddUint8(&actuate, 4);
-        Comms::packetAddUint8(&actuate, 0);
-        Comms::emitPacket(&actuate, ac2_ip);
-
-
-
-        delay(30);
-
-        //open lox vent rbv
-        actuate.len = 0;
-        Comms::packetAddUint8(&actuate, 3);
-        Comms::packetAddUint8(&actuate, 0);
-        Comms::packetAddUint8(&actuate, 0);
-        Comms::emitPacket(&actuate, ac2_ip);
-
-        delay(30);
-
-        //open fuel vent rbv
-        actuate.len = 0;
-        Comms::packetAddUint8(&actuate, 4);
-        Comms::packetAddUint8(&actuate, 0);
-        Comms::packetAddUint8(&actuate, 0);
-        Comms::emitPacket(&actuate, ac2_ip);
-
+        Comms::packetAddUint8(&packet, HOTFIRE);
+        Comms::packetAddUint8(&packet, abortReason);
+        Comms::emitPacket(&packet, ALL);
     }
 
 

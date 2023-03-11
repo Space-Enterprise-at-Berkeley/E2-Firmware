@@ -12,7 +12,7 @@ namespace Packets {
     const uint8_t LIMIT_SWITCHES = 6;
     const uint8_t PHASE_CURRENTS = 7;
     const uint8_t TEMPS = 8;
-    const uint8_t ABORT_ID = 9;
+    const uint8_t ABORT_ID = 133;
     const uint8_t OVERCURRENT_ID = 10;
 
     void sendTelemetry(
@@ -30,7 +30,7 @@ namespace Packets {
     void sendDiagnostic(uint8_t motorDirPass, uint8_t servoPass);
     void sendStateTransitionError(uint8_t errorCode);
     void sendFlowState(uint8_t flowState);
-    void broadcastAbort();
+    void broadcastAbort(uint8_t abortReason);
     void sendPhaseCurrents();
     void sendTemperatures();
     void sendOvercurrentPacket();

@@ -74,8 +74,8 @@ void setup() {
     Comms::init(HAL::ETH_CS, HAL::ETH_MISO, HAL::ETH_MOSI, HAL::ETH_SCLK, HAL::ETH_INTn);
     StateMachine::enterIdleClosedState();
     zero(); 
-    Comms::registerCallback(200, flow);
-    Comms::registerCallback(201, stopFlow);
+    Comms::registerCallback(STARTFLOW, flow);
+    Comms::registerCallback(ENDFLOW, stopFlow);
     Comms::registerCallback(202, partialOpen);
     Comms::registerCallback(203, pressurize);
     Comms::registerCallback(204, runDiagnostics);
