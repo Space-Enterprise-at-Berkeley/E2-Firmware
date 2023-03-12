@@ -107,6 +107,10 @@ void setup() {
   initWire();
   Power::init();
   initLEDs();
+  Comms::registerCallback(STARTFLOW, onFlowStart);
+  Comms::registerCallback(ABORT, onAbortOrEndFlow);
+  Comms::registerCallback(ENDFLOW, onAbortOrEndFlow);
+
 
   while(1){
     // main loop here to avoid arduino overhead
