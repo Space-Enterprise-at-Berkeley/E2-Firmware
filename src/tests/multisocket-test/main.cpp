@@ -6,8 +6,9 @@
 uint32_t task_example() { 
   
   Serial.println("Hello World!");
-  Comms::emitPacketToGS();
-  Comms::emitPacketToAll();
+  Comms::Packet tmp = {.id = 200, .len = 5, .data = {(uint8_t)'h', (uint8_t)'e', (uint8_t)'l', (uint8_t)'l', (uint8_t)'o'}};
+  // Comms::emitPacketToGS(&tmp);
+  Comms::emitPacketToAll(&tmp);
   return 1000 * 1000;
   
 }
@@ -22,6 +23,11 @@ void setup() {
   Serial.begin(921600);
   // setup stuff here
   Comms::init(); // takes care of Serial.begin()
+
+  Comms::registerCallback(200, [](Comms::Packet packet, uint8_t id) {
+    Serial.println("Got packet!");
+    Serial.println((char*)packet.data);
+  });
 
   while(1) {
     // main loop here to avoid arduino overhead

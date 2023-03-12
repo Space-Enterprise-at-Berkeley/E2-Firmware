@@ -41,6 +41,13 @@ uint8_t EthernetUDP::begin(uint16_t port)
 	return 1;
 }
 
+/* Start EthernetUDP socket, listening at local port PORT */
+uint8_t EthernetUDP::begin(uint16_t port, int s)
+{
+	Ethernet.socketBegin(SnMR::UDP, port, s);
+	return 1;
+}
+
 /* return number of bytes available in the current packet,
    will return zero if parsePacket hasn't been called yet */
 int EthernetUDP::available()
@@ -81,9 +88,18 @@ void EthernetUDP::resetSendOffset() {
 	_offset[sockindex]= 0;
 }
 
+void EthernetUDP::resetSendOffset(int s) {
+	_offset[s]= 0;
+}
+
 int EthernetUDP::endPacket()
 {
 	return Ethernet.socketSendUDP(sockindex);
+}
+
+int EthernetUDP::endPacket(int s)
+{
+	return Ethernet.socketSendUDP(s);
 }
 
 size_t EthernetUDP::write(uint8_t byte)
@@ -122,12 +138,12 @@ int EthernetUDP::parsePacket()
 		read((uint8_t *)NULL, _remaining);
 	}
 
-	if (Ethernet.socketRecvAvailable(sockindex) > 0) {
+	if (Ethernet.socketRecvAvailable(0) > 0) {
 		//HACK - hand-parse the UDP packet using TCP recv method
 		uint8_t tmpBuf[8];
 		int ret=0;
 		//read 8 header bytes and get IP and port from it
-		ret = Ethernet.socketRecv(sockindex, tmpBuf, 8);
+		ret = Ethernet.socketRecv(0, tmpBuf, 8);
 		if (ret > 0) {
 			_remoteIP = tmpBuf;
 			_remotePort = tmpBuf[4];
@@ -148,7 +164,7 @@ int EthernetUDP::read()
 {
 	uint8_t byte;
 
-	if ((_remaining > 0) && (Ethernet.socketRecv(sockindex, &byte, 1) > 0)) {
+	if ((_remaining > 0) && (Ethernet.socketRecv(0, &byte, 1) > 0)) {
 		// We read things without any problems
 		_remaining--;
 		return byte;
@@ -164,11 +180,11 @@ int EthernetUDP::read(unsigned char *buffer, size_t len)
 		int got;
 		if (_remaining <= len) {
 			// data should fit in the buffer
-			got = Ethernet.socketRecv(sockindex, buffer, _remaining);
+			got = Ethernet.socketRecv(0, buffer, _remaining);
 		} else {
 			// too much data for the buffer,
 			// grab as much as will fit
-			got = Ethernet.socketRecv(sockindex, buffer, len);
+			got = Ethernet.socketRecv(0, buffer, len);
 		}
 		if (got > 0) {
 			_remaining -= got;
@@ -185,8 +201,7 @@ int EthernetUDP::peek()
 	// Unlike recv, peek doesn't check to see if there's any data available, so we must.
 	// If the user hasn't called parsePacket yet then return nothing otherwise they
 	// may get the UDP header
-	if (sockindex >= MAX_SOCK_NUM || _remaining == 0) return -1;
-	return Ethernet.socketPeek(sockindex);
+	return Ethernet.socketPeek(0);
 }
 
 void EthernetUDP::flush()

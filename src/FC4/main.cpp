@@ -1,15 +1,12 @@
 #include <Common.h>
-#include <TeensyComms.h>
+#include <EspComms.h>
+
 #include "Ducers.h"
 #include "Actuators.h"
 #include "CapFill.h"
 #include "Valves.h"
 #include "HAL.h"
-#include "Thermocouples.h"
-// #include "OCHandler.h"
-
-// #include "BlackBox.h"
-#include "RadioBlackBox.h"
+#include "BlackBox.h"
 #include "Barometer.h"
 #include "IMU.h"
 #include "GPS.h"
@@ -18,7 +15,7 @@
 #include <Wire.h>
 #include <SPI.h>
 
-#include "Apogee.h"
+#include "FlightStatus.h"
 
 // 0: Ground, 1: Flight
 uint8_t vehicleState = 0; 
@@ -33,13 +30,7 @@ Task taskTable[] = {
 
     // ducers
     {Ducers::ptSample, 0},
-
-    // thermocouples
-    {Thermocouples::tc0Sample, 0},
-    {Thermocouples::tc1Sample, 0},
-    {Thermocouples::tc2Sample, 0},
-    {Thermocouples::tc3Sample, 0},
-
+    
     // valves
     {Valves::loxGemValveSample, 0},
     {Valves::fuelGemValveSample, 0},
@@ -61,9 +52,6 @@ Task taskTable[] = {
 
     // Cap fill
     {CapFill::sampleCapFill, 0},
-
-    // Apogee
-    {Apogee::checkForApogee, 0},
 };
 
 #define TASK_COUNT (sizeof(taskTable) / sizeof (struct Task))
@@ -79,8 +67,8 @@ uint8_t setVehicleMode(Comms::Packet statePacket, uint8_t ip){
     // Setup for apogee
     if (vehicleState) { 
         Barometer::zeroAltitude();
-        Apogee::start();   
-        RadioBlackBox::beginWrite();
+        Apogee::start(); 
+        // start bb recording  
     } 
 
     return vehicleState;
@@ -112,7 +100,6 @@ int main() {
     DEBUG("8\n");
     Comms::registerCallback(29, setVehicleMode);
     DEBUG("69\n");
-    RadioBlackBox::init();
 
     while(1) {
         for(uint32_t i = 0; i < TASK_COUNT; i++) { // for each task, execute if next time >= current time

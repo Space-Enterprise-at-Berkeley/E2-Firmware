@@ -28,7 +28,7 @@ void setup() {
         taskTable[i].nexttime = ticks + taskTable[i].taskCall();
       }
     }
-    Comms::processWaitingPackets();
+    //Comms::processWaitingPackets();
   }
 }
 

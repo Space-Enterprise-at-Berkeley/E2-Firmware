@@ -8,7 +8,7 @@ int count;
 EthernetUDP Udp;
 byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 21};
 IPAddress groundStation1(10, 0, 0, 70);
-IPAddress ip(10, 0, 0, 42);
+IPAddress ip(10, 0, 0, 11);
 int port = 42069;
 char packetBuffer[sizeof(Comms::Packet)];
 
