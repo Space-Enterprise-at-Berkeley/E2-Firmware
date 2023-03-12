@@ -126,6 +126,8 @@ namespace Packets {
     void broadcastAbort() { //TODO
         Comms::Packet packet = {.id = ABORT_ID};
         packet.len = 0;
+        Comms::packetAddUint8(&packet, 2);
+        Comms::packetAddUint8(&packet, 0);
         Comms::emitPacketToAll(&packet);
 
         // //send abort to ACs

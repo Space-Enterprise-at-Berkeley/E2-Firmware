@@ -15,11 +15,11 @@ namespace Ducers {
 
 
     float interpolate1000(double rawValue) {
-        return (rawValue - 0.5) * 250;
+        return ((rawValue - 0.5) * 250) + 12.5;
     }
 
     float interpolate5000(double rawValue) {
-        return (rawValue * 1000 * 1.0042); //1.0042 from the voltage divider - 5647ohm and 5600ohm
+        return (rawValue * 1000 * 1.0042) + 5; //1.0042 from the voltage divider - 5647ohm and 5600ohm
     }
 
     float readPressurantPT1() {

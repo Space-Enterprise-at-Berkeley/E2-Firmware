@@ -12,7 +12,7 @@ namespace Packets {
     const uint8_t LIMIT_SWITCHES = 6;
     const uint8_t PHASE_CURRENTS = 7;
     const uint8_t TEMPS = 8;
-    const uint8_t ABORT_ID = 9;
+    const uint8_t ABORT_ID = 133;
     const uint8_t OVERCURRENT_ID = 10;
 
     void sendTelemetry(
