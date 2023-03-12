@@ -32,6 +32,19 @@ namespace Ducers {
     float readTankPT1() {
         return max((float)1, interpolate1000(_downstreamPT1));
     }
+
+    float readRawTankPT1() {
+        return interpolate1000(_downstreamPT1);
+    }
+    float readRawTankPT2() {
+        return interpolate1000(_downstreamPT2);
+    }
+    float readRawPressurantPT1() {
+        return interpolate5000(_upstreamPT1);
+    }
+    float readRawPressurantPT2() {
+        return interpolate5000(_upstreamPT2);
+    }
     float readTankPT2() {
         return max((float)1, interpolate1000(_downstreamPT2));
     }

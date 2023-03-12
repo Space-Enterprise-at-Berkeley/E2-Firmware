@@ -27,6 +27,9 @@ namespace StateMachine {
         HAL::readAllDucers();
         float upstreamPsi = Ducers::readPressurantPT1();
         float downstreamPsi = Ducers::readTankPT1();
+        float rawDownstreamPsi = Ducers::readRawTankPT1();
+        float rawUpstreamPsi = Ducers::readRawPressurantPT1();
+
         unsigned long flowTime = TimeUtil::timeInterval(timeStarted_, micros());
         pressureSetpoint_ = FlowProfiles::pressurizationRamp(flowTime);
 
@@ -43,8 +46,8 @@ namespace StateMachine {
         //send data to AC
         if (TimeUtil::timeInterval(lastPrint_, micros()) > Config::telemetryInterval) {
             Packets::sendTelemetry(
-                upstreamPsi,
-                downstreamPsi,
+                rawUpstreamPsi,
+                rawDownstreamPsi,
                 motorAngle,
                 angleSetpoint_,
                 pressureSetpoint_,

@@ -14,4 +14,9 @@ namespace Ducers {
     float readTankPT1();
     float readPressurantPT2();
     float readTankPT1();
+    float readRawTankPT1();
+    float readRawTankPT2();
+    float readRawPressurantPT1();
+    float readRawPressurantPT2();
+    
 }
