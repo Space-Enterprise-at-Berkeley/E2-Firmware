@@ -94,11 +94,11 @@ uint32_t launchDaemon(){
 
         //arm and open main valves
         AC::actuate(ARM, AC::ON, 0);
-        AC::actuate(LOX_MAIN_VALVE, AC::ON, 0);
-        AC::actuate(FUEL_MAIN_VALVE, AC::ON, 0);
-        AC::delayedActuate(ARM, AC::OFF, 0, 1000);
-        AC::delayedActuate(ARM_VENT, AC::ON, 0, 1050);
-        AC::delayedActuate(ARM_VENT, AC::OFF, 0, 1500);
+        AC::delayedActuate(LOX_MAIN_VALVE, AC::ON, 0, 100);
+        AC::delayedActuate(FUEL_MAIN_VALVE, AC::ON, 0, 150);
+        AC::delayedActuate(ARM, AC::OFF, 0, 2000);
+        AC::delayedActuate(ARM_VENT, AC::ON, 0, 2050);
+        AC::delayedActuate(ARM_VENT, AC::OFF, 0, 2500);
         launchStep++;
         return flowLength * 1000;
       }
@@ -111,12 +111,12 @@ uint32_t launchDaemon(){
         Comms::emitPacketToAll(&endFlow);
 
         //arm and close main valves
-        AC::actuate(ARM, AC::ON, 0);
         AC::actuate(LOX_MAIN_VALVE, AC::OFF, 0);
         AC::actuate(FUEL_MAIN_VALVE, AC::OFF, 0);
-        AC::delayedActuate(ARM, AC::OFF, 0, 1000);
-        AC::delayedActuate(ARM_VENT, AC::ON, 0, 1050);
-        AC::delayedActuate(ARM_VENT, AC::OFF, 0, 1500);
+        AC::delayedActuate(ARM, AC::ON, 0, 100);
+        AC::delayedActuate(ARM, AC::OFF, 0, 2000);
+        AC::delayedActuate(ARM_VENT, AC::ON, 0, 2050);
+        AC::delayedActuate(ARM_VENT, AC::OFF, 0, 2500);
 
 
 
@@ -197,13 +197,13 @@ void onAbort(Comms::Packet packet, uint8_t ip) {
       break;
     case ENGINE_OVERTEMP:
       if(ID == AC1){
-        //arm and close main valves
-        AC::actuate(ARM, AC::ON, 0);
+        //arm and close main valves   
         AC::actuate(LOX_MAIN_VALVE, AC::OFF, 0);
         AC::actuate(FUEL_MAIN_VALVE, AC::OFF, 0);
-        AC::delayedActuate(ARM, AC::OFF, 0, 1000);
-        AC::delayedActuate(ARM_VENT, AC::ON, 0, 1050);
-        AC::delayedActuate(ARM_VENT, AC::OFF, 0, 1500);
+        AC:delayedActuate(ARM, AC::ON, 0, 100);
+        AC::delayedActuate(ARM, AC::OFF, 0, 2000);
+        AC::delayedActuate(ARM_VENT, AC::ON, 0, 2050);
+        AC::delayedActuate(ARM_VENT, AC::OFF, 0, 2500);
       } else if (ID == AC2){
         //open lox and fuel gems
         AC::actuate(LOX_GEMS, AC::ON, 0);
@@ -214,13 +214,12 @@ void onAbort(Comms::Packet packet, uint8_t ip) {
     case LC_UNDERTHRUST:
       if(ID == AC1){
         //arm and close main valves
-        AC::actuate(ARM, AC::ON, 0);
+        AC::actuate(LOX_MAIN_VALVE, AC::OFF, 0);
         AC::actuate(FUEL_MAIN_VALVE, AC::OFF, 0);
-        //trigger delayed execution of lox valve closure
-        AC::delayedActuate(LOX_MAIN_VALVE, AC::OFF, 0, 500);
-        AC::delayedActuate(ARM, AC::OFF, 0, 1500);
-        AC::delayedActuate(ARM_VENT, AC::ON, 0, 1550);
-        AC::delayedActuate(ARM_VENT, AC::OFF, 0, 2000);
+        AC:delayedActuate(ARM, AC::ON, 0, 100);
+        AC::delayedActuate(ARM, AC::OFF, 0, 2000);
+        AC::delayedActuate(ARM_VENT, AC::ON, 0, 2050);
+        AC::delayedActuate(ARM_VENT, AC::OFF, 0, 2500);
 
       } else if (ID == AC2){
         //open lox and fuel gems
