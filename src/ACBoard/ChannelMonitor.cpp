@@ -38,7 +38,7 @@ void init(uint8_t s0, uint8_t s1, uint8_t s2, uint8_t curr, uint8_t cont){
     contpin = cont;
 
     // every 10 ms
-    cmUpdatePeriod = 1000 * 10;
+    cmUpdatePeriod = 1000 * 100;
 
     pinMode(sel0, OUTPUT);
     pinMode(sel1, OUTPUT);
@@ -118,8 +118,8 @@ uint32_t readChannels() {
         Comms::packetAddFloat(&contPacket, cont);
         Comms::packetAddFloat(&currPacket, curr);
     }  
-    Comms::emitPacket(&currPacket);
-    Comms::emitPacket(&contPacket);
+    Comms::emitPacketToGS(&currPacket);
+    Comms::emitPacketToGS(&contPacket);
     return cmUpdatePeriod;
 }
 

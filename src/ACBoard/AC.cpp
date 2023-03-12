@@ -96,6 +96,7 @@ namespace AC {
     delayedActuationsCmd[delayedActuationCount] = cmd;
     delayedActuationsTime[delayedActuationCount] = time;
     delayedActuationsDelay[delayedActuationCount] = delay + millis();
+    delayedActuationCount++;
   }
 
   void init() {
@@ -165,8 +166,8 @@ namespace AC {
     for (int i = 0; i < 8; i++) {
       packetAddUint8(&acStates, formatActuatorState(actuators[i].state));
     }
-    Comms::emitPacket(&acStates);
-    return 1000 * 1000;
+    Comms::emitPacketToGS(&acStates);
+    return 250 * 1000;
   }
 
   // prints every actuator state to serial

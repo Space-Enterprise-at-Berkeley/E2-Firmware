@@ -113,6 +113,24 @@ makesocket:
 	return s;
 }
 
+uint8_t EthernetClass::socketBegin(uint8_t protocol, uint16_t port, int s)
+{
+	//Serial.printf("W5000socket %d\n", s);
+	EthernetServer::server_port[s] = 0;
+	delayMicroseconds(250); // TODO: is this needed??
+	W5500.writeSnMR(s, protocol);
+	W5500.writeSnIR(s, 0xFF);
+	W5500.writeSnPORT(s, port);
+	W5500.execCmdSn(s, Sock_OPEN);
+	state[s].RX_RSR = 0;
+	state[s].RX_RD  = W5500.readSnRX_RD(s); // always zero?
+	state[s].RX_inc = 0;
+	state[s].TX_FSR = 0;
+	//Serial.printf("W5000socket prot=%d, RX_RD=%d\n", W5100.readSnMR(s), state[s].RX_RD);
+	SPI.endTransaction();
+	return s;
+}
+
 // multicast version to set fields before open  thd
 uint8_t EthernetClass::socketBeginMulticast(uint8_t protocol, IPAddress ip, uint16_t port)
 {

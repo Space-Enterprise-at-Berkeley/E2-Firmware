@@ -21,7 +21,7 @@ namespace RTD {
   uint32_t task_sampleRTD() {
     rtdPacket.len = 0;
     Comms::packetAddFloat(&rtdPacket, sample0());
-    Comms::emitPacket(&rtdPacket);
+    Comms::emitPacketToGS(&rtdPacket);
     return sendRate;
   }
 

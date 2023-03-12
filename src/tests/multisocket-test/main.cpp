@@ -1,26 +1,33 @@
-#include <Common.h>
-#include <EspComms.h>
-
 #include <Arduino.h>
 
-#include "RTD.h"
+#include "Common.h"
+#include "EspComms.h"
 
-uint32_t print_task() {
-  RTD::print_sampleRTD();
+uint32_t task_example() { 
+  
+  Serial.println("Hello World!");
+  Comms::Packet tmp = {.id = 200, .len = 5, .data = {(uint8_t)'h', (uint8_t)'e', (uint8_t)'l', (uint8_t)'l', (uint8_t)'o'}};
+  // Comms::emitPacketToGS(&tmp);
+  Comms::emitPacketToAll(&tmp);
   return 1000 * 1000;
+  
 }
 
 Task taskTable[] = {
-  {RTD::task_sampleRTD, 0, true},
-  // {print_task, 0, true}
+  {task_example, 0, true},
 };
 
 #define TASK_COUNT (sizeof(taskTable) / sizeof (struct Task))
 
 void setup() {
+  Serial.begin(921600);
   // setup stuff here
   Comms::init(); // takes care of Serial.begin()
-  RTD::init();
+
+  Comms::registerCallback(200, [](Comms::Packet packet, uint8_t id) {
+    Serial.println("Got packet!");
+    Serial.println((char*)packet.data);
+  });
 
   while(1) {
     // main loop here to avoid arduino overhead
@@ -34,4 +41,4 @@ void setup() {
   }
 }
 
-void loop() {} // unused
+void loop() {}

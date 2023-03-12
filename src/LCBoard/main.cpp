@@ -28,7 +28,7 @@ void initLEDs() {
 }
 
 uint32_t LED_roll(){
-  if (ADS::unrefreshedSample(roll) < -1000){
+  if (ADS::unrefreshedSample(roll) < 0){
     digitalWrite(LEDS[roll], LOW);
   }
   roll = (roll + 1) % 4;
@@ -36,7 +36,10 @@ uint32_t LED_roll(){
   return 600 * 1000;
 }
 
+uint32_t abortDaemon();
+
 Task taskTable[] = {
+  {abortDaemon, 0, false},
   {ADS::task_sampleLC, 0, true},
   {ADS::printReadings, 0, true},
   {Power::task_readSendPower, 0, true},
@@ -44,6 +47,57 @@ Task taskTable[] = {
 };
 
 #define TASK_COUNT (sizeof(taskTable) / sizeof (struct Task))
+
+// Load Cell Abort
+// Starts check 2 seconds after recieving flow start packet
+// Stops check after recieving abort or end flow packet
+// Triggers abort if any load cell is over -100 from flow start weight for 0.5 seconds
+uint32_t minThrust = 100;
+uint32_t abortTime = 500;
+uint32_t abortStartDelay = 2000;
+uint32_t timeSinceBad = 0;
+float flowStartWeight[4] = {0, 0, 0, 0};
+
+
+uint32_t abortDaemon(){
+  //check if sum less than min thrust from flow start weight for 0.5 seconds
+  float sum = 0;
+  for (int i = 0; i < 4; i++){
+    sum += ADS::unrefreshedSample(i) - flowStartWeight[i];
+  }
+  if (sum < minThrust){
+    if (timeSinceBad == 0){
+      timeSinceBad = millis();
+    }
+    if(millis() - timeSinceBad > abortTime){
+      Comms::sendAbort(HOTFIRE, LC_UNDERTHRUST);
+      return 0;
+    }
+  } else {
+    timeSinceBad = 0;
+  }
+  return 75*1000;
+}
+
+void onFlowStart(Comms::Packet packet, uint8_t ip) {
+  Mode systemMode = (Mode)Comms::packetGetUint8(&packet, 0);
+  if (systemMode != HOTFIRE) {
+    return;
+  }
+  //record flow weights
+  for (int i = 0; i < 4; i++){
+    flowStartWeight[i] = ADS::unrefreshedSample(i);
+  }
+  //start LC abort daemon when hotfire starts
+  taskTable[0].enabled = true;
+  taskTable[0].nexttime = micros() + abortStartDelay * 1000;
+}
+
+void onAbortOrEndFlow(Comms::Packet packet, uint8_t ip){
+  //stop LC abort daemon when abort or endflow is received
+  taskTable[0].enabled = false;
+}
+
 
 
 void setup() {
