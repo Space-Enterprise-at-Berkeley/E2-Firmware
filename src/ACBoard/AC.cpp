@@ -166,7 +166,7 @@ namespace AC {
     for (int i = 0; i < 8; i++) {
       packetAddUint8(&acStates, formatActuatorState(actuators[i].state));
     }
-    Comms::emitPacket(&acStates);
+    Comms::emitPacketToGS(&acStates);
     return 250 * 1000;
   }
 

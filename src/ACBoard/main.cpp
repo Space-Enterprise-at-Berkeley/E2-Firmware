@@ -38,7 +38,7 @@ uint32_t task_heartbeat() {
   heart.len = 0;
   Comms::packetAddUint8(&heart, ID);
   //Comms::packetAddUint8(&heart, counter++);
-  Comms::emitPacket(&heart);
+  Comms::emitPacketToGS(&heart);
   Serial.println("Heartbeat");
   return 1000 * 1000; //1 sec
 }
@@ -90,7 +90,7 @@ uint32_t launchDaemon(){
         Comms::Packet launch = {.id = STARTFLOW, .len = 0};
         Comms::packetAddUint8(&launch, systemMode);
         Comms::packetAddUint32(&launch, flowLength);
-        Comms::emitPacket(&launch, ALL);
+        Comms::emitPacketToAll(&launch);
 
         //arm and open main valves
         AC::actuate(ARM, AC::ON, 0);
@@ -108,7 +108,7 @@ uint32_t launchDaemon(){
 
         //end packet for eregs
         Comms::Packet endFlow = {.id = ENDFLOW, .len = 0};
-        Comms::emitPacket(&endFlow, ALL);
+        Comms::emitPacketToAll(&endFlow);
 
         //arm and close main valves
         AC::actuate(ARM, AC::ON, 0);
@@ -122,10 +122,10 @@ uint32_t launchDaemon(){
 
         //open lox and fuel gems via abort only to AC2
         delay(100); // temporary to give time to eth chip to send the packet
-        Comms::Packet openGems = {.id = ABORT, .len = 0};
-        Comms::packetAddUint8(&openGems, systemMode);
-        Comms::packetAddUint8(&openGems, LC_UNDERTHRUST);
-        Comms::emitPacket(&openGems, AC2);
+        // Comms::Packet openGems = {.id = ABORT, .len = 0};
+        // Comms::packetAddUint8(&openGems, systemMode);
+        // Comms::packetAddUint8(&openGems, LC_UNDERTHRUST);
+        // Comms::emitPacket(&openGems, AC2);
 
         launchStep = 0;
         return 0;  

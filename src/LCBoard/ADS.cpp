@@ -118,7 +118,7 @@ namespace ADS {
         for(int i = 0 ; i < ADCsize; i ++){
             Comms::packetAddFloat(&ADCPacket, lbs[i]); //write data[i] into the packet
         }
-        Comms::emitPacket(&ADCPacket); //commented out for tesing. shoud comment back in for comms
+        Comms::emitPacketToGS(&ADCPacket); //commented out for tesing. shoud comment back in for comms
 
         return sampleRate; //80Hz
 

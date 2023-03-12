@@ -10,15 +10,6 @@ uint32_t print_task() {
   return 1000 * 1000;
 }
 
-uint32_t hello_packet() {
-  Comms::Packet hello = {.id = 1};
-  Comms::packetAddFloat(&hello, 69);
-  Comms::packetAddFloat(&hello, 69);
-  Comms::packetAddFloat(&hello, 69);
-  Comms::emitPacket(&hello);
-  return 1000 * 1000;
-}
-
 Task taskTable[] = {
   {RTD::task_sampleRTD, 0, true},
   // {print_task, 0, true}

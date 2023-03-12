@@ -61,7 +61,7 @@ namespace TC {
     for (uint8_t i = 0; i < 8; i ++) {
       Comms::packetAddFloat(&tcPacket, sample(i));
     }
-    Comms::emitPacket(&tcPacket);
+    Comms::emitPacketToGS(&tcPacket);
     return sendRate;
   }
 
