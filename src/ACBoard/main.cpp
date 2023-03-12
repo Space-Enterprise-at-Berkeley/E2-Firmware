@@ -39,7 +39,7 @@ uint32_t task_heartbeat() {
   Comms::packetAddUint8(&heart, ID);
   //Comms::packetAddUint8(&heart, counter++);
   Comms::emitPacketToGS(&heart);
-  Serial.println("Heartbeat");
+  // Serial.println("Heartbeat");
   return 1000 * 1000; //1 sec
 }
 
@@ -52,12 +52,12 @@ uint32_t launchDaemon(){
     switch(launchStep){
       case 0:
       {
-        // Light igniter and wait for 0.5 sec
+        // Light igniter and wait for 2.0 sec
         if (systemMode == HOTFIRE || systemMode == LAUNCH){
           Serial.println("launch step 0, igniter on");
           AC::actuate(IGNITER, AC::ON, 0);
           launchStep++;
-          return 500 * 1000;
+          return 2000 * 1000;
         } else {
           Serial.println("launch step 0, not hotfire, skip");
           launchStep++;
@@ -141,7 +141,7 @@ Task taskTable[] = {
   {AC::task_actuatorStates, 0, true},
   {ChannelMonitor::readChannels, 0, true},
   {Power::task_readSendPower, 0, true},
-  {AC::task_printActuatorStates, 0, true},
+  // {AC::task_printActuatorStates, 0, true},
   {task_heartbeat, 0, true},
 };
 
@@ -266,6 +266,8 @@ void onLaunchQueue(Comms::Packet packet, uint8_t ip){
     }
     systemMode = (Mode)packetGetUint8(&packet, 0);
     flowLength = packetGetUint32(&packet, 1);
+    Serial.println("System mode: " + String(systemMode));
+    Serial.println("Flow length: " + String(flowLength));
 
     if (systemMode == LAUNCH || systemMode == HOTFIRE){
       // check igniter and breakwire continuity
