@@ -49,27 +49,6 @@ namespace Actuators {
      pressFlowRBV.stop); }
 
     void actPacketHandler(Comms::Packet tmp, void (*extend)(), void (*retract)(), Task *stopTask){
-/*         switch(tmp.data[0]){
-            case 0:
-                (*extend)();
-                break;
-            case 1:
-                (*retract)();
-                break;
-            case 2:
-                (*extend)();
-                if(stopTask->enabled) stopTask->nexttime += Comms::packetGetUint32(&tmp, 1) * 1000;
-                else stopTask->nexttime = micros() + Comms::packetGetUint32(&tmp, 1) * 1000;
-                stopTask->enabled = true;
-                break;
-            case 3:
-                (*retract)();
-                if(stopTask->enabled) stopTask->nexttime += Comms::packetGetUint32(&tmp, 1) * 1000;
-                else stopTask->nexttime = micros() + Comms::packetGetUint32(&tmp, 1) * 1000;
-                stopTask->enabled = true;
-                break;
-        } */
-
         // (Actuate code) 0: extend fully 1: retract fully 2: extend millis 3: retract millis
 
         if(tmp.data[0]%2)(*extend)();
@@ -95,8 +74,6 @@ namespace Actuators {
         if (actuator->current > OClimit){
             switch(actuator->actuatorID){
                 case 0: stopPressFlowRBV(); break;
-                // case 1: stopAct1(); break;
-                // case 2: stopAct2(); break;
             }
             actuator->state = 3;
         }
@@ -104,8 +81,6 @@ namespace Actuators {
         if (actuator->state > 0 && !actuator->stop->enabled && actuator->current < stopCurrent){
             switch(actuator->actuatorID){
                 case 0: stopPressFlowRBV(); break;
-                // case 1: stopAct1(); break;
-                // case 2: stopAct2(); break;
             }
         }
 
@@ -122,16 +97,6 @@ namespace Actuators {
         sampleActuator(&pressFlowRBV);
         return actuatorCheckPeriod;
     }
-
-    // uint32_t act1Sample() {
-    //     sampleActuator(&act1);
-    //     return actuatorCheckPeriod;
-    // }
-
-    // uint32_t act2Sample() {
-    //     sampleActuator(&act2);
-    //     return actuatorCheckPeriod;
-    // }
 
     void initActuators(Task *pressFlowStopTask) {
         Comms::registerCallback(169, pressFlowRBVPacketHandler);

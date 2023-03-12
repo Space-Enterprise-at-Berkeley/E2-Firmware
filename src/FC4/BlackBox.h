@@ -1,23 +1,20 @@
-// #pragma once
+#pragma once
 
-// #include <NativeEthernet.h>
-// #include <NativeEthernetUdp.h>
-// #include <LittleFS.h>
-// #include "Comms.h"
+#include <SPIFlash.h>
+#include "EspComms.h"
 
-// namespace BlackBox {
-//     void init();
-//     void writePacket(Comms::Packet packet);
-//     bool hasData();
-//     void erase(Comms::Packet packet);
-//     void writeBuffer();
-//     void beginWrite();
+namespace BlackBox {
 
-//     /**
-//      * @brief Prints data over Ethernet and Serial.
-//      * 
-//      */
-//     void getData(Comms::Packet packet);
+    const uint32_t FLASH_SIZE = 1.6e7;
+    extern bool erasing;
 
-//     uint32_t reportBlackBoxStatus();
-// }
+    void init();
+    void writePacket(Comms::Packet packet);
+    bool getData(uint32_t byteAddress, Comms::Packet* packet);
+    void startEraseAndRecord();
+    
+
+    void packetHandler(Comms::Packet packet);
+
+    uint32_t getAddr();
+}

@@ -1,124 +1,55 @@
 #include "HAL.h"
 
 namespace HAL {
-    ADS8167 adc1;
-
-    //Voltage and Current Sense Mux
-    Mux valveMux = {.muxSelect1Pin = 3,
-                    .muxSelect2Pin = 4,
-                    .muxSelect3Pin = 5,
-                    .muxSelect4Pin = 6,
-                    .muxInput1Pin = 40,
-                    .muxInput2Pin = 16};
-
-    MuxChannel muxChan0; // Chute1
-    MuxChannel muxChan1; // Chute2
-    MuxChannel muxChan2; // Cam1/NA
-    MuxChannel muxChan3; // Amp/NA
-    MuxChannel muxChan4; // Cam2/Break1
-    MuxChannel muxChan5; // Radio/Break2
-    MuxChannel muxChan6; // NA/Break3
-    MuxChannel muxChan7; // Valve1
-    MuxChannel muxChan8; // Valve2
-    MuxChannel muxChan9; // Valve3
-    MuxChannel muxChan10; // Valve4
-    MuxChannel muxChan11; // Valve5
-    MuxChannel muxChan12; // Valve6
-    MuxChannel muxChan13; // HBridge1
-    MuxChannel muxChan14; // HBridge2
-    MuxChannel muxChan15; // HBridge3
-
-    MCP9600 tcAmp0;
-    MCP9600 tcAmp1;
-    MCP9600 tcAmp2;
-    MCP9600 tcAmp3;
-
-    // Sensors breakouts
-    BMP388_DEV bmp388;
-    BNO055 bno055(28);
-    SFE_UBLOX_GNSS neom9n;
 
     void initHAL() {
-        // initialize ADC 1
-        analogReadResolution(12); 
 
-        adc1.init(&SPI, 37, 25);
-        adc1.setAllInputsSeparate();
-        adc1.enableOTFMode();
+        pinMode(adcCS, OUTPUT);
+        pinMode(radioCS, OUTPUT);
+        pinMode(bbCS, OUTPUT);
 
-        // Initialize I2C buses
-        Wire.begin();
+        // initialize SPI
+        spi0 = new SPIClass(HSPI);
+        spi0->begin(sckPin, misoPin, mosiPin, adcCS);
+
+        // initialize I2C
+        Wire.begin(sdaPin, sclPin); 
         Wire.setClock(100000);
 
+        // initialize IO expanders and channels
+        MCP0.begin();
+        MCP1.begin();
+        MCP0.pinMode8(0x00);  // 0 = output , 1 = input
+        MCP1.pinMode8(0x00);  // 0 = output , 1 = input
+
+        // initialize ADC
+        adc.init(spi0, adcCS, adcRDY);
+        adc.setAllInputsSeparate();
+        adc.enableOTFMode();
+
         // barometer
-        bmp388.begin(0x76); // TODO check address
+        if (!bmp.begin_I2C(0x76)) {
+            Serial.println("Could not find a valid BMP3 sensor, check wiring!");
+            while (1);
+        }
 
         // imu
-        bno055.begin();
-
-        // gps
-        if(!neom9n.begin(SPI, gpsCSPin, 2000000)) {
-            DEBUG("GPS DIDN'T INIT");
-            DEBUG("\n");
-        } else {
-            DEBUG("GPS INIT SUCCESSFUL");
-            DEBUG("\n");
+        if (!dso32.begin_I2C()) {
+            while (1) {
+            delay(10);
+            }
         }
-        
-        // RS-485
-        pinMode(RS485SwitchPin, OUTPUT);
-        RS485_SERIAL.begin(921600); // Serial for capfill
 
-        RADIO_SERIAL.begin(250000);
+        dso32.setAccelRange(LSM6DSO32_ACCEL_RANGE_16_G);
+        dso32.setGyroRange(LSM6DS_GYRO_RANGE_1000_DPS );
+        dso32.setAccelDataRate(LSM6DS_RATE_3_33K_HZ);
+        dso32.setGyroDataRate(LSM6DS_RATE_3_33K_HZ);
 
-        DEBUG("radio\n");
 
-        // Flight v3 channels
-        pinMode(chute1Pin, OUTPUT);
-        pinMode(chute2Pin, OUTPUT);
-        pinMode(camPin, OUTPUT);
-        pinMode(amp1Pin, OUTPUT);
-        pinMode(radio1Pin, OUTPUT);
+        bmp.setIIRFilterCoeff(BMP3_IIR_FILTER_COEFF_3);
+        bmp.setOutputDataRate(BMP3_ODR_200_HZ);
+        bmp.performReading();
+        set_barometer_ground_altitude();  
 
-        // E-1 Extension channels
-        pinMode(valve1Pin, OUTPUT);
-        pinMode(valve2Pin, OUTPUT);
-        pinMode(valve3Pin, OUTPUT);
-        pinMode(valve4Pin, OUTPUT);
-        pinMode(valve5Pin, OUTPUT);
-        pinMode(valve6Pin, OUTPUT);
-        pinMode(hBridge1Pin1, OUTPUT);
-        pinMode(hBridge1Pin2, OUTPUT);
-        pinMode(hBridge2Pin1, OUTPUT);
-        pinMode(hBridge2Pin2, OUTPUT);
-        pinMode(hBridge3Pin1, OUTPUT);
-        pinMode(hBridge3Pin2, OUTPUT);
-
-        // thermocouple amplifiers
-        tcAmp0.init(0x60, &Wire, MCP9600_ADCRESOLUTION_16, MCP9600_TYPE_K, 0);
-        tcAmp1.init(0x62, &Wire, MCP9600_ADCRESOLUTION_16, MCP9600_TYPE_K, 0); 
-        tcAmp2.init(0x66, &Wire, MCP9600_ADCRESOLUTION_16, MCP9600_TYPE_K, 0);
-        tcAmp3.init(0x65, &Wire, MCP9600_ADCRESOLUTION_16, MCP9600_TYPE_K, 0);
-
-        // DEBUG("tc\n");
-
-        muxChan0.init(&valveMux, 0, valveMuxCurrentScalingFactor, valveMuxContinuityScalingFactor);
-        muxChan1.init(&valveMux, 1, valveMuxCurrentScalingFactor, valveMuxContinuityScalingFactor);
-        muxChan2.init(&valveMux, 2, valveMuxCurrentScalingFactor, valveMuxContinuityScalingFactor);
-        muxChan3.init(&valveMux, 3, valveMuxCurrentScalingFactor, valveMuxContinuityScalingFactor);
-        muxChan4.init(&valveMux, 4, valveMuxCurrentScalingFactor, valveMuxContinuityScalingFactor);
-        muxChan5.init(&valveMux, 5, valveMuxCurrentScalingFactor, valveMuxContinuityScalingFactor);
-        muxChan6.init(&valveMux, 6, valveMuxCurrentScalingFactor, valveMuxContinuityScalingFactor);
-        muxChan7.init(&valveMux, 7, valveMuxCurrentScalingFactor, valveMuxContinuityScalingFactor); // valve channel 1
-        muxChan8.init(&valveMux, 8, valveMuxCurrentScalingFactor, valveMuxContinuityScalingFactor);
-        muxChan9.init(&valveMux, 9, valveMuxCurrentScalingFactor, valveMuxContinuityScalingFactor);
-        muxChan10.init(&valveMux, 10, valveMuxCurrentScalingFactor, valveMuxContinuityScalingFactor);
-        muxChan11.init(&valveMux, 11, valveMuxCurrentScalingFactor, valveMuxContinuityScalingFactor);
-        muxChan12.init(&valveMux, 12, valveMuxCurrentScalingFactor, valveMuxContinuityScalingFactor); // valve channel 6
-        muxChan13.init(&valveMux, 13, valveMuxCurrentScalingFactor, valveMuxCurrentScalingFactor);
-        muxChan14.init(&valveMux, 14, valveMuxCurrentScalingFactor, valveMuxCurrentScalingFactor);
-        muxChan15.init(&valveMux, 15, valveMuxCurrentScalingFactor, valveMuxCurrentScalingFactor);
-
-        DEBUG("mux\n");
     }
 };

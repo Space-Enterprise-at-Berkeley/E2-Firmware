@@ -107,7 +107,8 @@ void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress g
 	W5500.setIPAddress(ip._address.bytes);
 	W5500.setGatewayIp(gateway._address.bytes);
 	W5500.setSubnetMask(subnet._address.bytes);
-	W5500.writeSIMR(0xFF);
+	W5500.writeSIMR(0x01);
+	W5500.writeSnIMR(0, 0x04);
 	// Set Interupprt
 	if (ETH_intN == -1) {
 		ETH_intN = 9;
@@ -121,7 +122,6 @@ bool EthernetClass::detectRead() {
 	// Serial.printf("%d\n", digitalRead(35));
 	int pinVal = digitalRead(35);
 	if (!pinVal) {
-		W5500.writeSnIMR(0, 0x04);
 		W5500.writeSnIR(0, 0xff);
 		INTnFlag = false;
 		return true;
@@ -230,14 +230,6 @@ void EthernetClass::setRetransmissionCount(uint8_t num)
 	W5500.setRetransmissionCount(num);
 	SPI.endTransaction();
 }
-
-
-
-
-
-
-
-
 
 
 EthernetClass Ethernet;
