@@ -118,7 +118,13 @@ void setup() {
     for(uint32_t i = 0; i < TASK_COUNT; i++) { // for each task, execute if next time >= current time
       uint32_t ticks = micros(); // current time in microseconds
       if (taskTable[i].nexttime - ticks > UINT32_MAX / 2 && taskTable[i].enabled) {
+        uint32_t nextTime = taskTable[i].taskCall();
+        if (nextTime == 0){
+          taskTable[i].enabled = false;
+        }
+        else {
         taskTable[i].nexttime = ticks + taskTable[i].taskCall();
+        }
       }
     }
     Comms::processWaitingPackets();

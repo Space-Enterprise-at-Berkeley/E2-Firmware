@@ -190,8 +190,9 @@ void onAbort(Comms::Packet packet, uint8_t ip) {
         AC::actuate(LOX_GEMS, AC::ON, 0);
         AC::actuate(FUEL_GEMS, AC::ON, 0);
         //open lox and fuel vent rbvs
-        AC::actuate(LOX_VENT_RBV, AC::RETRACT_FULLY, 0);
-        AC::actuate(FUEL_VENT_RBV, AC::RETRACT_FULLY, 0);
+        //AC::actuate(LOX_VENT_RBV, AC::RETRACT_FULLY, 0);
+        //AC::actuate(FUEL_VENT_RBV, AC::RETRACT_FULLY, 0);
+        AC::actuate(N2_FLOW, AC::RETRACT_FULLY, 0);
       }
       break;
     case ENGINE_OVERTEMP:
@@ -207,6 +208,7 @@ void onAbort(Comms::Packet packet, uint8_t ip) {
         //open lox and fuel gems
         AC::actuate(LOX_GEMS, AC::ON, 0);
         AC::actuate(FUEL_GEMS, AC::ON, 0);
+        AC::actuate(N2_FLOW, AC::RETRACT_FULLY, 0);
       }
       break;
     case LC_UNDERTHRUST:
@@ -224,6 +226,7 @@ void onAbort(Comms::Packet packet, uint8_t ip) {
         //open lox and fuel gems
         AC::actuate(LOX_GEMS, AC::ON, 0);
         AC::actuate(FUEL_GEMS, AC::ON, 0);
+        AC::actuate(N2_FLOW, AC::RETRACT_FULLY, 0);
       }    
       break;
     case MANUAL_ABORT:
@@ -232,12 +235,12 @@ void onAbort(Comms::Packet packet, uint8_t ip) {
     case BREAKWIRE_NO_BURNT:
       if(ID == AC1){
         //arm and close main valves
-        AC::actuate(ARM, AC::ON, 0);
-        AC::actuate(LOX_MAIN_VALVE, AC::OFF, 0);
-        AC::actuate(FUEL_MAIN_VALVE, AC::OFF, 0);
-        AC::delayedActuate(ARM, AC::OFF, 0, 1000);
-        AC::delayedActuate(ARM_VENT, AC::ON, 0, 1050);
-        AC::delayedActuate(ARM_VENT, AC::OFF, 0, 1500);
+        // AC::actuate(ARM, AC::ON, 0);
+        // AC::actuate(LOX_MAIN_VALVE, AC::OFF, 0);
+        // AC::actuate(FUEL_MAIN_VALVE, AC::OFF, 0);
+        // AC::delayedActuate(ARM, AC::OFF, 0, 1000);
+        // AC::delayedActuate(ARM_VENT, AC::ON, 0, 1050);
+        // AC::delayedActuate(ARM_VENT, AC::OFF, 0, 1500);
       } else if (ID == AC2){
         //open lox and fuel gems
         AC::actuate(LOX_GEMS, AC::ON, 0);
@@ -338,6 +341,8 @@ void setup() {
   
   uint32_t ticks;
   uint32_t nextTime;
+
+  
   while(1) {
     // main loop here to avoid arduino overhead
     for(uint32_t i = 0; i < TASK_COUNT; i++) { // for each task, execute if next time >= current time

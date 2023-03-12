@@ -107,20 +107,25 @@ void setup() {
   initWire();
   Power::init();
   initLEDs();
-  Comms::registerCallback(STARTFLOW, onFlowStart);
-  Comms::registerCallback(ABORT, onAbortOrEndFlow);
-  Comms::registerCallback(ENDFLOW, onAbortOrEndFlow);
+  //Comms::registerCallback(STARTFLOW, onFlowStart);
+  //Comms::registerCallback(ABORT, onAbortOrEndFlow);
+  //Comms::registerCallback(ENDFLOW, onAbortOrEndFlow);
 
 
-  while(1){
+  while(1) {
     // main loop here to avoid arduino overhead
     for(uint32_t i = 0; i < TASK_COUNT; i++) { // for each task, execute if next time >= current time
       uint32_t ticks = micros(); // current time in microseconds
       if (taskTable[i].nexttime - ticks > UINT32_MAX / 2 && taskTable[i].enabled) {
-        taskTable[i].nexttime = ticks + taskTable[i].taskCall();
+        uint32_t delayoftask = taskTable[i].taskCall();
+        if (delayoftask == 0) {
+          taskTable[i].enabled = false;
+        }
+        else {
+          taskTable[i].nexttime = ticks + delayoftask;
+        }
       }
     }
-
     Comms::processWaitingPackets();
   }
 }
