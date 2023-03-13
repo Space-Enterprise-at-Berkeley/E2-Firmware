@@ -71,7 +71,7 @@ namespace Packets {
         Comms::packetAddFloat(&packet, Config::p_inner);
         Comms::packetAddFloat(&packet, Config::i_inner);
         Comms::packetAddFloat(&packet, Config::d_inner);
-        Comms::packetAddFloat(&packet, (float) (Config::flowDuration / 1e6));
+        Comms::packetAddFloat(&packet, (float) (Config::getFlowDuration() / 1e6));
         Comms::emitPacket(&packet);
     }
 

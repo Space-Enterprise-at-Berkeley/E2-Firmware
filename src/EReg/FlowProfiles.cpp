@@ -16,7 +16,7 @@ namespace FlowProfiles {
     float angleCvCharacterization(unsigned long flowTime) {
         const float steps[] = {500, 400, 300, 200, 150};
         const int numSteps = sizeof(steps)/sizeof(steps[0]);
-        unsigned long stepTime = Config::flowDuration/numSteps;
+        unsigned long stepTime = Config::getFlowDuration()/numSteps;
         unsigned int index = flowTime/stepTime;
         index = (index >= numSteps)?(numSteps-1):index;
         return steps[index];
@@ -30,7 +30,7 @@ namespace FlowProfiles {
             7*1000*1000UL,
             11*1000*1000UL,
             13*1000*1000UL,
-            Config::flowDuration
+            Config::getFlowDuration()
         };
         const float keyPointPressures[numKeypoints] = { // these correspond to keypoints
             0.0,
@@ -69,7 +69,7 @@ namespace FlowProfiles {
             6*1000*1000UL,
             // 10*1000*1000UL,
             // 12*1000*1000UL,
-            Config::flowDuration
+            Config::getFlowDuration()
         };
         const float keyPointPressures[numKeypoints] = { // these correspond to keypoints
             0.0,
@@ -112,7 +112,7 @@ namespace FlowProfiles {
             7*1000*1000UL,
             11*1000*1000UL,
             13*1000*1000UL,
-            Config::flowDuration
+            Config::getFlowDuration()
         };
         const float keyPointPressures[numKeypoints] = { // these correspond to keypoints
             0.0,
@@ -155,7 +155,7 @@ namespace FlowProfiles {
             7*1000*1000UL,
             11*1000*1000UL,
             13*1000*1000UL,
-            Config::flowDuration
+            Config::getFlowDuration()
         };
         const float keyPointPressures[numKeypoints] = { // these correspond to keypoints
             0.0,

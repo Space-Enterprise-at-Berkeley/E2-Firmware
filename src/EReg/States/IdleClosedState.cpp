@@ -19,6 +19,7 @@ namespace StateMachine {
     void IdleClosedState::init() {
         timeStarted_ = millis();
         lastPrint_ = 0;
+        lastConfigSend_ = 0;
         Util::runMotors(closeSpeed_);
     }
 
@@ -61,6 +62,11 @@ namespace StateMachine {
             
             lastPrint_ = micros();
             // Serial.printf("downstream pt: %f\n", downstreamPsi);
+        }
+
+        if (TimeUtil::timeInterval(lastConfigSend_, micros()) > (Config::telemetryIntervalIdle * 100)) {
+            Packets::sendConfig();
+            lastConfigSend_ = micros();
         }
     }
 

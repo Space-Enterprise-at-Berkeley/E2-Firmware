@@ -37,7 +37,8 @@ namespace Config {
     const unsigned long closeTime = 3UL * 1000UL; // time in milliseconds //CHANGE THIS BACK TO 3S
 
     // flow duration
-    const unsigned long flowDuration = 45UL * 1000UL * 1000UL; // time in microseconds TODO change to 5s
+    void setFlowDuration(unsigned long duration);
+    unsigned long getFlowDuration();
     const unsigned long rampDuration = 500UL * 1000UL; // time in microseconds
 
     // Pressurization Parameters

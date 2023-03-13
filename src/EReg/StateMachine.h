@@ -20,7 +20,7 @@ namespace StateMachine {
     enum State { IDLE_CLOSED, PARTIAL_OPEN, PRESSURIZE, FLOW, DIAGNOSTIC };
     enum ValveAction { MAIN_VALVE_OPEN, MAIN_VALVE_CLOSE };
     
-    void enterFlowState(uint32_t flowLength);
+    void enterFlowState();
     void enterIdleClosedState();
     void enterPartialOpenState(float angle);
     void enterDiagnosticState();

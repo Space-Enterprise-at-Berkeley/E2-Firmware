@@ -38,8 +38,22 @@ void zero(Comms::Packet packet, uint8_t ip) {
 }
 
 void flow(Comms::Packet packet, uint8_t ip) {
+    if (packet.len != 5) {
+        Serial.printf("bad flow packet len %d\n", packet.len);
+        return;
+    }
     uint32_t flowLength = packetGetUint32(&packet, 1);
-    StateMachine::enterFlowState(flowLength);
+    if ((flowLength < 1 * 1000 * 1000) || (flowLength > 70 * 1000 * 1000)) {
+        Serial.printf("bad flow duration %d\n", flowLength);
+        return;
+    }
+    if (sizeof(unsigned long) != sizeof(uint32_t)) {
+        while(1) {
+            Serial.printf("bro fix this\n");
+        }
+    }
+    Config::setFlowDuration(flowLength);
+    StateMachine::enterFlowState();
 }
 
 void stopFlow(Comms::Packet packet, uint8_t ip) {

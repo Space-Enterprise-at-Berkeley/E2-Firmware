@@ -6,8 +6,7 @@ namespace StateMachine {
     ValveAction currentMainValveState = MAIN_VALVE_CLOSE;
 
 
-    void enterFlowState(uint32_t flowLength) {
-        // Config::flowDuration = flowLength;
+    void enterFlowState() {
         if (currentState == IDLE_CLOSED) {
             currentState = FLOW;
             getFlowState()->init();

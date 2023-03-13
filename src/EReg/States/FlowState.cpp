@@ -76,7 +76,7 @@ namespace StateMachine {
             lastPrint_ = micros();
         }
 
-        if (flowTime > Config::flowDuration) {
+        if (flowTime > Config::getFlowDuration()) {
             enterIdleClosedState();
         }
 

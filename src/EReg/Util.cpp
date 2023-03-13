@@ -72,7 +72,7 @@ namespace Util {
         // const float steps[] = {600, 500, 550, 450, 500, 400, 450, 350, 400};
         const float steps[] = {350, 450, 400, 500, 450, 550, 500, 600, 550, 700};
         const int numSteps = sizeof(steps)/sizeof(steps[0]);
-        unsigned long stepTime = Config::flowDuration/numSteps;
+        unsigned long stepTime = Config::getFlowDuration()/numSteps;
         unsigned int index = flowTime/stepTime;
         index = (index >= numSteps)?(numSteps-1):index;
         return steps[index];
