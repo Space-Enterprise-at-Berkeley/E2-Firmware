@@ -48,8 +48,8 @@ namespace StateMachine {
         //send data to AC
         if (TimeUtil::timeInterval(lastPrint_, micros()) > Config::telemetryInterval) {
             Packets::sendTelemetry(
-                filteredUpstreamPsi,
-                filteredDownstreamPsi,
+                rawUpstreamPsi,
+                rawDownstreamPsi,
                 motorAngle,
                 angleSetpoint_,
                 0,
