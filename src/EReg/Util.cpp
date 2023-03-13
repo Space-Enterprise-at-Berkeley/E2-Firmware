@@ -143,7 +143,7 @@ namespace Util {
         int closedLimitSwitchState = HAL::getClosedLimitSwitchState();
         int openLimitSwitchState = HAL::getOpenLimitSwitchState();
         bool inOvercurrentCooldown = HAL::getOvercurrentStatus();
-        if (inOvercurrentCooldown) {
+        if (inOvercurrentCooldown || (!HAL::hardwareInitialized)) {
             speed = 0;
             // Serial.printf("oc flag on\n");
         }

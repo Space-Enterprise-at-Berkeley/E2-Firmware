@@ -63,6 +63,7 @@ namespace HAL {
 
 
 
+
     int init();
     int initializeMotorDriver();
     void sendSPICommand(uint8_t* dataBuffer, int numBytes, SPIClass* spi, int csPin, int clkSpeed, int spiMode);
@@ -89,4 +90,6 @@ namespace HAL {
     int getClosedLimitSwitchState();
     void packetizeTemperatures(Comms::Packet* packet);
     bool getOvercurrentStatus();
+
+    bool hardwareInitialized();
 }
