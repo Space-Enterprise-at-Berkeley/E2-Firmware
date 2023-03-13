@@ -172,6 +172,9 @@ Task taskTable[] = {
 void onAbort(Comms::Packet packet, uint8_t ip) {
   Mode systemMode = (Mode)packetGetUint8(&packet, 0);
   AbortReason abortReason = (AbortReason)packetGetUint8(&packet, 1);
+  Serial.println("abort received");
+  Serial.println(abortReason);
+  Serial.println(systemMode);
 
   if (launchStep != 0){
     Serial.println("mid-flow abort");
@@ -229,6 +232,12 @@ void onAbort(Comms::Packet packet, uint8_t ip) {
       }    
       break;
     case MANUAL_ABORT:
+      if (ID == AC2){
+        //open lox and fuel gems
+        Serial.println("manual abort opening gems");
+        AC::actuate(LOX_GEMS, AC::ON, 0);
+        AC::actuate(FUEL_GEMS, AC::ON, 0);
+      }
     case IGNITER_NO_CONTINUITY:
     case BREAKWIRE_NO_CONTINUITY:
     case BREAKWIRE_NO_BURNT:
