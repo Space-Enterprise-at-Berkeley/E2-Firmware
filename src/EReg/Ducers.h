@@ -1,14 +1,16 @@
 #include "Arduino.h"
 #include "HAL.h"
 #include "Util.h"
+#include "data_buff.h"
 
 namespace Ducers {
-    void readAllPTs();
 
     void setDownstreamPT1(float downstreamPT1);
     void setDownstreamPT2(float downstreamPT2);
     void setUpstreamPT1(float upstreamPT1);
     void setUpstreamPT2(float upstreamPT2);
+
+    void initPTs();
 
     float readPressurantPT1();
     float readTankPT1();
@@ -18,5 +20,9 @@ namespace Ducers {
     float readRawTankPT2();
     float readRawPressurantPT1();
     float readRawPressurantPT2();
+    float readFilteredTankPT1();
+    float readFilteredTankPT2();
+    float readFilteredPressurantPT1();
+    float readFilteredPressurantPT2();
     
 }

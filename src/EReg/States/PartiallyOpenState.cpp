@@ -35,6 +35,9 @@ namespace StateMachine {
         float rawDownstreamPsi = Ducers::readRawTankPT1();
         float rawUpstreamPsi = Ducers::readRawPressurantPT1();
 
+        float filteredDownstreamPsi = Ducers::readFilteredTankPT1();
+        float filteredUpstreamPsi = Ducers::readFilteredPressurantPT1();
+
         float speed = 0;
 
         //Compute Inner PID Servo loop
@@ -45,8 +48,8 @@ namespace StateMachine {
         //send data to AC
         if (TimeUtil::timeInterval(lastPrint_, micros()) > Config::telemetryInterval) {
             Packets::sendTelemetry(
-                rawUpstreamPsi,
-                rawDownstreamPsi,
+                filteredUpstreamPsi,
+                filteredDownstreamPsi,
                 motorAngle,
                 angleSetpoint_,
                 0,

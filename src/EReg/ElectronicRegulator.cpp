@@ -92,6 +92,7 @@ void setup() {
         }
     }
     Comms::init(HAL::ETH_CS, HAL::ETH_MISO, HAL::ETH_MOSI, HAL::ETH_SCLK, HAL::ETH_INTn);
+    Ducers::initPTs();
     StateMachine::enterIdleClosedState();
     zero(); 
     Comms::registerCallback(150, flow);

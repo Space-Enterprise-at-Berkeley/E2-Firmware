@@ -36,6 +36,8 @@ namespace StateMachine {
         float downstreamPsi = Ducers::readTankPT1();
         float rawDownstreamPsi = Ducers::readRawTankPT1();
         float rawUpstreamPsi = Ducers::readRawPressurantPT1();
+        float filteredDownstreamPsi = Ducers::readFilteredTankPT1();
+        float filteredUpstreamPsi = Ducers::readFilteredPressurantPT1();
         // Serial.printf("%.2f\n", downstreamPsi);
 
         //Compute Inner PID Servo loop
@@ -49,8 +51,8 @@ namespace StateMachine {
         // send data to AC
         if (TimeUtil::timeInterval(lastPrint_, micros()) > Config::telemetryIntervalIdle) {
             Packets::sendTelemetry(
-                rawUpstreamPsi,
-                rawDownstreamPsi,
+                filteredUpstreamPsi,
+                filteredDownstreamPsi,
                 motorAngle,
                 0,
                 0,
