@@ -11,7 +11,7 @@
 //Actuators
 enum Actuators {
   //AC1
-  IGNITER = 0,
+  IGNITER = 7,
   BREAKWIRE = 1,
 
   ARM_VENT = 2,

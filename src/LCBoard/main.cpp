@@ -39,7 +39,7 @@ uint32_t LED_roll(){
 uint32_t abortDaemon();
 
 Task taskTable[] = {
-  {abortDaemon, 0, false},
+  {abortDaemon, 0, false}, // do not move from index 0
   {ADS::task_sampleLC, 0, true},
   {ADS::printReadings, 0, true},
   {Power::task_readSendPower, 0, true},
