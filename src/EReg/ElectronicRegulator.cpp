@@ -38,7 +38,8 @@ void zero(Comms::Packet packet, uint8_t ip) {
 }
 
 void flow(Comms::Packet packet, uint8_t ip) {
-    StateMachine::enterFlowState();
+    uint32_t flowLength = packetGetUint32(&packet, 1);
+    StateMachine::enterFlowState(flowLength);
 }
 
 void stopFlow(Comms::Packet packet, uint8_t ip) {
