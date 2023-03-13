@@ -19,7 +19,7 @@ namespace Config {
     const double p_inner = 3, i_inner = 5e-6, d_inner = 0;
 
     // Flow Parameters
-    const float pressureSetpoint = 305;
+    const float pressureSetpoint = 120;
     const unsigned long rampStart = 0.7 * pressureSetpoint; // psi
     const unsigned long loxLead = 0; //time in microseconds
 
