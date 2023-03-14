@@ -24,8 +24,10 @@ namespace Packets {
 
 
     void sendTelemetry(
-        float upstreamPressure,
-        float downstreamPressure,
+        float upstreamPressure1,
+        float upstreamPressure2,
+        float downstreamPressure1,
+        float downstreamPressure2,
         float encoderAngle,
         float angleSetpoint,
         float pressureSetpoint,
@@ -36,8 +38,10 @@ namespace Packets {
     ) {
 
         Comms::Packet packet = {.id = TELEMETRY_ID};
-        Comms::packetAddFloat(&packet, upstreamPressure);
-        Comms::packetAddFloat(&packet, downstreamPressure);
+        Comms::packetAddFloat(&packet, upstreamPressure1);
+        Comms::packetAddFloat(&packet, upstreamPressure2);
+        Comms::packetAddFloat(&packet, downstreamPressure1);
+        Comms::packetAddFloat(&packet, downstreamPressure2);
         Comms::packetAddFloat(&packet, encoderAngle);
         Comms::packetAddFloat(&packet, angleSetpoint);
         Comms::packetAddFloat(&packet, pressureSetpoint);

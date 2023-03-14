@@ -32,12 +32,24 @@ namespace StateMachine {
         float motorAngle = HAL::getEncoderCount();
 
         HAL::readAllDucers();
-        float UpstreamPsi = Ducers::readPressurantPT1();
-        float DownstreamPsi = Ducers::readTankPT1();
-        float rawDownstreamPsi = Ducers::readRawTankPT1();
-        float rawUpstreamPsi = Ducers::readRawPressurantPT1();
-        float filteredDownstreamPsi = Ducers::readFilteredTankPT1();
-        float filteredUpstreamPsi = Ducers::readFilteredPressurantPT1();
+
+        float upstreamPT1 = Ducers::readPressurantPT1();
+        float upstreamPT2 = Ducers::readPressurantPT2();
+        float downstreamPT1 = Ducers::readTankPT1();
+        float downstreamPT2 = Ducers::readTankPT2();
+
+        float rawUpstreamPT1 = Ducers::readRawPressurantPT1();
+        float rawUpstreamPT2 = Ducers::readRawPressurantPT2();
+        float rawDownstreamPT1 = Ducers::readRawTankPT1();
+        float rawDownstreamPT2 = Ducers::readRawTankPT2();
+
+        float filteredUpstreamPT1 = Ducers::readFilteredPressurantPT1();
+        float filteredUpstreamPT2 = Ducers::readFilteredPressurantPT2();
+        float filteredDownstreamPT1 = Ducers::readFilteredTankPT1();
+        float filteredDownstreamPT2 = Ducers::readFilteredTankPT2();
+
+        float upstreamPsi = upstreamPT1;
+        float downstreamPsi = Ducers::chooseDucerRead(downstreamPT1, downstreamPT2);
 
         unsigned long flowTime = TimeUtil::timeInterval(timeStarted_, micros());
         float speed = 0;
@@ -46,12 +58,12 @@ namespace StateMachine {
             pressureSetpoint_ = FlowProfiles::flowPressureProfile(flowTime - Config::loxLead);
 
             //Use dynamic PID Constants
-            Util::PidConstants dynamicPidConstants = Util::computeTankDynamicPidConstants(UpstreamPsi, DownstreamPsi, flowTime);
+            Util::PidConstants dynamicPidConstants = Util::computeTankDynamicPidConstants(upstreamPsi, downstreamPsi, flowTime);
             outerController_->updateConstants(dynamicPidConstants.k_p, dynamicPidConstants.k_i, dynamicPidConstants.k_d);
-            double feedforward = Util::compute_feedforward(pressureSetpoint_, UpstreamPsi, flowTime);
+            double feedforward = Util::compute_feedforward(pressureSetpoint_, upstreamPsi, flowTime);
 
             //Compute Outer Pressure Control Loop
-            angleSetpoint_ = outerController_->update(DownstreamPsi - pressureSetpoint_, feedforward);
+            angleSetpoint_ = outerController_->update(downstreamPsi - pressureSetpoint_, feedforward);
 
             //Compute Inner PID Servo loop
             speed = innerController_->update(motorAngle - angleSetpoint_);
@@ -66,8 +78,10 @@ namespace StateMachine {
         //send data to AC
         if (TimeUtil::timeInterval(lastPrint_, micros()) > Config::telemetryInterval) {
             Packets::sendTelemetry(
-                rawUpstreamPsi,
-                rawDownstreamPsi,
+                rawUpstreamPT1,
+                rawUpstreamPT2,
+                rawDownstreamPT1,
+                rawDownstreamPT2,
                 motorAngle,
                 angleSetpoint_,
                 pressureSetpoint_,
@@ -83,7 +97,7 @@ namespace StateMachine {
             enterIdleClosedState();
         }
 
-        checkAbortPressure(DownstreamPsi, Config::abortPressureThresh);
+        checkAbortPressure(downstreamPsi, Config::abortPressureThresh);
     }
 
 }

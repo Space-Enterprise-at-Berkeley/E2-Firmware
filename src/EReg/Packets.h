@@ -16,8 +16,10 @@ namespace Packets {
     const uint8_t OVERCURRENT_ID = 10;
 
     void sendTelemetry(
-        float upstreamPressure,
-        float downstreamPressure,
+        float upstreamPressure1,
+        float upstreamPressure2,
+        float downstreamPressure1,
+        float downstreamPressure2,
         float encoderAngle,
         float angleSetpoint,
         float pressureSetpoint,

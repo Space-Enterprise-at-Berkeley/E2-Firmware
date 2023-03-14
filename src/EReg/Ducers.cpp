@@ -61,6 +61,10 @@ namespace Ducers {
         return max((float)1, interpolate1000(_downstreamPT1));
     }
 
+    float readTankPT2() {
+        return max((float)1, interpolate1000(_downstreamPT2));
+    }
+
     float readRawTankPT1() {
         return interpolate1000(_downstreamPT1);
     }
@@ -86,8 +90,16 @@ namespace Ducers {
     float readFilteredPressurantPT2() {
         return (float) upstreamPT2Buff->getFiltered();
     }
-    float readTankPT2() {
-        return max((float)1, interpolate1000(_downstreamPT2));
-    }
+
+    /**
+     * @brief choose which ducer to read, implementing PT redundancy
+     * @param ducer1 ducer 1 reading
+     * @param ducer2 ducer 2 reading
+     * @return *float* which ducer to use
+    */
+   float chooseDucerRead(float ducer1, float ducer2) {
+       return max(ducer1, ducer2);
+   }
+
 
 }

@@ -73,8 +73,8 @@ double Buffer::getFiltered() {
         return 0;
     } else {
         double filtered = 0;
-        for (int i = 0; i<n; i++) {
-            filtered += buf[i] * taps[i];
+        for (int i = curr_i; i<curr_i+n; i++) {
+            filtered += buf[i % n] * taps[i % n];
         }
         return filtered;
     }

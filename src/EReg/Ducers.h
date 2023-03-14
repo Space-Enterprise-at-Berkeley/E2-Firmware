@@ -13,16 +13,20 @@ namespace Ducers {
     void initPTs();
 
     float readPressurantPT1();
-    float readTankPT1();
     float readPressurantPT2();
     float readTankPT1();
-    float readRawTankPT1();
-    float readRawTankPT2();
+    float readTankPT2();
+    
     float readRawPressurantPT1();
     float readRawPressurantPT2();
-    float readFilteredTankPT1();
-    float readFilteredTankPT2();
+    float readRawTankPT1();
+    float readRawTankPT2();
+
     float readFilteredPressurantPT1();
     float readFilteredPressurantPT2();
+    float readFilteredTankPT1();
+    float readFilteredTankPT2();
+
+    float chooseDucerRead(float ducer1, float ducer2);
     
 }
