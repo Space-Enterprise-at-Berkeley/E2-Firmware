@@ -295,7 +295,7 @@ void onLaunchQueue(Comms::Packet packet, uint8_t ip){
     //start launch daemon
     launchStep = 0;
     taskTable[0].enabled = true;
-    taskTable[0].nexttime = millis(); // this has to be here for timestamp overflowing
+    taskTable[0].nexttime = micros(); // this has to be here for timestamp overflowing
     Serial.println("launch command recieved, starting sequence");
 
   }
