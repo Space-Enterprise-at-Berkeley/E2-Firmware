@@ -98,6 +98,9 @@ namespace Ducers {
      * @return *float* which ducer to use
     */
    float chooseDucerRead(float ducer1, float ducer2) {
+        if ((ducer1 < -50) && (ducer2 < -50)) {
+            return 10000; //easy way to abort
+        }
        return max(ducer1, ducer2);
    }
 
