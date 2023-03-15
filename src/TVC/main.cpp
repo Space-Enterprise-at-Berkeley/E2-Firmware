@@ -22,11 +22,9 @@ Task taskTable[] = {
 void setup() {
   // setup stuff here
   Comms::init();
-  TVC::init();
   HAL::init();
-  // HAL::initializeMotorDriver();
-  HAL::setEncoderCount(0);
-  HAL::setupEncoder();
+  // HAL::setupEncoder();
+  TVC::init();
 
   while(1) {
     // main loop here to avoid arduino overhead

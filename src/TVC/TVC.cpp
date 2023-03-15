@@ -9,21 +9,23 @@ namespace TVC {
 
     // define update period
     uint32_t tvcUpdatePeriod = 50 * 1000;
-    int x_motor_ticksp = 0;
+    int x_motor_ticksp = 10000;
     int y_motor_ticksp = 0;
-    float x_p = 0.1;
+    float x_p = 0.5;
     float x_i = 0;
     float x_d = 0;
     float y_p = 0;
     float y_i = 0;
     float y_d = 0;
     int MID_SPD = 307;
-    int MAX_SPD = 20; //(4096 * (1500 / 200000)))
-    int MIN_SPD = -20;
+    // int MAX_SPD = 20; //(4096 * (1500 / 200000)))
+    // int MIN_SPD = -20;
+    int MAX_SPD = 50;
+    int MIN_SPD = -50;
     int INNER_BUFFER_SIZE = 2;
-    // int x_tickSetpoint = 0;
+    int x_tickSetpoint = 0;
     int y_tickSetpoint = 0;
-    int speed_x;
+    int speed_x = 40;
     int speed_y;
 
     // define class variables    
@@ -50,25 +52,28 @@ namespace TVC {
         // ledcAttachPin(HAL::y_pwm, 1);
         // ledcWrite(1, 307);
 
-        // analogWriteFrequency(X_PWM_PIN, 50);
-        // analogWriteResolution(12);  
-        // analogWrite(X_PWM_PIN, 307); 
         x_Controller.reset();
         y_Controller.reset();
         delay(3000); 
     }
 
     uint32_t updatePID() {
-        // speed_x = x_Controller.update(x_motor_ticksp - HAL::encoderTicks) + MID_SPD;
-        speed_x = -(x_motor_ticksp - HAL::encoderTicks)*x_p + MID_SPD;
-        Serial.println(speed_x);
-        Serial.println(x_motor_ticksp - HAL::encoderTicks);
-        speed_y = y_Controller.update(y_motor_ticksp - y_tickSetpoint) + MID_SPD;
 
-        // analogWrite(X_PWM_PIN, speed_x);
-        // analogWrite(Y_PWM_PIN, speed_y);
+        Serial.println("PID time");
+
+        speed_x = x_Controller.update(x_motor_ticksp - HAL::getEncoderCount()) + MID_SPD;
+        // speed_x = -(x_motor_ticksp - HAL::encoderTicks)*x_p + MID_SPD;
+
+        Serial.print("Speed: ");
+        Serial.println(speed_x);
+        Serial.print("Encoder count: ");
+        Serial.println(HAL::getEncoderCount());
+        Serial.print("setpoint - encoder count: ");
+        Serial.println(x_motor_ticksp - HAL::getEncoderCount());
+        // speed_y = y_Controller.update(y_motor_ticksp - y_tickSetpoint) + MID_SPD;
+
         ledcWrite(0, speed_x);
-        ledcWrite(1, speed_y);
+        // ledcWrite(1, speed_y);
 
         // analogWrite(X_PWM_PIN, 655);
         Serial.println("Running PWM");

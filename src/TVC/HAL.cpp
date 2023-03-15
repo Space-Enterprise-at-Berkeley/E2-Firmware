@@ -12,7 +12,7 @@ namespace HAL {
         setupEncoder();
 
         pinMode(x_pwm, OUTPUT); 
-        pinMode(y_pwm, OUTPUT);
+        // pinMode(y_pwm, OUTPUT);
 
         // ledcSetup(motorChannel, pwmFreq, pwmResolution);
         // ledcAttachPin(SPARKMAX, 0);
@@ -22,9 +22,9 @@ namespace HAL {
         ledcAttachPin(x_pwm, 0);
         ledcWrite(0, 307);
 
-        ledcSetup(1, 50, 12);
-        ledcAttachPin(y_pwm, 1);
-        ledcWrite(1, 307);
+        // ledcSetup(1, 50, 12);
+        // ledcAttachPin(y_pwm, 1);
+        // ledcWrite(1, 307);
 
         return 0;
     }

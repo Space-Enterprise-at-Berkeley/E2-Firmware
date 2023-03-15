@@ -25,7 +25,6 @@ uint32_t printEncoder() {
     return 50 * 1000;
 }
 
-
 void risingA() {
     if (digitalRead(encC)) {
         encoderTicks += 1;
@@ -112,12 +111,10 @@ void setupEncoder() {
 }
 
 void runMotor(int32_t speed) {
-    if (speed >= -100 && speed <= 50) {
-        // analogWrite(X_PWM_PIN, speed + 307);
+    if (speed >= -100 && speed <= 100) {
         ledcWrite(0, speed + 307);
     }
     else {
-        // analogWrite(X_PWM_PIN, 307);
         ledcWrite(0, 307);
     }
 }
@@ -125,9 +122,6 @@ void runMotor(int32_t speed) {
 void initMotor() {
     setupEncoder();
     pinMode(X_PWM_PIN, OUTPUT);   
-    // analogWriteFrequency(X_PWM_PIN, 50);
-    // analogWriteResolution(12);  
-    // analogWrite(X_PWM_PIN, 307);
     ledcSetup(0, 50, 12);
     ledcAttachPin(X_PWM_PIN, 0);
     ledcWrite(0, 307);
@@ -136,15 +130,11 @@ void initMotor() {
 void setup() {
     Serial.begin(115200);
     initMotor(); 
-    delay(3000); 
+    delay(1000); 
 }
 
 void loop() {
-    Serial.println(encoderTicks);
-    // Serial.println(digitalRead(encA));
-    // Serial.println(digitalRead(encB));
-    // Serial.println(digitalRead(encC));
-    // analogWrite(X_PWM_PIN, 320);
+    Serial.println(getEncoderCount());
     runMotor(x);
     x += 1;
     delay(100);
