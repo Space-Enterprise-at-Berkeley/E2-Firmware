@@ -74,7 +74,7 @@ double Buffer::getFiltered() {
     } else {
         double filtered = 0;
         for (int i = curr_i; i<curr_i+n; i++) {
-            filtered += buf[i % n] * taps[i % n];
+            filtered += buf[i % n] * taps[i - curr_i];
         }
         return filtered;
     }
