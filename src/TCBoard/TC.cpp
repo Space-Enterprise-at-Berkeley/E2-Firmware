@@ -47,6 +47,7 @@ namespace TC {
         }
         else if (millis() - abortStart[index] > abortTime){
           Comms::sendAbort(HOTFIRE, ENGINE_OVERTEMP);
+          setAbort(false);
         }
       }
       else{

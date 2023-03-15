@@ -31,13 +31,34 @@ enum Actuators {
   FUEL_GEMS = 7,
 };
 
+uint8_t recieveCounter = 0;
+uint32_t droppedPackets = 0;
+void heartReceive(Comms::Packet p, uint8_t ip){
+  uint8_t id = Comms::packetGetUint8(&p, 0);
+  if (id != ip){
+    Serial.println("Heartbeat ID mismatch of " + String(ip) + " and " + String(id));
+    return;
+  }
+  uint8_t counter = Comms::packetGetUint8(&p, 1);
+  if (ip == GROUND1){
+    if (counter != recieveCounter){
+      uint8_t diff = counter - recieveCounter;
+      Serial.println(String(diff) + " packets dropped from GROUND1");
+      droppedPackets += diff;
+      recieveCounter = counter;
+    } else {
+      recieveCounter++;
+    }
+  }
+}
 
 Comms::Packet heart = {.id = HEARTBEAT, .len = 0};
-//uint8_t counter = 0;
+uint8_t counter = 0;
 uint32_t task_heartbeat() {
   heart.len = 0;
   Comms::packetAddUint8(&heart, ID);
-  //Comms::packetAddUint8(&heart, counter++);
+  Comms::packetAddUint8(&heart, counter++);
+  Comms::packetAddUint32(&heart, droppedPackets);
   Comms::emitPacketToGS(&heart);
   Serial.println("Heartbeat");
   return 1000 * 1000; //1 sec
@@ -76,10 +97,6 @@ uint32_t launchDaemon(){
           ChannelMonitor::readChannels();
           if (ChannelMonitor::isChannelContinuous(BREAKWIRE)){
             Serial.println("breakwire still has continuity, aborting");
-/*             Comms::Packet abort = {.id = 43, .len = 0};
-            Comms::packetAddUint8(&abort, systemMode);
-            Comms::packetAddUint8(&abort, BREAKWIRE_NO_BURNT);
-            Comms::emitPacket(&abort, ALL); */
             Comms::sendAbort(systemMode, BREAKWIRE_NO_BURNT);
             launchStep = 0;
             return 0;
@@ -198,12 +215,12 @@ void onAbort(Comms::Packet packet, uint8_t ip) {
     case ENGINE_OVERTEMP:
       if(ID == AC1){
         //arm and close main valves   
-        AC::actuate(LOX_MAIN_VALVE, AC::OFF, 0);
         AC::actuate(FUEL_MAIN_VALVE, AC::OFF, 0);
+        AC::delayedActuate(LOX_MAIN_VALVE, AC::OFF, 0, 500);
         AC::delayedActuate(ARM, AC::ON, 0, 100);
-        AC::delayedActuate(ARM, AC::OFF, 0, 2000);
-        AC::delayedActuate(ARM_VENT, AC::ON, 0, 2050);
-        AC::delayedActuate(ARM_VENT, AC::OFF, 0, 2500);
+        AC::delayedActuate(ARM, AC::OFF, 0, 2500);
+        AC::delayedActuate(ARM_VENT, AC::ON, 0, 2550);
+        AC::delayedActuate(ARM_VENT, AC::OFF, 0, 3000);
       } else if (ID == AC2){
         //open lox and fuel gems
         AC::actuate(LOX_GEMS, AC::ON, 0);
@@ -214,12 +231,12 @@ void onAbort(Comms::Packet packet, uint8_t ip) {
     case LC_UNDERTHRUST:
       if(ID == AC1){
         //arm and close main valves
-        AC::actuate(LOX_MAIN_VALVE, AC::OFF, 0);
         AC::actuate(FUEL_MAIN_VALVE, AC::OFF, 0);
+        AC::delayedActuate(LOX_MAIN_VALVE, AC::OFF, 0, 500);
         AC::delayedActuate(ARM, AC::ON, 0, 100);
-        AC::delayedActuate(ARM, AC::OFF, 0, 2000);
-        AC::delayedActuate(ARM_VENT, AC::ON, 0, 2050);
-        AC::delayedActuate(ARM_VENT, AC::OFF, 0, 2500);
+        AC::delayedActuate(ARM, AC::OFF, 0, 2500);
+        AC::delayedActuate(ARM_VENT, AC::ON, 0, 2550);
+        AC::delayedActuate(ARM_VENT, AC::OFF, 0, 3000);
 
       } else if (ID == AC2){
         //open lox and fuel gems
@@ -302,6 +319,8 @@ void setup() {
   Comms::registerCallback(LAUNCH_QUEUE, onLaunchQueue);
   //endflow register
   Comms::registerCallback(ENDFLOW, onEndFlow);
+
+  Comms::registerCallback(HEARTBEAT, heartReceive);
 
 
   for (int i = 0; i < 8; i++) {

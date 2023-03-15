@@ -18,6 +18,7 @@ uint8_t LED3 = 16;
 uint8_t LED4 = 17;
 uint8_t LEDS[4] = {LED1, LED2, LED3, LED4};
 int roll = 0;
+bool lcAbortEnabled = true;
 
 
 void initLEDs() {
@@ -107,9 +108,11 @@ void setup() {
   initWire();
   Power::init();
   initLEDs();
-  //Comms::registerCallback(STARTFLOW, onFlowStart);
-  //Comms::registerCallback(ABORT, onAbortOrEndFlow);
-  //Comms::registerCallback(ENDFLOW, onAbortOrEndFlow);
+  if (lcAbortEnabled){
+    Comms::registerCallback(STARTFLOW, onFlowStart);
+    Comms::registerCallback(ABORT, onAbortOrEndFlow);
+    Comms::registerCallback(ENDFLOW, onAbortOrEndFlow);
+  }
 
 
   while(1) {
