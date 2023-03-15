@@ -39,8 +39,11 @@ uint32_t LED_roll(){
 
 uint32_t abortDaemon();
 
+uint32_t disable_Daemon();
+
 Task taskTable[] = {
-  {abortDaemon, 0, false},
+  {abortDaemon, 0, false}, // do not move from index 0
+  {disable_Daemon, 0, false},
   {ADS::task_sampleLC, 0, true},
   {ADS::printReadings, 0, true},
   {Power::task_readSendPower, 0, true},
@@ -59,11 +62,15 @@ uint32_t abortStartDelay = 2000;
 uint32_t timeSinceBad = 0;
 float flowStartWeight[4] = {0, 0, 0, 0};
 
+uint32_t disable_Daemon(){
+  taskTable[0].enabled = false;
+  return 0;
+}
 
 uint32_t abortDaemon(){
   //check if sum less than min thrust from flow start weight for 0.5 seconds
   float sum = 0;
-  for (int i = 0; i < 4; i++){
+  for (int i = 1; i < 3; i++){ // only care about channels 1 and 2
     sum += ADS::unrefreshedSample(i) - flowStartWeight[i];
   }
   if (sum < minThrust){
@@ -77,26 +84,31 @@ uint32_t abortDaemon(){
   } else {
     timeSinceBad = 0;
   }
-  return 75*1000;
+  return 80*1000;
 }
 
 void onFlowStart(Comms::Packet packet, uint8_t ip) {
   Mode systemMode = (Mode)Comms::packetGetUint8(&packet, 0);
+  uint32_t length = Comms::packetGetUint32(&packet, 1);
   if (systemMode != HOTFIRE) {
     return;
   }
   //record flow weights
-  for (int i = 0; i < 4; i++){
+  for (int i = 1; i < 3; i++){ // only care about channels 1 and 2
     flowStartWeight[i] = ADS::unrefreshedSample(i);
   }
   //start LC abort daemon when hotfire starts
   taskTable[0].enabled = true;
   taskTable[0].nexttime = micros() + abortStartDelay * 1000;
+
+  taskTable[1].enabled = true;
+  taskTable[1].nexttime = micros() + length * 1000;
 }
 
 void onAbortOrEndFlow(Comms::Packet packet, uint8_t ip){
   //stop LC abort daemon when abort or endflow is received
   taskTable[0].enabled = false;
+  taskTable[1].enabled = false;
 }
 
 

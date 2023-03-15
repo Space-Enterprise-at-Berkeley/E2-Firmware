@@ -11,7 +11,7 @@
 //Actuators
 enum Actuators {
   //AC1
-  IGNITER = 0,
+  IGNITER = 7,
   BREAKWIRE = 1,
 
   ARM_VENT = 2,
@@ -60,7 +60,7 @@ uint32_t task_heartbeat() {
   Comms::packetAddUint8(&heart, counter++);
   Comms::packetAddUint32(&heart, droppedPackets);
   Comms::emitPacketToGS(&heart);
-  Serial.println("Heartbeat");
+  // Serial.println("Heartbeat");
   return 1000 * 1000; //1 sec
 }
 
@@ -73,12 +73,12 @@ uint32_t launchDaemon(){
     switch(launchStep){
       case 0:
       {
-        // Light igniter and wait for 0.5 sec
+        // Light igniter and wait for 2.0 sec
         if (systemMode == HOTFIRE || systemMode == LAUNCH){
           Serial.println("launch step 0, igniter on");
           AC::actuate(IGNITER, AC::ON, 0);
           launchStep++;
-          return 500 * 1000;
+          return 2000 * 1000;
         } else {
           Serial.println("launch step 0, not hotfire, skip");
           launchStep++;
@@ -158,7 +158,7 @@ Task taskTable[] = {
   {AC::task_actuatorStates, 0, true},
   {ChannelMonitor::readChannels, 0, true},
   {Power::task_readSendPower, 0, true},
-  {AC::task_printActuatorStates, 0, true},
+  // {AC::task_printActuatorStates, 0, true},
   {task_heartbeat, 0, true},
 };
 
@@ -189,6 +189,9 @@ Task taskTable[] = {
 void onAbort(Comms::Packet packet, uint8_t ip) {
   Mode systemMode = (Mode)packetGetUint8(&packet, 0);
   AbortReason abortReason = (AbortReason)packetGetUint8(&packet, 1);
+  Serial.println("abort received");
+  Serial.println(abortReason);
+  Serial.println(systemMode);
 
   if (launchStep != 0){
     Serial.println("mid-flow abort");
@@ -246,6 +249,12 @@ void onAbort(Comms::Packet packet, uint8_t ip) {
       }    
       break;
     case MANUAL_ABORT:
+      if (ID == AC2){
+        //open lox and fuel gems
+        Serial.println("manual abort opening gems");
+        AC::actuate(LOX_GEMS, AC::ON, 0);
+        AC::actuate(FUEL_GEMS, AC::ON, 0);
+      }
     case IGNITER_NO_CONTINUITY:
     case BREAKWIRE_NO_CONTINUITY:
     case BREAKWIRE_NO_BURNT:
@@ -283,6 +292,8 @@ void onLaunchQueue(Comms::Packet packet, uint8_t ip){
     }
     systemMode = (Mode)packetGetUint8(&packet, 0);
     flowLength = packetGetUint32(&packet, 1);
+    Serial.println("System mode: " + String(systemMode));
+    Serial.println("Flow length: " + String(flowLength));
 
     if (systemMode == LAUNCH || systemMode == HOTFIRE){
       // check igniter and breakwire continuity
@@ -301,6 +312,7 @@ void onLaunchQueue(Comms::Packet packet, uint8_t ip){
     //start launch daemon
     launchStep = 0;
     taskTable[0].enabled = true;
+    taskTable[0].nexttime = micros(); // this has to be here for timestamp overflowing
     Serial.println("launch command recieved, starting sequence");
 
   }
