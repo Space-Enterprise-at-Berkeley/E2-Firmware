@@ -19,12 +19,8 @@ Task taskTable[] = {
 
 #define TASK_COUNT (sizeof(taskTable) / sizeof (struct Task))
 
-int main() {
+void setup() {
   // setup stuff here
-  Serial.begin(115200);
-  #ifdef DEBUG_MODE
-  while(!Serial);
-  #endif
   Comms::init();
   TVC::init();
   HAL::init();
@@ -37,10 +33,18 @@ int main() {
     for(uint32_t i = 0; i < TASK_COUNT; i++) { // for each task, execute if next time >= current time
       uint32_t ticks = micros(); // current time in microseconds
       if (taskTable[i].nexttime - ticks > UINT32_MAX / 2 && taskTable[i].enabled) {
-        taskTable[i].nexttime = ticks + taskTable[i].taskCall();
+        uint32_t delayoftask = taskTable[i].taskCall();
+        if (delayoftask == 0) {
+          taskTable[i].enabled = false;
+        }
+        else {
+          taskTable[i].nexttime = ticks + delayoftask;
+        }
       }
     }
     Comms::processWaitingPackets();
   }
-  return 0;
 }
+
+void loop() {} // unused
+
