@@ -11,7 +11,7 @@ namespace TVC {
     uint32_t tvcUpdatePeriod = 50 * 1000;
     int x_motor_ticksp = 10000;
     int y_motor_ticksp = 0;
-    float x_p = 0.5;
+    float x_p = 0.1;
     float x_i = 0;
     float x_d = 0;
     float y_p = 0;
@@ -57,6 +57,16 @@ namespace TVC {
         delay(3000); 
     }
 
+    void definePosition(Comms::Packet defPos, uint8_t id) {
+        float x_pos = packetGetFloat(&defPos, 0);
+        float y_pos = packetGetFloat(&defPos, 4);
+
+        x_motor_ticksp = (int)x_pos;
+        y_motor_ticksp = (int)y_pos;
+
+        Serial.println("Received command to define encoder position: (" + String(x_pos) + ", " + String(y_pos) + ")");
+    }
+
     uint32_t updatePID() {
 
         Serial.println("PID time");
@@ -71,6 +81,10 @@ namespace TVC {
         Serial.print("setpoint - encoder count: ");
         Serial.println(x_motor_ticksp - HAL::getEncoderCount());
         // speed_y = y_Controller.update(y_motor_ticksp - y_tickSetpoint) + MID_SPD;
+
+        Comms::Packet tmp = {.id=12};
+        Comms::packetAddUint32(&tmp, HAL::getEncoderCount());
+        Comms::emitPacketToGS(&tmp);
 
         ledcWrite(0, speed_x);
         // ledcWrite(1, speed_y);

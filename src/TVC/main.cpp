@@ -22,10 +22,11 @@ Task taskTable[] = {
 void setup() {
   // setup stuff here
   Comms::init();
+  // Serial.begin(921600);
   HAL::init();
-  // HAL::setupEncoder();
+  HAL::setupEncoder();
   TVC::init();
-
+  Comms::registerCallback(1, TVC::definePosition);
   while(1) {
     // main loop here to avoid arduino overhead
     for(uint32_t i = 0; i < TASK_COUNT; i++) { // for each task, execute if next time >= current time
