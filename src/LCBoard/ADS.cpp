@@ -41,7 +41,7 @@ namespace ADS {
         }
     }
 
-    void zeroChannel(int i){
+    void zeroChannel(uint8_t i){
         offset[i] = -lbs[i] + offset[i];
         Serial.println("zeroed channel " + String(i) + " at " + String(lbs[i]) + " lbs");
         if(persistant_offset){
@@ -118,14 +118,14 @@ namespace ADS {
         for(int i = 0 ; i < ADCsize; i ++){
             Comms::packetAddFloat(&ADCPacket, lbs[i]); //write data[i] into the packet
         }
-        Comms::emitPacket(&ADCPacket); //commented out for tesing. shoud comment back in for comms
+        Comms::emitPacketToGS(&ADCPacket); //commented out for tesing. shoud comment back in for comms
 
         return sampleRate; //80Hz
 
     }
 
-    long unrefreshedSample(int i){
-        return data[i];
+    float unrefreshedSample(uint8_t channel){
+        return lbs[channel];
     }
 
 }

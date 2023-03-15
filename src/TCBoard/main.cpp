@@ -38,13 +38,22 @@ uint32_t print_task() {
   return 1000 * 1000;
 }
 
-uint32_t hello_packet() {
-  Comms::Packet hello = {.id = 1};
-  Comms::packetAddFloat(&hello, 69);
-  Comms::packetAddFloat(&hello, 69);
-  Comms::packetAddFloat(&hello, 69);
-  Comms::emitPacket(&hello);
-  return 1000 * 1000;
+// TC abort triggers when over 200 C for 0.5 seconds, and only during a hotfire
+uint32_t maxTemp = 200;
+uint32_t abortTime = 500;
+
+void onFlowStart(Comms::Packet packet, uint8_t ip) {
+  Mode systemMode = (Mode)Comms::packetGetUint8(&packet, 0);
+  if (systemMode != HOTFIRE) {
+    return;
+  }
+  //start TC abort check when hotfire starts
+  TC::setAbort(true, maxTemp, abortTime);
+
+}
+void onAbortOrEndFlow(Comms::Packet packet, uint8_t ip){
+  //stop TC abort check when abort or endflow is received
+  TC::setAbort(false);
 }
 
 Task taskTable[] = {
@@ -62,15 +71,24 @@ void setup() {
   Comms::init(); // takes care of Serial.begin()
   initWire();
   initLEDs();
-  Power::init();
+  //Power::init();
   TC::init();
+  Comms::registerCallback(STARTFLOW, onFlowStart);
+  Comms::registerCallback(ABORT, onAbortOrEndFlow);
+  Comms::registerCallback(ENDFLOW, onAbortOrEndFlow);
 
   while(1) {
     // main loop here to avoid arduino overhead
     for(uint32_t i = 0; i < TASK_COUNT; i++) { // for each task, execute if next time >= current time
       uint32_t ticks = micros(); // current time in microseconds
       if (taskTable[i].nexttime - ticks > UINT32_MAX / 2 && taskTable[i].enabled) {
-        taskTable[i].nexttime = ticks + taskTable[i].taskCall();
+        uint32_t delayoftask = taskTable[i].taskCall();
+        if (delayoftask == 0) {
+          taskTable[i].enabled = false;
+        }
+        else {
+          taskTable[i].nexttime = ticks + delayoftask;
+        }
       }
     }
     Comms::processWaitingPackets();

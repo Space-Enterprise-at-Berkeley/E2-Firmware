@@ -39,7 +39,7 @@ namespace Power
         Comms::packetAddFloat(&p, power);
 
         // emit the packet
-        Comms::emitPacket(&p);
+        Comms::emitPacketToGS(&p);
 
         return sendRate; // 1 second
     }

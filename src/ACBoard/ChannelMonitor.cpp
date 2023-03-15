@@ -1,7 +1,7 @@
 #include "ChannelMonitor.h"
 #include <Arduino.h>
 #include <EspComms.h>
-#include "MCP23008.h"
+#include <MCP23008.h>
 
 // Channel Monitor monitors continuity and currents for each actuator channel
 // It also handles setting the LEDs for each of these things on the board as it reads
@@ -38,7 +38,7 @@ void init(uint8_t s0, uint8_t s1, uint8_t s2, uint8_t curr, uint8_t cont){
     contpin = cont;
 
     // every 10 ms
-    cmUpdatePeriod = 1000 * 10;
+    cmUpdatePeriod = 1000 * 100;
 
     pinMode(sel0, OUTPUT);
     pinMode(sel1, OUTPUT);
@@ -118,8 +118,8 @@ uint32_t readChannels() {
         Comms::packetAddFloat(&contPacket, cont);
         Comms::packetAddFloat(&currPacket, curr);
     }  
-    Comms::emitPacket(&currPacket);
-    Comms::emitPacket(&contPacket);
+    Comms::emitPacketToGS(&currPacket);
+    Comms::emitPacketToGS(&contPacket);
     return cmUpdatePeriod;
 }
 
@@ -130,6 +130,10 @@ float* getCurrents() {
 
 float* getContinuities() {
     return continuities;
+}
+
+bool isChannelContinuous(uint8_t channel) {
+    return continuities[channel] > CONT_THRESHOLD;
 }
 
 MCP23008 getMCP1() {

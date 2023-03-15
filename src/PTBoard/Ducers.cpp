@@ -120,7 +120,7 @@ namespace Ducers {
             Comms::packetAddFloat(&ptPacket, data[i]);
         }
 
-        Comms::emitPacket(&ptPacket);
+        Comms::emitPacketToGS(&ptPacket);
         // Comms::emitPacket(&ptPacket, &RADIO_SERIAL, "\r\n\n", 3);
         // return the next execution time
         DEBUG("PT Packet Sent\n");

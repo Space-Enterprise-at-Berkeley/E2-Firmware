@@ -100,7 +100,8 @@ void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress g
 	W5500.setIPAddress(ip._address.bytes);
 	W5500.setGatewayIp(gateway._address.bytes);
 	W5500.setSubnetMask(subnet._address.bytes);
-	W5500.writeSIMR(0xFF);
+	W5500.writeSIMR(0x01);
+	W5500.writeSnIMR(0, 0x04);
 	// Set Interupprt
 	if (ETH_intN == -1) {
 		ETH_intN = 9;
@@ -112,7 +113,6 @@ void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress g
 
 bool EthernetClass::detectRead() {
 	if (INTnFlag) {
-		W5500.writeSnIMR(0, 0x04);
 		W5500.writeSnIR(0, 0xff);
 		INTnFlag = false;
 		return true;
