@@ -1,6 +1,6 @@
 #include <Arduino.h>
 // #include "Util.h"
-#define X_PWM_PIN 5
+#define X_PWM_PIN 39
 
 volatile int encoderTicks = 0;
 
@@ -124,7 +124,7 @@ void runMotor(int32_t speed) {
 
 void initMotor() {
     setupEncoder();
-    pinMode(OUTPUT, X_PWM_PIN);   
+    pinMode(X_PWM_PIN, OUTPUT);   
     // analogWriteFrequency(X_PWM_PIN, 50);
     // analogWriteResolution(12);  
     // analogWrite(X_PWM_PIN, 307);

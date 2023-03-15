@@ -1,10 +1,9 @@
 #include "TVC.h"
 #include "EEPROM.h"
-#include "Util.h"
 #include "HAL.h"
 
-#define X_PWM_PIN 6
-#define Y_PWM_PIN 7
+// #define X_PWM_PIN 6
+// #define Y_PWM_PIN 7
 
 namespace TVC {
 
@@ -41,10 +40,19 @@ namespace TVC {
         INNER_BUFFER_SIZE);
 
     void init() {
-        pinMode(OUTPUT, X_PWM_PIN);   
-        analogWriteFrequency(X_PWM_PIN, 50);
-        analogWriteResolution(12);  
-        analogWrite(X_PWM_PIN, 307); 
+        // pinMode(OUTPUT, X_PWM_PIN);   
+
+        // ledcSetup(0, 50, 12);
+        // ledcAttachPin(HAL::x_pwm, 0);
+        // ledcWrite(0, 307);
+
+        // ledcSetup(1, 50, 12);
+        // ledcAttachPin(HAL::y_pwm, 1);
+        // ledcWrite(1, 307);
+
+        // analogWriteFrequency(X_PWM_PIN, 50);
+        // analogWriteResolution(12);  
+        // analogWrite(X_PWM_PIN, 307); 
         x_Controller.reset();
         y_Controller.reset();
         delay(3000); 
@@ -57,8 +65,10 @@ namespace TVC {
         Serial.println(x_motor_ticksp - HAL::encoderTicks);
         speed_y = y_Controller.update(y_motor_ticksp - y_tickSetpoint) + MID_SPD;
 
-        analogWrite(X_PWM_PIN, speed_x);
-        analogWrite(Y_PWM_PIN, speed_y);
+        // analogWrite(X_PWM_PIN, speed_x);
+        // analogWrite(Y_PWM_PIN, speed_y);
+        ledcWrite(0, speed_x);
+        ledcWrite(1, speed_y);
 
         // analogWrite(X_PWM_PIN, 655);
         Serial.println("Running PWM");

@@ -6,61 +6,32 @@ namespace HAL {
 
     int32_t numReads = 0;
 
-    // int openLimitSwitchEngaged = 0;
-    // int closedLimitSwitchEngaged = 0;
-
-    bool motorDriverEnabled;
-
 
     int init() {
 
         setupEncoder();
 
-        int pwmFreq = 50;
-        int pwmResolution = 12;
+        pinMode(x_pwm, OUTPUT); 
+        pinMode(y_pwm, OUTPUT);
 
         // ledcSetup(motorChannel, pwmFreq, pwmResolution);
         // ledcAttachPin(SPARKMAX, 0);
         // ledcWrite(motorChannel, 307);
-// 
+
+        ledcSetup(0, 50, 12);
+        ledcAttachPin(x_pwm, 0);
+        ledcWrite(0, 307);
+
+        ledcSetup(1, 50, 12);
+        ledcAttachPin(y_pwm, 1);
+        ledcWrite(1, 307);
+
         return 0;
-    }
-
-    
-    int initializeMotorDriver() {
-        Serial.printf("motor driver init start\n");
-
-        int pwmFreq = 50000;
-        int pwmResolution = 8;
-        // ledcSetup(motorChannel, pwmFreq, pwmResolution);
-        // ledcAttachPin(INHA, 0);
-        // ledcWrite(motorChannel, 0);
-
-        enableMotorDriver();
-        delay(10);
-        // printMotorDriverFaultAndDisable();
-        enableMotorDriver();
-        delay(10);
-
-        delay(1);
-        return 0;
-
     }
 
     uint32_t printEncoder() {        
         Serial.println(getEncoderCount());
         return 50 * 1000;
-    }
-
-
-    void enableMotorDriver() {
-        digitalWrite(DRV_EN, HIGH);
-        motorDriverEnabled = true;
-    }
-
-    void disableMotorDriver() {
-        digitalWrite(DRV_EN, LOW);
-        motorDriverEnabled = false;
     }
 
 
