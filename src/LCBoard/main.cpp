@@ -6,12 +6,6 @@
 #include <Arduino.h>
 // #include <Comms.h>
 
-uint32_t task_example() { 
-  Serial.println("Hello World");
-  return 1000 * 1000; 
-}
-
-
 uint8_t LED1 = 14;
 uint8_t LED2 = 15;
 uint8_t LED3 = 16;
@@ -20,6 +14,27 @@ uint8_t LEDS[4] = {LED1, LED2, LED3, LED4};
 int roll = 0;
 bool lcAbortEnabled = true;
 
+uint8_t heartCounter = 0;
+Comms::Packet heart = {.id = HEARTBEAT, .len = 0};
+void heartbeat(Comms::Packet p, uint8_t ip){
+  uint8_t id = Comms::packetGetUint8(&p, 0);
+  if (id != ip){
+    Serial.println("Heartbeat ID mismatch of " + String(ip) + " and " + String(id));
+    return;
+  }
+  uint8_t recievedCounter = Comms::packetGetUint8(&p, 1);
+  if (heartCounter != recievedCounter){
+    Serial.println(String(recievedCounter-heartCounter) + " packets dropped");
+  }
+  Serial.println("Ping from " + String(id) + " with counter " + String(recievedCounter));
+  heartCounter = recievedCounter;
+
+  //send it back
+  heart.len = 0;
+  Comms::packetAddUint8(&heart, ID);
+  Comms::packetAddUint8(&heart, heartCounter);
+  Comms::emitPacketToGS(&heart);
+}
 
 void initLEDs() {
   for (int i = 0; i < 4; i++) {
@@ -69,6 +84,7 @@ uint32_t disable_Daemon(){
 
 uint32_t abortDaemon(){
   //check if sum less than min thrust from flow start weight for 0.5 seconds
+
   float sum = 0;
   for (int i = 1; i < 3; i++){ // only care about channels 1 and 2
     sum += ADS::unrefreshedSample(i) - flowStartWeight[i];
@@ -125,6 +141,7 @@ void setup() {
     Comms::registerCallback(ABORT, onAbortOrEndFlow);
     Comms::registerCallback(ENDFLOW, onAbortOrEndFlow);
   }
+  Comms::registerCallback(HEARTBEAT, heartbeat);
 
 
   while(1) {

@@ -31,37 +31,26 @@ enum Actuators {
   FUEL_GEMS = 7,
 };
 
-uint8_t recieveCounter = 0;
-uint32_t droppedPackets = 0;
-void heartReceive(Comms::Packet p, uint8_t ip){
+uint8_t heartCounter = 0;
+Comms::Packet heart = {.id = HEARTBEAT, .len = 0};
+void heartbeat(Comms::Packet p, uint8_t ip){
   uint8_t id = Comms::packetGetUint8(&p, 0);
   if (id != ip){
     Serial.println("Heartbeat ID mismatch of " + String(ip) + " and " + String(id));
     return;
   }
-  uint8_t counter = Comms::packetGetUint8(&p, 1);
-  if (ip == GROUND1){
-    if (counter != recieveCounter){
-      uint8_t diff = counter - recieveCounter;
-      Serial.println(String(diff) + " packets dropped from GROUND1");
-      droppedPackets += diff;
-      recieveCounter = counter;
-    } else {
-      recieveCounter++;
-    }
+  uint8_t recievedCounter = Comms::packetGetUint8(&p, 1);
+  if (heartCounter != recievedCounter){
+    Serial.println(String(recievedCounter-heartCounter) + " packets dropped");
   }
-}
+  Serial.println("Ping from " + String(id) + " with counter " + String(recievedCounter));
+  heartCounter = recievedCounter;
 
-Comms::Packet heart = {.id = HEARTBEAT, .len = 0};
-uint8_t counter = 0;
-uint32_t task_heartbeat() {
+  //send it back
   heart.len = 0;
   Comms::packetAddUint8(&heart, ID);
-  Comms::packetAddUint8(&heart, counter++);
-  Comms::packetAddUint32(&heart, droppedPackets);
+  Comms::packetAddUint8(&heart, heartCounter);
   Comms::emitPacketToGS(&heart);
-  // Serial.println("Heartbeat");
-  return 1000 * 1000; //1 sec
 }
 
 Mode systemMode = HOTFIRE;
@@ -159,7 +148,6 @@ Task taskTable[] = {
   {ChannelMonitor::readChannels, 0, true},
   {Power::task_readSendPower, 0, true},
   // {AC::task_printActuatorStates, 0, true},
-  {task_heartbeat, 0, true},
 };
 
 #define TASK_COUNT (sizeof(taskTable) / sizeof (struct Task))
@@ -249,12 +237,6 @@ void onAbort(Comms::Packet packet, uint8_t ip) {
       }    
       break;
     case MANUAL_ABORT:
-      if (ID == AC2){
-        //open lox and fuel gems
-        Serial.println("manual abort opening gems");
-        AC::actuate(LOX_GEMS, AC::ON, 0);
-        AC::actuate(FUEL_GEMS, AC::ON, 0);
-      }
     case IGNITER_NO_CONTINUITY:
     case BREAKWIRE_NO_CONTINUITY:
     case BREAKWIRE_NO_BURNT:
@@ -331,8 +313,7 @@ void setup() {
   Comms::registerCallback(LAUNCH_QUEUE, onLaunchQueue);
   //endflow register
   Comms::registerCallback(ENDFLOW, onEndFlow);
-
-  Comms::registerCallback(HEARTBEAT, heartReceive);
+  Comms::registerCallback(HEARTBEAT, heartbeat);
 
 
   for (int i = 0; i < 8; i++) {

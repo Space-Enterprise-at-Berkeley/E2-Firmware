@@ -17,6 +17,28 @@ uint8_t LED_7 = 46;
 uint8_t LEDS[8] = {LED_0, LED_1, LED_2, LED_3, LED_4, LED_5, LED_6, LED_7};
 uint8_t roll = 0;
 
+uint8_t heartCounter = 0;
+Comms::Packet heart = {.id = HEARTBEAT, .len = 0};
+void heartbeat(Comms::Packet p, uint8_t ip){
+  uint8_t id = Comms::packetGetUint8(&p, 0);
+  if (id != ip){
+    Serial.println("Heartbeat ID mismatch of " + String(ip) + " and " + String(id));
+    return;
+  }
+  uint8_t recievedCounter = Comms::packetGetUint8(&p, 1);
+  if (heartCounter != recievedCounter){
+    Serial.println(String(recievedCounter-heartCounter) + " packets dropped");
+  }
+  Serial.println("Ping from " + String(id) + " with counter " + String(recievedCounter));
+  heartCounter = recievedCounter;
+
+  //send it back
+  heart.len = 0;
+  Comms::packetAddUint8(&heart, ID);
+  Comms::packetAddUint8(&heart, heartCounter);
+  Comms::emitPacketToGS(&heart);
+}
+
 void initLEDs() {
   for (uint8_t i = 0; i < 8; i ++) {
     pinMode(LEDS[i], OUTPUT);
@@ -76,6 +98,7 @@ void setup() {
   Comms::registerCallback(STARTFLOW, onFlowStart);
   Comms::registerCallback(ABORT, onAbortOrEndFlow);
   Comms::registerCallback(ENDFLOW, onAbortOrEndFlow);
+  Comms::registerCallback(HEARTBEAT, heartbeat);
 
   while(1) {
     // main loop here to avoid arduino overhead
