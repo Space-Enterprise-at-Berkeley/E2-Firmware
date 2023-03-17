@@ -2,6 +2,7 @@
 #include "HAL.h"
 #include "Util.h"
 #include "data_buff.h"
+#include "EEPROM.h"
 
 namespace Ducers {
 
