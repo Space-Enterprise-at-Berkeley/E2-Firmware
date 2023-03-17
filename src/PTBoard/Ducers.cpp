@@ -12,7 +12,8 @@ namespace Ducers {
     Comms::Packet ptPacket = {.id = 2};
     float data[8];
     float offset[8];
-    bool persistentOffset = true;
+    float multiplier[8];
+    bool persistentCalibration = true;
 
 
     // float pressurantPTValue = 0.0;
@@ -42,20 +43,40 @@ namespace Ducers {
         return tmp / 12.97;
     }
 
-    void zeroChannel(uint8_t channel){
+    float zeroChannel(uint8_t channel){
         offset[channel] = -data[channel] + offset[channel];
         Serial.println("zeroed channel " + String(channel) + " to " + String(offset[channel]));
-        if (persistentOffset){
-            EEPROM.begin(8*sizeof(float));
+        if (persistentCalibration){
+            EEPROM.begin(16*sizeof(float));
             EEPROM.put(channel*sizeof(float),offset[channel]);
             EEPROM.end();
         }
+        return offset[channel];
     }
 
+    float calChannel(uint8_t channel, float value){
+        multiplier[channel] *= (value) / data[channel];
+        Serial.println("calibrated channel multiplier" + String(channel) + " to " + String(multiplier[channel]));
+        if (persistentCalibration){
+            EEPROM.begin(16*sizeof(float));
+            EEPROM.put((channel+8)*sizeof(float),multiplier[channel]);
+            EEPROM.end();
+        }
+        return multiplier[channel];
+    }
+
+    //sets offset (y-int)
     void onZeroCommand(Comms::Packet packet, uint8_t ip){
         uint8_t channel = Comms::packetGetUint8(&packet, 0);
         zeroChannel(channel);
-        return;
+    }
+
+    //uses current value and given value to add multiplier (slope) to match two points
+    void onCalCommand(Comms::Packet packet, uint8_t ip){
+        uint8_t channel = Comms::packetGetUint8(&packet, 0);
+        float value = Comms::packetGetFloat(&packet, 1);
+
+        calChannel(channel, value);
     }
 
     void init() {
@@ -68,20 +89,30 @@ namespace Ducers {
         adc1.enableOTFMode();
 
         Comms::registerCallback(100, onZeroCommand);
+        Comms::registerCallback(101, onCalCommand);
 
         //load offset from flash or set to 0
-        if (persistentOffset){
-            EEPROM.begin(8*sizeof(float));
+        if (persistentCalibration){
+            EEPROM.begin(16*sizeof(float));
             for (int i = 0; i < 8; i++){
                 EEPROM.get(i*sizeof(float),offset[i]);
                 if (isnan(offset[i])){
                     offset[i] = 0;
                 }
             }
+            for (int i = 0; i < 8; i++){
+                EEPROM.get((i+8)*sizeof(float),multiplier[i]);
+                if (isnan(multiplier[i])){
+                    multiplier[i] = 1;
+                }
+            }
             EEPROM.end();
         } else {
             for (int i = 0; i < 8; i++){
                 offset[i] = 0;
+            }
+            for (int i = 0; i < 8; i++){
+                multiplier[i] = 1;
             }
         }
 
@@ -90,7 +121,7 @@ namespace Ducers {
 
     float samplePT(uint8_t channel) {
         adc1.setChannel(channel);
-        data[channel] = interpolate1000(adc1.readChannelOTF(channel)) + offset[channel];
+        data[channel] = multiplier[channel] * (interpolate1000(adc1.readChannelOTF(channel)) + offset[channel]);
         return data[channel];
     }
 
@@ -102,14 +133,15 @@ namespace Ducers {
         // read from all 8 PTs in sequence
         
         adc1.setChannel(0); // switch mux back to channel 0
-        data[0] = interpolate1000(adc1.readChannelOTF(1)) + offset[0];
-        data[1] = interpolate1000(adc1.readChannelOTF(2)) + offset[1];
-        data[2] = interpolate1000(adc1.readChannelOTF(3)) + offset[2];
-        data[3] = interpolate1000(adc1.readChannelOTF(4)) + offset[3];
-        data[4] = interpolate1000(adc1.readChannelOTF(5)) + offset[4];
-        data[5] = interpolate1000(adc1.readChannelOTF(6)) + offset[5]; 
-        data[6] = interpolate1000(adc1.readChannelOTF(7)) + offset[6];
-        data[7] = interpolate1000(adc1.readChannelOTF(0)) + offset[7];
+        data[0] = multiplier[0] * (interpolate1000(adc1.readChannelOTF(1)) + offset[0]);
+        data[1] = multiplier[1] * (interpolate1000(adc1.readChannelOTF(2)) + offset[1]);
+        data[2] = multiplier[2] * (interpolate1000(adc1.readChannelOTF(3)) + offset[2]);
+        data[3] = multiplier[3] * (interpolate1000(adc1.readChannelOTF(4)) + offset[3]);
+        data[4] = multiplier[4] * (interpolate1000(adc1.readChannelOTF(5)) + offset[4]);
+        data[5] = multiplier[5] * (interpolate1000(adc1.readChannelOTF(6)) + offset[5]);
+        data[6] = multiplier[6] * (interpolate1000(adc1.readChannelOTF(7)) + offset[6]);
+        data[7] = multiplier[7] * (interpolate1000(adc1.readChannelOTF(0)) + offset[7]);
+
 
         DEBUG("Read all PTs\n");
         DEBUG_FLUSH();

@@ -10,7 +10,8 @@ namespace ADS {
     long data[sizeof(ADCsize)];
     float lbs[sizeof(ADCsize)];
     float offset[sizeof(ADCsize)];
-    bool persistant_offset = true; // saves offset to flash
+    float multiplier[sizeof(ADCsize)];
+    bool persistentCalibration = true; // saves offset to flash
     uint32_t sampleRate = 12500; //80Hz
 
     float adc_to_lbs = 0.00025; // 3992 adc units = 1 lb
@@ -31,7 +32,7 @@ namespace ADS {
     void refreshReadings(){
         for(int i = 0 ; i < ADCsize; i++){
             int ErrorValue = adcs[i].getValue(data[i]);
-            lbs[i] = data[i]*adc_to_lbs + offset[i];
+            lbs[i] = multiplier[i] * (data[i]*adc_to_lbs + offset[i]);
             if(ErrorValue != 1){//if we fail to read
                 // Serial.println("failed to fetch loadcell data for " + String(i) + "th loadcell. error number: " + String(ErrorValue));
             }else{
@@ -41,21 +42,41 @@ namespace ADS {
         }
     }
 
-    void zeroChannel(uint8_t i){
+    float zeroChannel(uint8_t i){
         offset[i] = -lbs[i] + offset[i];
         Serial.println("zeroed channel " + String(i) + " at " + String(lbs[i]) + " lbs");
-        if(persistant_offset){
+        if(persistentCalibration){
             //EEPROM takes 3.3 ms, we need different addresses for each channel. A float uses 4 bytes.
-            EEPROM.begin(ADCsize*sizeof(float));
+            EEPROM.begin(ADCsize*2*sizeof(float));
             EEPROM.put(i*sizeof(float),offset[i]);
             EEPROM.end();
         }
-
+        return offset[i];
     }
+
+    float calChannel(uint8_t i, float value){
+        multiplier[i] *= (value) / lbs[i];
+        Serial.println("calibrated channel multiplier" + String(i) + " to " + String(multiplier[i]));
+        if(persistentCalibration){
+            //EEPROM takes 3.3 ms, we need different addresses for each channel. A float uses 4 bytes.
+            EEPROM.begin(ADCsize*2*sizeof(float));
+            EEPROM.put((i+ADCsize)*sizeof(float),multiplier[i]);
+            EEPROM.end();
+        }
+        return multiplier[i];
+    }
+
 
     void onZeroCommand(Comms::Packet packet, uint8_t ip){
         uint8_t channel = Comms::packetGetUint8(&packet, 0);
         zeroChannel(channel);
+        return;
+    }
+
+    void onCalCommand(Comms::Packet packet, uint8_t ip){
+        uint8_t channel = Comms::packetGetUint8(&packet, 0);
+        float value = Comms::packetGetFloat(&packet, 1);
+        calChannel(channel, value);
         return;
     }
 
@@ -65,13 +86,21 @@ namespace ADS {
         }
 
         Comms::registerCallback(100, onZeroCommand);
+        Comms::registerCallback(101, onCalCommand);
+
         //load offset from flash or set to 0
-        if (persistant_offset){
-            EEPROM.begin(ADCsize*sizeof(float));
+        if (persistentCalibration){
+            EEPROM.begin(ADCsize*2*sizeof(float));
             for (int i = 0; i < ADCsize; i++){
                 EEPROM.get(i*sizeof(float),offset[i]);
                 if (isnan(offset[i])){
                     offset[i] = 0;
+                }
+            }
+            for (int i = 0; i < ADCsize; i++){
+                EEPROM.get((i+ADCsize)*sizeof(float),multiplier[i]);
+                if (isnan(multiplier[i])){
+                    multiplier[i] = 1;
                 }
             }
             EEPROM.end();
@@ -79,6 +108,9 @@ namespace ADS {
         } else {
             for (int i = 0; i < ADCsize; i++){
                 offset[i] = 0;
+            }
+            for (int i = 0; i < ADCsize; i++){
+                multiplier[i] = 1;
             }
         }
     }
