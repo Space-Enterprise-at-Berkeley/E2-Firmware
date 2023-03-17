@@ -20,6 +20,7 @@ namespace StateMachine {
         const float runTime_ = Config::closeTime; // in millis
         unsigned long timeStarted_;
         unsigned long lastPrint_;
+        unsigned long lastConfigSend_;
 
         public:
         IdleClosedState();

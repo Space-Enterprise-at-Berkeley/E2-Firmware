@@ -13,6 +13,14 @@ void setup(){
     adc.init(spi2, 39, 38);
     adc.setAllInputsSeparate();
     adc.enableOTFMode();
+    pinMode(18, OUTPUT);
+    pinMode(19, OUTPUT);
+    pinMode(20, OUTPUT);
+    pinMode(21, OUTPUT);
+    pinMode(26, OUTPUT);
+    pinMode(33, OUTPUT);
+    pinMode(34, OUTPUT);
+    pinMode(35, OUTPUT);
 
     while(1) {
         Serial.print("adc0: ");
@@ -31,7 +39,26 @@ void setup(){
         Serial.print(adc.readData(6));
         Serial.print("   adc7: ");
         Serial.println(adc.readData(7));
-        delay(2000);
+        digitalWrite(21, LOW);
+        digitalWrite(35, LOW);
+        digitalWrite(18, HIGH);
+        digitalWrite(26, HIGH);
+        delay(100);
+        digitalWrite(18, LOW);
+        digitalWrite(26, LOW);
+        digitalWrite(19, HIGH);
+        digitalWrite(33, HIGH);
+        delay(100);
+        digitalWrite(19, LOW);
+        digitalWrite(33, LOW);
+        digitalWrite(20, HIGH);
+        digitalWrite(34, HIGH);
+        delay(100);
+        digitalWrite(20, LOW);
+        digitalWrite(34, LOW);
+        digitalWrite(21, HIGH);
+        digitalWrite(35, HIGH);
+        delay(200);
     }
 
     //on the fly testing

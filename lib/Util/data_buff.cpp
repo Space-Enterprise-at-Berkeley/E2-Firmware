@@ -5,6 +5,8 @@ Buffer::Buffer(int buf_size){
     buf = (double *)malloc(sizeof(double) * buf_size);
     t_buf = (double *)malloc(sizeof(double) * buf_size);
     n = buf_size;
+    taps = (double *)malloc(sizeof(double) * buf_size);
+    calculate_taps();
     clear();
 }
 
@@ -66,3 +68,27 @@ double Buffer::getAverage() {
     }
     return is_full ? y_avg : (y_avg * n) / curr_i;
 }
+double Buffer::getFiltered() {
+    if (!is_full) {
+        return 0;
+    } else {
+        double filtered = 0;
+        for (int i = curr_i; i<curr_i+n; i++) {
+            filtered += buf[i % n] * taps[i - curr_i];
+        }
+        return filtered;
+    }
+}
+
+void Buffer::calculate_taps() {
+    double stdev = (float)n / 2.35; //fwhm of ~0.5
+    double sum = 0;
+    for (int i = 0; i<n; i++) {
+        taps[i] = exp(-0.5 * pow((i - (n/2))/stdev, 2));
+        sum += taps[i];
+    }
+    for (int i = 0; i<n; i++) {
+        taps[i] /= sum;
+    }
+}
+

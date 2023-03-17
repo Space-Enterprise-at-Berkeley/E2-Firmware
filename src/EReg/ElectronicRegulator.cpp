@@ -38,6 +38,21 @@ void zero(Comms::Packet packet, uint8_t ip) {
 }
 
 void flow(Comms::Packet packet, uint8_t ip) {
+    if (packet.len != 5) {
+        Serial.printf("bad flow packet len %d\n", packet.len);
+        return;
+    }
+    uint32_t flowLength = packetGetUint32(&packet, 1);
+    if ((flowLength < 1 * 1000 * 1000) || (flowLength > 70 * 1000 * 1000)) {
+        Serial.printf("bad flow duration %d\n", flowLength);
+        return;
+    }
+    if (sizeof(unsigned long) != sizeof(uint32_t)) {
+        while(1) {
+            Serial.printf("bro fix this\n");
+        }
+    }
+    Config::setFlowDuration(flowLength);
     StateMachine::enterFlowState();
 }
 
@@ -65,17 +80,24 @@ void setup() {
     Serial.begin(115200);
     Serial.printf("micros: %d\n", micros());
     Serial.printf("hi!!\n");
-    if (HAL::init() == -1) {
-        DEBUGF("HAL initialization failed\n");
-        while(1){};
-    } else {
-        DEBUGF("HAL initialization success!\n");
+    // HAL::init();
+    bool cont = true;
+    while (cont) {
+        if (HAL::init() == 0) {
+            Serial.printf("HAL init success\n");
+            cont = false;
+        } else {
+            Serial.printf("HAL init failed\n");
+            delay(5000);
+        }
     }
     Comms::init(HAL::ETH_CS, HAL::ETH_MISO, HAL::ETH_MOSI, HAL::ETH_SCLK, HAL::ETH_INTn);
+    Ducers::initPTs();
     StateMachine::enterIdleClosedState();
     zero(); 
     Comms::registerCallback(STARTFLOW, flow);
     Comms::registerCallback(ENDFLOW, stopFlow);
+    Comms::registerCallback(133, stopFlow);
     Comms::registerCallback(202, partialOpen);
     Comms::registerCallback(203, pressurize);
     Comms::registerCallback(204, runDiagnostics);

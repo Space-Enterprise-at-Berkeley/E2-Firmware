@@ -57,8 +57,24 @@ namespace StateMachine {
         float motorAngle = HAL::getEncoderCount();
 
         HAL::readAllDucers();
-        float upstreamPsi = Ducers::readPressurantPT1();
-        float downstreamPsi = Ducers::readTankPT1();
+
+        float upstreamPT1 = Ducers::readPressurantPT1();
+        float upstreamPT2 = Ducers::readPressurantPT2();
+        float downstreamPT1 = Ducers::readTankPT1();
+        float downstreamPT2 = Ducers::readTankPT2();
+
+        float rawUpstreamPT1 = Ducers::readRawPressurantPT1();
+        float rawUpstreamPT2 = Ducers::readRawPressurantPT2();
+        float rawDownstreamPT1 = Ducers::readRawTankPT1();
+        float rawDownstreamPT2 = Ducers::readRawTankPT2();
+
+        float filteredUpstreamPT1 = Ducers::readFilteredPressurantPT1();
+        float filteredUpstreamPT2 = Ducers::readFilteredPressurantPT2();
+        float filteredDownstreamPT1 = Ducers::readFilteredTankPT1();
+        float filteredDownstreamPT2 = Ducers::readFilteredTankPT2();
+
+        float upstreamPsi = upstreamPT1;
+        float downstreamPsi = Ducers::chooseDucerRead(downstreamPT1, downstreamPT2);
         
         unsigned long testTime = TimeUtil::timeInterval(timeTestStarted_, micros());
         float speed;
@@ -90,8 +106,10 @@ namespace StateMachine {
         //send data to AC
         if (TimeUtil::timeInterval(lastPrint_, micros()) > Config::telemetryInterval) {
             Packets::sendTelemetry(
-                upstreamPsi,
-                downstreamPsi,
+                rawUpstreamPT1,
+                rawUpstreamPT2,
+                rawDownstreamPT1,
+                rawDownstreamPT2,
                 motorAngle,
                 0,
                 0,
@@ -113,8 +131,24 @@ namespace StateMachine {
         float motorAngle = HAL::getEncoderCount();
 
         HAL::readAllDucers();
-        float upstreamPsi = Ducers::readPressurantPT1();
-        float downstreamPsi = Ducers::readTankPT1();
+
+        float upstreamPT1 = Ducers::readPressurantPT1();
+        float upstreamPT2 = Ducers::readPressurantPT2();
+        float downstreamPT1 = Ducers::readTankPT1();
+        float downstreamPT2 = Ducers::readTankPT2();
+
+        float rawUpstreamPT1 = Ducers::readRawPressurantPT1();
+        float rawUpstreamPT2 = Ducers::readRawPressurantPT2();
+        float rawDownstreamPT1 = Ducers::readRawTankPT1();
+        float rawDownstreamPT2 = Ducers::readRawTankPT2();
+
+        float filteredUpstreamPT1 = Ducers::readFilteredPressurantPT1();
+        float filteredUpstreamPT2 = Ducers::readFilteredPressurantPT2();
+        float filteredDownstreamPT1 = Ducers::readFilteredTankPT1();
+        float filteredDownstreamPT2 = Ducers::readFilteredTankPT2();
+
+        float upstreamPsi = upstreamPT1;
+        float downstreamPsi = Ducers::chooseDucerRead(downstreamPT1, downstreamPT2);
 
         unsigned long testTime = TimeUtil::timeInterval(timeTestStarted_, micros());
         
@@ -142,8 +176,10 @@ namespace StateMachine {
         // send data to AC
         if (TimeUtil::timeInterval(lastPrint_, micros()) > Config::telemetryInterval) {
             Packets::sendTelemetry(
-                upstreamPsi,
-                downstreamPsi,
+                rawUpstreamPT1,
+                rawUpstreamPT2,
+                rawDownstreamPT1,
+                rawDownstreamPT2,
                 motorAngle,
                 servoSetpoint_,
                 0,
@@ -174,11 +210,30 @@ namespace StateMachine {
                 float motorAngle = HAL::getEncoderCount();
 
                 HAL::readAllDucers();
-                float upstreamPsi = Ducers::readPressurantPT1();
-                float downstreamPsi = Ducers::readTankPT1();
+
+                float upstreamPT1 = Ducers::readPressurantPT1();
+                float upstreamPT2 = Ducers::readPressurantPT2();
+                float downstreamPT1 = Ducers::readTankPT1();
+                float downstreamPT2 = Ducers::readTankPT2();
+
+                float rawUpstreamPT1 = Ducers::readRawPressurantPT1();
+                float rawUpstreamPT2 = Ducers::readRawPressurantPT2();
+                float rawDownstreamPT1 = Ducers::readRawTankPT1();
+                float rawDownstreamPT2 = Ducers::readRawTankPT2();
+
+                float filteredUpstreamPT1 = Ducers::readFilteredPressurantPT1();
+                float filteredUpstreamPT2 = Ducers::readFilteredPressurantPT2();
+                float filteredDownstreamPT1 = Ducers::readFilteredTankPT1();
+                float filteredDownstreamPT2 = Ducers::readFilteredTankPT2();
+
+                float upstreamPsi = upstreamPT1;
+                float downstreamPsi = Ducers::chooseDucerRead(downstreamPT1, downstreamPT2);
+
                 Packets::sendTelemetry(
-                    upstreamPsi,
-                    downstreamPsi,
+                    rawUpstreamPT1,
+                    rawUpstreamPT2,
+                    rawDownstreamPT1,
+                    rawDownstreamPT2,
                     motorAngle,
                     0,
                     0,
@@ -216,11 +271,30 @@ namespace StateMachine {
                 float motorAngle = HAL::getEncoderCount();
                 
                 HAL::readAllDucers();
-                float upstreamPsi = Ducers::readPressurantPT1();
-                float downstreamPsi = Ducers::readTankPT1();
+
+                float upstreamPT1 = Ducers::readPressurantPT1();
+                float upstreamPT2 = Ducers::readPressurantPT2();
+                float downstreamPT1 = Ducers::readTankPT1();
+                float downstreamPT2 = Ducers::readTankPT2();
+
+                float rawUpstreamPT1 = Ducers::readRawPressurantPT1();
+                float rawUpstreamPT2 = Ducers::readRawPressurantPT2();
+                float rawDownstreamPT1 = Ducers::readRawTankPT1();
+                float rawDownstreamPT2 = Ducers::readRawTankPT2();
+
+                float filteredUpstreamPT1 = Ducers::readFilteredPressurantPT1();
+                float filteredUpstreamPT2 = Ducers::readFilteredPressurantPT2();
+                float filteredDownstreamPT1 = Ducers::readFilteredTankPT1();
+                float filteredDownstreamPT2 = Ducers::readFilteredTankPT2();
+
+                float upstreamPsi = upstreamPT1;
+                float downstreamPsi = Ducers::chooseDucerRead(downstreamPT1, downstreamPT2);
+
                 Packets::sendTelemetry(
-                    upstreamPsi,
-                    downstreamPsi,
+                    rawUpstreamPT1,
+                    rawUpstreamPT2,
+                    rawDownstreamPT1,
+                    rawDownstreamPT2,
                     motorAngle,
                     0,
                     0,

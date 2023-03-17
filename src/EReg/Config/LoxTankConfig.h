@@ -13,12 +13,13 @@ namespace Config {
 
     // Controller Constants
     // const double p_outer_nominal = 1.8, i_outer_nominal = 0.30e-6, d_outer_nominal = 0.24; // nominal is 4000 -> 500 psi flow
-    const double p_outer_nominal = 2.2, i_outer_nominal = 0.4e-6, d_outer_nominal = 0; // nominal is 4000 -> 500 psi flow
+    // const double p_outer_nominal = 2.2, i_outer_nominal = 0.4e-6, d_outer_nominal = 0; // nominal is 4000 -> 500 psi flow
+    const double p_outer_nominal = 3.3, i_outer_nominal = 0.6e-6, d_outer_nominal = 0; // nominal is 4000 -> 500 psi flow //for Mar 11, Dev flow #1
     // const double p_inner = 6, i_inner = 3.5e-6, d_inner = 0.10;
     const double p_inner = 3, i_inner = 5e-6, d_inner = 0;
 
     // Flow Parameters
-    const float pressureSetpoint = 450;
+    const float pressureSetpoint = 120;
     const unsigned long rampStart = 0.7 * pressureSetpoint; // psi
     const unsigned long loxLead = 0; //time in microseconds
 

@@ -10,6 +10,8 @@ namespace HAL {
     SPIClass *motorSPI = NULL;
     SPIClass *dataSPI = NULL;
     volatile int encoderTicks = 0;
+
+    bool initialized = false;
     
     double cumPhaseCurrentA = 0;
     double cumPhaseCurrentB = 0;
@@ -70,6 +72,7 @@ namespace HAL {
         pinMode(TEMPSENSE0, INPUT);
         pinMode(TEMPSENSE1, INPUT);
 
+        initialized = true;
         return 0;
     }
 
@@ -328,49 +331,49 @@ namespace HAL {
 
     void risingA() {
         if (digitalRead(encC)) {
-            encoderTicks += 1;
-        } else {
             encoderTicks -= 1;
+        } else {
+            encoderTicks += 1;
         }
     }
 
     void risingB() {
         if (digitalRead(encA)) {
-            encoderTicks += 1;
-        } else {
             encoderTicks -= 1;
+        } else {
+            encoderTicks += 1;
         } 
     }
 
     void risingC() {
         if (digitalRead(encB)) {
-            encoderTicks += 1;
-        } else {
             encoderTicks -= 1;
+        } else {
+            encoderTicks += 1;
         } 
     }
 
     void fallingA() {
         if (digitalRead(encB)) {
-            encoderTicks += 1;
-        } else {
             encoderTicks -= 1;
+        } else {
+            encoderTicks += 1;
         }  
     }
 
     void fallingB() {
         if (digitalRead(encC)) {
-            encoderTicks += 1;
-        } else {
             encoderTicks -= 1;
+        } else {
+            encoderTicks += 1;
         }  
     }
 
     void fallingC() {
         if (digitalRead(encA)) {
-            encoderTicks += 1;
-        } else {
             encoderTicks -= 1;
+        } else {
+            encoderTicks += 1;
         }  
     }
     void changeA() {
@@ -509,6 +512,10 @@ namespace HAL {
 
     bool getOvercurrentStatus() {
         return inOvercurrentCooldown;
+    }
+
+    bool hardwareInitialized() {
+        return initialized;
     }
 
 }

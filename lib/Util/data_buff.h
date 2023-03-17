@@ -1,5 +1,6 @@
 #pragma once
 #include <Arduino.h>
+#include <esp_dsp.h>
 
 
 class Buffer{
@@ -16,6 +17,10 @@ class Buffer{
     // double t_t = 0;
     // double t_y = 0;
 
+    //things for gaussian filter
+    double * taps;
+    void calculate_taps();
+
     // stores the gradient
     double slope;
 
@@ -29,5 +34,7 @@ class Buffer{
     double getSlope();
 
     double getAverage();
+
+    double getFiltered();
 
 };

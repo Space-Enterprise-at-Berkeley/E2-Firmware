@@ -35,7 +35,6 @@ void loop()
         long bruh = micros();
         Udp.read(packetBuffer, sizeof(Comms::Packet));
         Serial.printf("Recieved: %s delta: %ld \n", packetBuffer, micros() -  bruh);
-        Udp.flush();
       }
     }
     Udp.resetSendOffset();

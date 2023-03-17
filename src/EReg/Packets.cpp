@@ -20,8 +20,10 @@ namespace Packets {
 
 
     void sendTelemetry(
-        float upstreamPressure,
-        float downstreamPressure,
+        float upstreamPressure1,
+        float upstreamPressure2,
+        float downstreamPressure1,
+        float downstreamPressure2,
         float encoderAngle,
         float angleSetpoint,
         float pressureSetpoint,
@@ -32,8 +34,10 @@ namespace Packets {
     ) {
 
         Comms::Packet packet = {.id = TELEMETRY_ID};
-        Comms::packetAddFloat(&packet, upstreamPressure);
-        Comms::packetAddFloat(&packet, downstreamPressure);
+        Comms::packetAddFloat(&packet, upstreamPressure1);
+        Comms::packetAddFloat(&packet, upstreamPressure2);
+        Comms::packetAddFloat(&packet, downstreamPressure1);
+        Comms::packetAddFloat(&packet, downstreamPressure2);
         Comms::packetAddFloat(&packet, encoderAngle);
         Comms::packetAddFloat(&packet, angleSetpoint);
         Comms::packetAddFloat(&packet, pressureSetpoint);
@@ -67,7 +71,7 @@ namespace Packets {
         Comms::packetAddFloat(&packet, Config::p_inner);
         Comms::packetAddFloat(&packet, Config::i_inner);
         Comms::packetAddFloat(&packet, Config::d_inner);
-        Comms::packetAddFloat(&packet, (float) (Config::flowDuration / 1e6));
+        Comms::packetAddFloat(&packet, (float) (Config::getFlowDuration() / 1e6));
         Comms::emitPacket(&packet);
     }
 
@@ -120,8 +124,47 @@ namespace Packets {
         Comms::Packet packet = {.id = ABORT_ID};
         packet.len = 0;
         Comms::packetAddUint8(&packet, HOTFIRE);
-        Comms::packetAddUint8(&packet, abortReason);
-        Comms::emitPacket(&packet, ALL);
+        Comms::packetAddUint8(&packet, TANK_OVERPRESSURE);
+        Comms::emitPacketToAll(&packet);
+
+        // //send abort to ACs
+        // Comms::Packet actuate = {.id = ACTUATE_IP, .len=0};
+
+        // //open fuel GEMS
+        // actuate.len = 0;
+        // Comms::packetAddUint8(&actuate, 7);
+        // Comms::packetAddUint8(&actuate, 4);
+        // Comms::packetAddUint8(&actuate, 0);
+        // Comms::emitPacket(&actuate, ac2_ip);
+        // delay(30);
+
+        // //open lox GEMS
+        // actuate.len = 0;
+        // Comms::packetAddUint8(&actuate, 6);
+        // Comms::packetAddUint8(&actuate, 4);
+        // Comms::packetAddUint8(&actuate, 0);
+        // Comms::emitPacket(&actuate, ac2_ip);
+
+
+
+        // delay(30);
+
+        // //open lox vent rbv
+        // actuate.len = 0;
+        // Comms::packetAddUint8(&actuate, 3);
+        // Comms::packetAddUint8(&actuate, 0);
+        // Comms::packetAddUint8(&actuate, 0);
+        // Comms::emitPacket(&actuate, ac2_ip);
+
+        // delay(30);
+
+        // //open fuel vent rbv
+        // actuate.len = 0;
+        // Comms::packetAddUint8(&actuate, 4);
+        // Comms::packetAddUint8(&actuate, 0);
+        // Comms::packetAddUint8(&actuate, 0);
+        // Comms::emitPacket(&actuate, ac2_ip);
+
     }
 
 

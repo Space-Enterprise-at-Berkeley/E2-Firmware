@@ -37,7 +37,7 @@ namespace StateMachine {
 
         bool isMockInitialized_ = false;
         const unsigned long mockPressurizationDuration_ = Config::pressurizationRampDuration;
-        const unsigned long mockFlowDuration_ = Config::flowDuration - (1000UL * 1000UL); // careful about underflows if flow < 1s
+        const unsigned long mockFlowDuration_ = Config::getFlowDuration() - (1000UL * 1000UL); // careful about underflows if flow < 1s
 
         public:
         DiagnosticState();

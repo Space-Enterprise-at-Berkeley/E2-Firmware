@@ -72,7 +72,7 @@ namespace Util {
         // const float steps[] = {600, 500, 550, 450, 500, 400, 450, 350, 400};
         const float steps[] = {350, 450, 400, 500, 450, 550, 500, 600, 550, 700};
         const int numSteps = sizeof(steps)/sizeof(steps[0]);
-        unsigned long stepTime = Config::flowDuration/numSteps;
+        unsigned long stepTime = Config::getFlowDuration()/numSteps;
         unsigned int index = flowTime/stepTime;
         index = (index >= numSteps)?(numSteps-1):index;
         return steps[index];
@@ -143,7 +143,7 @@ namespace Util {
         int closedLimitSwitchState = HAL::getClosedLimitSwitchState();
         int openLimitSwitchState = HAL::getOpenLimitSwitchState();
         bool inOvercurrentCooldown = HAL::getOvercurrentStatus();
-        if (inOvercurrentCooldown) {
+        if (inOvercurrentCooldown || (!HAL::hardwareInitialized)) {
             speed = 0;
             // Serial.printf("oc flag on\n");
         }
@@ -154,7 +154,7 @@ namespace Util {
             speed = min(0, speed);
         }
         int pwmPower = abs((int) speed);
-        int motorDir = (speed > 0) ? 0 : 1;
+        int motorDir = (speed > 0) ? 1 : 0;
         if (pwmPower > Config::maximumMotorPower) {
             pwmPower = Config::maximumMotorPower;
         }

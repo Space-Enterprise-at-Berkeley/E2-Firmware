@@ -101,6 +101,7 @@ public:
 private:
 	// Opens a socket(TCP or UDP or IP_RAW mode)
 	static uint8_t socketBegin(uint8_t protocol, uint16_t port);
+	static uint8_t socketBegin(uint8_t protocol, uint16_t port, int s);
 	static uint8_t socketBeginMulticast(uint8_t protocol, IPAddress ip,uint16_t port);
 	static uint8_t socketStatus(uint8_t s);
 	// Close socket
@@ -147,7 +148,7 @@ private:
 	uint16_t _port; // local port to listen on
 	IPAddress _remoteIP; // remote IP address for the incoming packet whilst it's being processed
 	uint16_t _remotePort; // remote port for the incoming packet whilst it's being processed
-	uint16_t _offset; // offset into the packet being sent
+	uint16_t _offset[MAX_SOCK_NUM]; // offset into the packet being sent
 
 protected:
 	uint8_t sockindex;
@@ -156,23 +157,34 @@ protected:
 public:
 	EthernetUDP() : sockindex(MAX_SOCK_NUM) {}  // Constructor
 	virtual uint8_t begin(uint16_t);      // initialize, start listening on specified port. Returns 1 if successful, 0 if there are no sockets available to use
+	virtual uint8_t begin(uint16_t port, int s);
 	virtual uint8_t beginMulticast(IPAddress, uint16_t);  // initialize, start listening on specified port. Returns 1 if successful, 0 if there are no sockets available to use
 	virtual void stop();  // Finish with the UDP socket
 
 	// Start building up a packet to send to the remote host specific in ip and port
 	// Returns 1 if successful, 0 if there was a problem with the supplied IP address or port
 	virtual int beginPacket(IPAddress ip, uint16_t port);
+	// Start building up a packet to send to the remote host specific in ip, port, and socket s
+	// Returns 1 if successful, 0 if there was a problem with the supplied IP address or port
+	virtual int beginPacket(int x, IPAddress ip, uint16_t port);
 	// Start building up a packet to send to the remote host specific in host and port
 	// Returns 1 if successful, 0 if there was a problem resolving the hostname or port
 	virtual int beginPacket(const char *host, uint16_t port);
-	void resetSendOffset();
+	virtual void resetSendOffset();
+	virtual void resetSendOffset(int s);
 	// Finish off this packet and send it
 	// Returns 1 if the packet was sent successfully, 0 if there was an error
 	virtual int endPacket();
+	virtual int endPacket(int s);
 	// Write a single byte into the packet
 	virtual size_t write(uint8_t);
 	// Write size bytes from buffer into the packet
 	virtual size_t write(const uint8_t *buffer, size_t size);
+
+	// Write a single byte into the packet with specified socket s
+	virtual size_t write(int s, uint8_t);
+	// Write size bytes from buffer into the packet with specified socket s
+ 	virtual size_t write(int s, const uint8_t *buffer, size_t size);
 	using Print::write;
 
 	// Start processing the next available incoming packet
