@@ -80,13 +80,25 @@ namespace ADS {
         return;
     }
 
+    void sendCal(Comms::Packet packet, uint8_t ip){
+        Comms::Packet response = {.id = SEND_CAL, .len = 0};
+        for (int i = 0; i < ADCsize; i++){
+            Comms::packetAddFloat(&ADCPacket, offset[i]);
+            Comms::packetAddFloat(&ADCPacket, multiplier[i]);
+            Serial.println("channel " + String(i) + " offset: " + String(offset[i]) + ", multiplier: " + String(multiplier[i]));
+        }
+        Comms::emitPacketToGS(&response);
+        return;
+    }
+
     void init(){
         for(int i = 0; i < ADCsize; i++) {
             adcs[i].init(clockPins[i],dataPins[i]);
         }
 
-        Comms::registerCallback(100, onZeroCommand);
-        Comms::registerCallback(101, onCalCommand);
+        Comms::registerCallback(ZERO_CMD, onZeroCommand);
+        Comms::registerCallback(CAL_CMD, onCalCommand);
+        Comms::registerCallback(SEND_CAL, sendCal);
 
         //load offset from flash or set to 0
         if (persistentCalibration){

@@ -56,12 +56,13 @@ enum PacketID {
   //Does not include FC or EREG
   //PT
   PT_DATA = 2,
-  PT_ZERO_CMD = 100,
+  ZERO_CMD = 100,
+  CAL_CMD = 101,
+  SEND_CAL = 102,
   //TC
   TC_DATA = 2,
   //LC
   LC_DATA = 2,
-  LC_ZERO_CMD = 100,
   //AC
   AC_STATE = 2,
   AC_CONTINUITY = 3,

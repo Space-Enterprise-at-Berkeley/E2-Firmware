@@ -79,6 +79,16 @@ namespace Ducers {
         calChannel(channel, value);
     }
 
+    void sendCal(Comms::Packet packet, uint8_t ip){
+        Comms::Packet response = {.id = SEND_CAL, .len = 0};
+        for (int i = 0; i < 8; i++){
+            Comms::packetAddFloat(&response, offset[i]);
+            Comms::packetAddFloat(&response, multiplier[i]);
+            Serial.println("Channel " + String(i) + ": offset " + String(offset[i]) + ", multiplier " + String(multiplier[i]));
+        }
+        Comms::emitPacketToGS(&response);
+    }
+
     void init() {
         // Comms::registerCallback(140, handleFastReadPacket);
         spi2 = new SPIClass(HSPI);
@@ -88,8 +98,9 @@ namespace Ducers {
         adc1.setAllInputsSeparate();
         adc1.enableOTFMode();
 
-        Comms::registerCallback(100, onZeroCommand);
-        Comms::registerCallback(101, onCalCommand);
+        Comms::registerCallback(ZERO_CMD, onZeroCommand);
+        Comms::registerCallback(CAL_CMD, onCalCommand);
+        Comms::registerCallback(SEND_CAL, sendCal);
 
         //load offset from flash or set to 0
         if (persistentCalibration){
