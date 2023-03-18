@@ -192,7 +192,7 @@ namespace Ducers {
     float readTankPT2() {
         // Serial.print("Tank PT 2 reading: ");
         // Serial.println(max((float)1, interpolate1000(_downstreamPT2)));
-        return max((float)1, multiplier[3] * (interpolate1000(_downstreamPT2) + offset[3]);
+        return max((float)1, multiplier[3] * (interpolate1000(_downstreamPT2) + offset[3]));
     }
 
     //multiplier
