@@ -7,6 +7,7 @@ namespace Ducers {
 
     float data[4];
     float offset[4];
+    float point1[4];
     float multiplier[4];
 
     // //0
@@ -52,21 +53,21 @@ namespace Ducers {
         _upstreamPT2 = upstreamPT2;
         upstreamPT2Buff->insert(millis(), upstreamPT2);
     }
-
+    /*
     void zeroChannel(uint8_t channel){
         float value;
 
         if(channel == 0){
-            value = readFilteredPressurantPT1();
+            value = readRawPressurantPT1();
         }
         else if(channel == 1){
-            value = readFilteredTankPT1();
+            value = readRawTankPT1();
         }
         else if(channel == 2){
-            value = readFilteredPressurantPT2();
+            value = readRawPressurantPT2();
         }
         else if(channel == 3){
-            value = readFilteredTankPT2();
+            value = readRawTankPT2();
         }
         
         offset[channel] = -value + offset[channel];
@@ -76,42 +77,101 @@ namespace Ducers {
             EEPROM.put(channel*sizeof(float),offset[channel]);
             EEPROM.end();
         }
-    }
+    }*/
 
-    void calChannel(uint8_t channel, float inputvalue){
+    void cal1Channel(uint8_t channel, float inputvalue){
         float value;
 
         if(channel == 0){
-            value = readFilteredPressurantPT1();
+            value = readRawPressurantPT1();
         }
         else if(channel == 1){
-            value = readFilteredTankPT1();
+            value = readRawTankPT1();
         }
         else if(channel == 2){
-            value = readFilteredPressurantPT2();
+            value = readRawPressurantPT2();
         }
         else if(channel == 3){
-            value = readFilteredTankPT2();
+            value = readRawTankPT2();
         }
-        multiplier[channel] *= inputvalue / value;
+
+        point1[channel] = inputvalue;
+        offset[channel] = inputvalue - value + offset[channel];
+        Serial.println("calibrated channel offset" + String(channel) + " to " + String(offset[channel]));
+        if (persistentCal){
+            EEPROM.begin(8*sizeof(float));
+            EEPROM.put(channel*sizeof(float),offset[channel]);
+            EEPROM.end();
+        }
+    }
+
+    void cal2Channel(uint8_t channel, float inputvalue){
+        float value;
+
+        if(channel == 0){
+            value = readRawPressurantPT1();
+        }
+        else if(channel == 1){
+            value = readRawTankPT1();
+        }
+        else if(channel == 2){
+            value = readRawPressurantPT2();
+        }
+        else if(channel == 3){
+            value = readRawTankPT2();
+        }
+
+
+        multiplier[channel] = (inputvalue - point1[channel])/(value/multiplier[channel] - point1[channel]);
+        offset[channel] += inputvalue/multiplier[channel] - value;
         Serial.println("calibrated channel multiplier" + String(channel) + " to " + String(multiplier[channel]));
         if (persistentCal){
             EEPROM.begin(8*sizeof(float));
+            EEPROM.put((channel)*sizeof(float),offset[channel]);
             EEPROM.put((channel+4)*sizeof(float),multiplier[channel]);
             EEPROM.end();
         }
     }
 
-    void onZeroCommand(Comms::Packet packet, uint8_t ip){
+    void onCal1Command(Comms::Packet packet, uint8_t ip){
         uint8_t channel = Comms::packetGetUint8(&packet, 0);
-        zeroChannel(channel);
+        float value = Comms::packetGetFloat(&packet, 1);
+        cal1Channel(channel, value);
         return;
     }
 
-    void onCalCommand(Comms::Packet packet, uint8_t ip){
+    void onCal2Command(Comms::Packet packet, uint8_t ip){
         uint8_t channel = Comms::packetGetUint8(&packet, 0);
-        float value = Comms::packetGetFloat(&packet, 2);
-        calChannel(channel, value);
+        float value = Comms::packetGetFloat(&packet, 1);
+        cal2Channel(channel, value);
+        return;
+    }
+
+    void sendCal(Comms::Packet packet, uint8_t ip){
+        Comms::Packet response = {.id=102, .len =0};
+        for (int i = 0; i < 4; i++){
+            Comms::packetAddFloat(&response, offset[i]);
+            Comms::packetAddFloat(&response, multiplier[i]);
+            Serial.println(" " + String(offset[i]) + " " + String(multiplier[i]));
+        }
+        Comms::emitPacketToGS(&response);
+        return;
+    }
+
+    void resetCal(Comms::Packet packet, uint8_t ip){
+        uint8_t channel = Comms::packetGetUint8(&packet, 0);
+        
+        offset[channel] = 0;
+        multiplier[channel] = 1;
+
+        Serial.println("reset channel " + String(channel));
+    
+        if (persistentCal){
+            EEPROM.begin(8*sizeof(float));
+            EEPROM.put(channel*sizeof(float),offset[channel]);
+            EEPROM.put((channel+4)*sizeof(float),multiplier[channel]);
+            EEPROM.end();
+        }
         return;
     }
 
@@ -126,8 +186,11 @@ namespace Ducers {
             upstreamPT2Buff->clear();
             downstreamPT2Buff->clear();
 
-            Comms::registerCallback(100, onZeroCommand);
-            Comms::registerCallback(101, onCalCommand);
+            Comms::registerCallback(100, onCal1Command);
+            Comms::registerCallback(101, onCal2Command);
+            Comms::registerCallback(102, sendCal);
+            Comms::registerCallback(103, resetCal);
+
 
             if (persistentCal){
             EEPROM.begin(8*sizeof(float));
@@ -139,7 +202,7 @@ namespace Ducers {
             }
             for (int i = 0; i < 4; i++){
                 EEPROM.get((i+4)*sizeof(float),multiplier[i]);
-                if (isnan(multiplier[i])){
+                if (isnan(multiplier[i]) || multiplier[i] < 0.01){
                     multiplier[i] = 1;
                 }
             }
@@ -198,51 +261,63 @@ namespace Ducers {
     //multiplier
     
     float readRawTankPT1() {
-        // Serial.print("Raw Tank PT 1 reading: ");
+        if (millis() % 1000 == 0){
+            Serial.print("Raw Tank PT 1 reading: ");
+            Serial.println(multiplier[1] * (interpolate1000(_downstreamPT1) + offset[1]));
+        }
         // Serial.println(multiplier[1] * (interpolate1000(_downstreamPT1) + offset[1]));
         return multiplier[1] * (interpolate1000(_downstreamPT1) + offset[1]);
     }
     float readRawTankPT2() {
-        // Serial.print("Raw Tank PT 2 reading: ");
+        if (millis() % 1000 == 0){
+            Serial.print("Raw Tank PT 2 reading: ");
+            Serial.println(multiplier[3] * (interpolate1000(_downstreamPT2) + offset[3]));
+        }
         // Serial.println(multiplier[3] * (interpolate1000(_downstreamPT2) + offset[3]));
         return multiplier[3] * (interpolate1000(_downstreamPT2) + offset[3]);
     }
     float readRawPressurantPT1() {
-        // Serial.print("Raw Pressurant PT 1 reading: ");
+        if (millis() % 1000 == 0){
+            Serial.print("Raw Pressurant PT 1 reading: ");
+            Serial.println(multiplier[0] * (interpolate5000(_upstreamPT1) + offset[0]));
+        }
         // Serial.println(multiplier[0] * (interpolate5000(_upstreamPT1) + offset[0]));
         return multiplier[0] * (interpolate5000(_upstreamPT1) + offset[0]);
     }
     float readRawPressurantPT2() {
-        // Serial.print("Raw Pressurant PT 2 reading: ");
+        if (millis() % 1000 == 0){
+            Serial.print("Raw Pressurant PT 2 reading: ");
+            Serial.println(multiplier[2] * (interpolate5000(_upstreamPT2) + offset[2]));
+        }
         // Serial.println(multiplier[2] * (interpolate5000(_upstreamPT2) + offset[2]));
         return multiplier[2] * (interpolate5000(_upstreamPT2) + offset[2]);
     }
 
     float readFilteredTankPT1() {
         if(millis() % 1000 == 0){
-        Serial.print("Tank PT 1 reading: ");
-        Serial.println(downstreamPT1Buff->getFiltered());
+        //Serial.print("Tank PT 1 reading: ");
+        //Serial.println(downstreamPT1Buff->getFiltered());
          }
         return (float) downstreamPT1Buff->getFiltered();
     }
     float readFilteredTankPT2() {
         if(millis() % 1000 == 0){
-        Serial.print("Tank PT 2 reading: ");
-        Serial.println(downstreamPT2Buff->getFiltered());
+        //Serial.print("Tank PT 2 reading: ");
+        //Serial.println(downstreamPT2Buff->getFiltered());
      }
         return (float) downstreamPT2Buff->getFiltered();
     }
     float readFilteredPressurantPT1() {
         if(millis() % 1000 == 0){
-        Serial.print("Pressurant PT 1 reading: ");
-        Serial.println(upstreamPT1Buff->getFiltered());
+        //Serial.print("Pressurant PT 1 reading: ");
+        //Serial.println(upstreamPT1Buff->getFiltered());
      }
         return (float) upstreamPT1Buff->getFiltered();
     }
     float readFilteredPressurantPT2() {
         if(millis() % 1000 == 0){
-        Serial.print("Pressurant PT 2 reading: ");
-        Serial.println(upstreamPT2Buff->getFiltered());
+        //Serial.print("Pressurant PT 2 reading: ");
+        //Serial.println(upstreamPT2Buff->getFiltered());
      }
         return (float) upstreamPT2Buff->getFiltered();
     }
