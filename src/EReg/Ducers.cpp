@@ -53,31 +53,6 @@ namespace Ducers {
         _upstreamPT2 = upstreamPT2;
         upstreamPT2Buff->insert(millis(), upstreamPT2);
     }
-    /*
-    void zeroChannel(uint8_t channel){
-        float value;
-
-        if(channel == 0){
-            value = readRawPressurantPT1();
-        }
-        else if(channel == 1){
-            value = readRawTankPT1();
-        }
-        else if(channel == 2){
-            value = readRawPressurantPT2();
-        }
-        else if(channel == 3){
-            value = readRawTankPT2();
-        }
-        
-        offset[channel] = -value + offset[channel];
-        Serial.println("zeroed channel " + String(channel) + " to " + String(offset[channel]));
-        if (persistentCal){
-            EEPROM.begin(8*sizeof(float));
-            EEPROM.put(channel*sizeof(float),offset[channel]);
-            EEPROM.end();
-        }
-    }*/
 
     void cal1Channel(uint8_t channel, float inputvalue){
         float value;
@@ -235,75 +210,46 @@ namespace Ducers {
         return (rawValue * 1000 * 1.0042) + 5; //1.0042 from the voltage divider - 5647ohm and 5600ohm
     }
 
-    float readPressurantPT1() {
-        //Serial.print("Pressurant PT 1 reading: ");
-        //Serial.println(max((float)1, interpolate5000(_upstreamPT1)));
-        return max((float)1, multiplier[0] * (interpolate5000(_upstreamPT1) + offset[0]));
-    }
-    float readPressurantPT2() {
-        // Serial.print("Pressurant PT 2 reading: ");
-        // Serial.println(max((float)1, interpolate5000(_upstreamPT2)));
-        return max((float)1, multiplier[2] * (interpolate5000(_upstreamPT2) + offset[2]));
-    }
-
-    float readTankPT1() {
-        // Serial.print("Tank PT 1 reading: ");
-        // Serial.println(max((float)1, interpolate1000(_downstreamPT1)));
-        return max((float)1, multiplier[1] * (interpolate1000(_downstreamPT1) + offset[1]));
-    }
-
-    float readTankPT2() {
-        // Serial.print("Tank PT 2 reading: ");
-        // Serial.println(max((float)1, interpolate1000(_downstreamPT2)));
-        return max((float)1, multiplier[3] * (interpolate1000(_downstreamPT2) + offset[3]));
-    }
-
-    //multiplier
-    
     float readRawTankPT1() {
-        if (millis() % 1000 == 0){
-            Serial.print("Raw Tank PT 1 reading: ");
-            Serial.println(multiplier[1] * (interpolate1000(_downstreamPT1) + offset[1]));
-        }
-        // Serial.println(multiplier[1] * (interpolate1000(_downstreamPT1) + offset[1]));
         return multiplier[1] * (interpolate1000(_downstreamPT1) + offset[1]);
     }
     float readRawTankPT2() {
-        if (millis() % 1000 == 0){
-            Serial.print("Raw Tank PT 2 reading: ");
-            Serial.println(multiplier[3] * (interpolate1000(_downstreamPT2) + offset[3]));
-        }
-        // Serial.println(multiplier[3] * (interpolate1000(_downstreamPT2) + offset[3]));
         return multiplier[3] * (interpolate1000(_downstreamPT2) + offset[3]);
     }
     float readRawPressurantPT1() {
-        if (millis() % 1000 == 0){
-            Serial.print("Raw Pressurant PT 1 reading: ");
-            Serial.println(multiplier[0] * (interpolate5000(_upstreamPT1) + offset[0]));
-        }
-        // Serial.println(multiplier[0] * (interpolate5000(_upstreamPT1) + offset[0]));
         return multiplier[0] * (interpolate5000(_upstreamPT1) + offset[0]);
     }
     float readRawPressurantPT2() {
-        if (millis() % 1000 == 0){
-            Serial.print("Raw Pressurant PT 2 reading: ");
-            Serial.println(multiplier[2] * (interpolate5000(_upstreamPT2) + offset[2]));
-        }
-        // Serial.println(multiplier[2] * (interpolate5000(_upstreamPT2) + offset[2]));
         return multiplier[2] * (interpolate5000(_upstreamPT2) + offset[2]);
     }
 
+    float readPressurantPT1() {
+        return max((float)1, readRawPressurantPT1());
+    }
+    float readPressurantPT2() {
+        return max((float)1, readRawPressurantPT2());
+    }
+
+    float readTankPT1() {
+        return max((float)1, readRawTankPT1());
+    }
+
+    float readTankPT2() {
+        return max((float)1, readRawTankPT2());
+    }
+    
+
     float readFilteredTankPT1() {
-        return (float) downstreamPT1Buff->getFiltered();
+        return (float) multiplier[1] * (interpolate1000(downstreamPT1Buff->getFiltered()) + offset[1]);
     }
     float readFilteredTankPT2() {
-        return (float) downstreamPT2Buff->getFiltered();
+        return (float) multiplier[3] * (interpolate1000(downstreamPT2Buff->getFiltered()) + offset[3]);
     }
     float readFilteredPressurantPT1() {
-        return (float) upstreamPT1Buff->getFiltered();
+        return (float) multiplier[0] * (interpolate5000(upstreamPT1Buff->getFiltered()) + offset[0]);
     }
     float readFilteredPressurantPT2() {
-        return (float) upstreamPT2Buff->getFiltered();
+        return (float) multiplier[2] * (interpolate5000(upstreamPT2Buff->getFiltered()) + offset[2]);
     }
 
     /**
