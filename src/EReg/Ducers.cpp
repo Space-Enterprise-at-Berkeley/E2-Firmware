@@ -294,31 +294,15 @@ namespace Ducers {
     }
 
     float readFilteredTankPT1() {
-        if(millis() % 1000 == 0){
-        //Serial.print("Tank PT 1 reading: ");
-        //Serial.println(downstreamPT1Buff->getFiltered());
-         }
         return (float) downstreamPT1Buff->getFiltered();
     }
     float readFilteredTankPT2() {
-        if(millis() % 1000 == 0){
-        //Serial.print("Tank PT 2 reading: ");
-        //Serial.println(downstreamPT2Buff->getFiltered());
-     }
         return (float) downstreamPT2Buff->getFiltered();
     }
     float readFilteredPressurantPT1() {
-        if(millis() % 1000 == 0){
-        //Serial.print("Pressurant PT 1 reading: ");
-        //Serial.println(upstreamPT1Buff->getFiltered());
-     }
         return (float) upstreamPT1Buff->getFiltered();
     }
     float readFilteredPressurantPT2() {
-        if(millis() % 1000 == 0){
-        //Serial.print("Pressurant PT 2 reading: ");
-        //Serial.println(upstreamPT2Buff->getFiltered());
-     }
         return (float) upstreamPT2Buff->getFiltered();
     }
 
