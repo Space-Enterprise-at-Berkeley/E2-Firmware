@@ -1,14 +1,28 @@
 #include <Arduino.h>
 // #include "Util.h"
-#define X_PWM_PIN 39
+// #define X_PWM_PIN 39
+#define X_PWM_PIN 15
 
 volatile int encoderTicks = 0;
 
 int32_t numReads = 0;
-int encA = 19; //encoder A orange
-int encB = 18; //encoder B grey
-int encC = 21; //encoder C yellow
-int x = -50;
+// int encA = 20; //encoder A orange
+// int encB = 18; //encoder B grey
+// int encC = 21; //encoder C yellow
+
+// int encA = 34;
+// int encB = 21;
+// int encC = 20;
+    // const int encA_1 = 14;
+    // const int encB_1 = 17;
+    // const int encC_1 = 18;
+
+int encA = 14;
+int encB = 17;
+int encC = 18;
+
+int x = -30;
+int dec = 1;
 
 bool motorDriverEnabled;
 
@@ -28,7 +42,8 @@ uint32_t printEncoder() {
 void risingA() {
     if (digitalRead(encC)) {
         encoderTicks += 1;
-    } else {
+    } 
+    else {
         encoderTicks -= 1;
     }
     
@@ -111,7 +126,7 @@ void setupEncoder() {
 }
 
 void runMotor(int32_t speed) {
-    if (speed >= -100 && speed <= 100) {
+    if (speed >= -40 && speed <= 40) {
         ledcWrite(0, speed + 307);
     }
     else {
@@ -134,9 +149,22 @@ void setup() {
 }
 
 void loop() {
+    Serial.print("Count: ");
     Serial.println(getEncoderCount());
+    Serial.print("A: ");
+    Serial.println(digitalRead(encA));
+    Serial.print("B: ");
+    Serial.println(digitalRead(encB));
+    Serial.print("C: ");
+    Serial.println(digitalRead(encC));
     runMotor(x);
-    x += 1;
+    x += dec;
     delay(100);
+    if (x == 40) { 
+        dec = -1;
+    } 
+    if (x == -40) { 
+        dec = 1;
+    }
 }
 

@@ -14,7 +14,8 @@ uint32_t task_example() {
 Task taskTable[] = {
   // {task_example, 0, true},
   {TVC::updatePID, 0, true},
-  // {HAL::printEncoder, 0, true }
+  // {HAL::printEncoder_0, 0, true},
+  // {HAL::printEncoder_1, 0, true}
 };
 
 #define TASK_COUNT (sizeof(taskTable) / sizeof (struct Task))
@@ -22,11 +23,17 @@ Task taskTable[] = {
 void setup() {
   // setup stuff here
   Comms::init();
+  // Comms::init(10, );
+  // int cs, int spiMisoPin, int spiMosiPin, int spiSclkPin, int ETH_intN
   // Serial.begin(921600);
   HAL::init();
-  HAL::setupEncoder();
+  HAL::setupEncoders();
+  HAL::resetEncoders();
   TVC::init();
   Comms::registerCallback(1, TVC::definePosition);
+  // Comms::registerCallback(2, TVC::printEncoders);
+  // Comms::registerCallback(2, TVC::slowRun);
+
   while(1) {
     // main loop here to avoid arduino overhead
     for(uint32_t i = 0; i < TASK_COUNT; i++) { // for each task, execute if next time >= current time
