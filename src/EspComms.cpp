@@ -18,6 +18,8 @@ namespace Comms {
 
   IPAddress ip(10, 0, 0, ID);
 
+
+
   void init(int cs, int spiMisoPin, int spiMosiPin, int spiSclkPin, int ETH_intN)
   {
     Serial.begin(921600);
@@ -285,6 +287,11 @@ namespace Comms {
       Udp.write(i+1, packet->data, packet->len);
       Udp.endPacket(i+1);
     }
+  }
+
+  void redirectEmitPacketToAll(uint8_t ip){
+    Udp.beginPacket(0, IPAddress(10,0,0,ip), 42099);
+    //This changes where emitPacketToAll sends packets to
   }
 
   void emitPacketToAll(Packet *packet)

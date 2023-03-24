@@ -82,6 +82,8 @@ namespace Comms
   // Broadcast
   void emitPacketToAll(Packet *packet);
 
+  void redirectEmitPacketToAll(uint8_t ip);
+
   bool verifyPacket(Packet *packet);
 
   uint16_t computePacketChecksum(Packet *packet);

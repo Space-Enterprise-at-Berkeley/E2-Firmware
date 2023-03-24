@@ -11,6 +11,14 @@ uint32_t task_example() {
   return 1000 * 1000;
 }
 
+/* bool joystickActive = false;
+void joystickCommand(Comms::Packet joystickCommand, uint8_t ip) {
+  // If the joystick is active, then we should be updating position targets from it
+  if (joystickActive){
+    TVC::definePosition(joystickCommand, ip);
+  }
+}
+ */
 Task taskTable[] = {
   // {task_example, 0, true},
   {TVC::updatePID, 0, true},
@@ -31,6 +39,7 @@ void setup() {
   HAL::resetEncoders();
   TVC::init();
   Comms::registerCallback(1, TVC::definePosition);
+  //Comms::registerCallback(101, joystickCommand);
   // Comms::registerCallback(2, TVC::printEncoders);
   // Comms::registerCallback(2, TVC::slowRun);
 
