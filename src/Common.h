@@ -59,6 +59,7 @@ enum PacketID {
   ZERO_CMD = 100,
   CAL_CMD = 101,
   SEND_CAL = 102,
+  RESET_CAL = 103,
   //TC
   TC_DATA = 2,
   //LC

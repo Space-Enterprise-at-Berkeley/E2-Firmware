@@ -92,6 +92,18 @@ namespace Ducers {
         Comms::emitPacketToGS(&response);
     }
 
+    void resetCal(Comms::Packet packet, uint8_t ip){
+        uint8_t channel = Comms::packetGetUint8(&packet, 0);
+        offset[channel] = 0;
+        multiplier[channel] = 1;
+        if (persistentCalibration){
+            EEPROM.begin(16*sizeof(float));
+            EEPROM.put(channel*sizeof(float),offset[channel]);
+            EEPROM.put((channel+8)*sizeof(float),multiplier[channel]);
+            EEPROM.end();
+        }
+    }
+
     void init() {
         // Comms::registerCallback(140, handleFastReadPacket);
         spi2 = new SPIClass(HSPI);
@@ -104,6 +116,7 @@ namespace Ducers {
         Comms::registerCallback(ZERO_CMD, onZeroCommand);
         Comms::registerCallback(CAL_CMD, onCalCommand);
         Comms::registerCallback(SEND_CAL, sendCal);
+        Comms::registerCallback(RESET_CAL, resetCal);
 
         //load offset from flash or set to 0
         if (persistentCalibration){
