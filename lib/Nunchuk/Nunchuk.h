@@ -27,6 +27,7 @@ class Nunchuk
     int accelZ;
     int zButton;
     int cButton;
+    bool connected;
 
     void init();
     void init(uint8_t sda, uint8_t scl);

@@ -36,12 +36,19 @@ void Nunchuk::init()
   Nunchuk::update();
 }
 
+
 void Nunchuk::update()
 {
   int count = 0;
   int values[6];
 
-  Wire.requestFrom(0x52, 6);
+  if (Wire.requestFrom(0x52, 6) != 6)
+  {
+    Nunchuk::connected = false;
+    return;
+  } else {
+    Nunchuk::connected = true;
+  }
 
   while(Wire.available())
   {

@@ -9,31 +9,58 @@ uint8_t scl = 20;
 uint8_t tvcIP = 88;
 bool enabled = false;
 
+uint8_t center_x = 133;
+uint8_t center_y = 125;
+uint8_t x_range = 73;
+uint8_t y_range = 73;
+
+float convertX(uint8_t x){
+    if (nunchuk.connected == false){
+        return 0;
+    }
+    return min(max(((x - center_x) / (float)x_range), -1.0f), 1.0f);
+}
+
+float convertY(uint8_t y){
+    if (nunchuk.connected == false){
+        return 0;
+    }
+    return min(max(((y - center_y) / (float)y_range), -1.0f), 1.0f);
+}
+
+bool convertZ(uint8_t z){
+    if (nunchuk.connected == false){
+        return false;
+    }
+    return z;
+}
+
 Comms::Packet pos = {.id = 1, .len=0};
 uint32_t updatePos() {
     nunchuk.update();
     pos.len = 0;
-    Comms::packetAddUint32(&pos, nunchuk.analogX);
-    Comms::packetAddUint32(&pos, nunchuk.analogY);
-    if (enabled && nunchuk.zButton){
+    Comms::packetAddFloat(&pos, convertX(nunchuk.analogX));
+    Comms::packetAddFloat(&pos, convertY(nunchuk.analogY));
+    if (enabled && convertZ(nunchuk.zButton)){
         Comms::emitPacketToAll(&pos); //actually sends to TVC IP
     }
-    Comms::packetAddUint8(&pos, nunchuk.zButton);
+    Comms::packetAddUint8(&pos, convertZ(nunchuk.zButton));
     Comms::packetAddUint8(&pos, enabled);
+    Comms::packetAddUint8(&pos, nunchuk.connected);
     Comms::emitPacketToGS(&pos);
-    return 100*1000; // don't do faster than 10ms
+    return 50*1000; // don't do faster than 10ms
 }
 
 uint32_t printPos(){
     Serial.print("Enabled: ");
     Serial.println(enabled);
     Serial.print(" X: ");
-    Serial.print(nunchuk.analogX);
+    Serial.print(convertX(nunchuk.analogX));
     Serial.print(" Y: ");
-    Serial.println(nunchuk.analogY);
+    Serial.println(convertY(nunchuk.analogY));
     Serial.print(" Z button: ");
-    Serial.println(nunchuk.zButton);
-    return 500*1000;
+    Serial.println(convertZ(nunchuk.zButton));
+    return 50*1000;
 }
 
 //i used this to figure out what pins were sda/scl lol
@@ -70,6 +97,7 @@ void setup() {
 
   Comms::registerCallback(100, [](Comms::Packet packet, uint8_t ip) {
     enabled = Comms::packetGetUint8(&packet, 0);
+    Serial.println("Setting enabled to " + String(enabled));
   });
   
 
