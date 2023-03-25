@@ -14,6 +14,7 @@ namespace Ducers {
     float offset[8];
     float multiplier[8];
     bool persistentCalibration = true;
+    uint8_t channelCounter = 0;
 
 
     // float pressurantPTValue = 0.0;
@@ -142,32 +143,37 @@ namespace Ducers {
 
     uint32_t task_ptSample() {
         // read from all 8 PTs in sequence
+
         
-        adc1.setChannel(0); // switch mux back to channel 0
-        data[0] = multiplier[0] * (interpolate1000(adc1.readChannelOTF(1)) + offset[0]);
-        data[1] = multiplier[1] * (interpolate1000(adc1.readChannelOTF(2)) + offset[1]);
-        data[2] = multiplier[2] * (interpolate1000(adc1.readChannelOTF(3)) + offset[2]);
-        data[3] = multiplier[3] * (interpolate1000(adc1.readChannelOTF(4)) + offset[3]);
-        data[4] = multiplier[4] * (interpolate1000(adc1.readChannelOTF(5)) + offset[4]);
-        data[5] = multiplier[5] * (interpolate1000(adc1.readChannelOTF(6)) + offset[5]);
-        data[6] = multiplier[6] * (interpolate1000(adc1.readChannelOTF(7)) + offset[6]);
-        data[7] = multiplier[7] * (interpolate1000(adc1.readChannelOTF(0)) + offset[7]);
+        // adc1.setChannel(0); // switch mux back to channel 0
+        // data[0] = multiplier[0] * (interpolate1000(adc1.readChannelOTF(1)) + offset[0]);
+        // data[1] = multiplier[1] * (interpolate1000(adc1.readChannelOTF(2)) + offset[1]);
+        // data[2] = multiplier[2] * (interpolate1000(adc1.readChannelOTF(3)) + offset[2]);
+        // data[3] = multiplier[3] * (interpolate1000(adc1.readChannelOTF(4)) + offset[3]);
+        // data[4] = multiplier[4] * (interpolate1000(adc1.readChannelOTF(5)) + offset[4]);
+        // data[5] = multiplier[5] * (interpolate1000(adc1.readChannelOTF(6)) + offset[5]);
+        // data[6] = multiplier[6] * (interpolate1000(adc1.readChannelOTF(7)) + offset[6]);
+        // data[7] = multiplier[7] * (interpolate1000(adc1.readChannelOTF(0)) + offset[7]);
+        // if (channelCounter == 0){
+        //     Comms::emitPacketToGS(&ptPacket);
+        //     ptPacket.len = 0;
+        //     adc1.setChannel(0);
+        // }
 
+        // if (channelCounter < 6){
+        //     data[channelCounter] = multiplier[channelCounter] * (interpolate1000(adc1.readChannelOTF((channelCounter+1)%8)) + offset[channelCounter]);
+        //     Comms::packetAddFloat(&ptPacket, data[channelCounter]);
+        // } else {
+        //     //they're RTDs not PTs
+        //     data[channelCounter] = (interpolate1000(adc1.readChannelOTF((channelCounter+1)%8))) * -2.65385 + 2420;
+        //     Comms::packetAddFloat(&ptPacket, data[channelCounter]);
 
-        DEBUG("Read all PTs\n");
-        DEBUG_FLUSH();
+        // }
 
-        // emit a packet with data
-        ptPacket.len = 0;
-        for (int i = 0; i < 8; i++){
-            Comms::packetAddFloat(&ptPacket, data[i]);
-        }
+        // channelCounter = (channelCounter + 1) % 8;
 
-        Comms::emitPacketToGS(&ptPacket);
         // Comms::emitPacket(&ptPacket, &RADIO_SERIAL, "\r\n\n", 3);
         // return the next execution time
-        DEBUG("PT Packet Sent\n");
-        DEBUG_FLUSH();
 
         return ptUpdatePeriod;
     }
