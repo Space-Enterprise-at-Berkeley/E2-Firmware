@@ -22,9 +22,9 @@ namespace Comms
       (uint8_t)(__m2 >> 0),
   };
   const int port = 42069;
-  const IPAddress ip(10, 0, 0, IP_ADDRESS_END);
-  const IPAddress groundStation1(10, 0, 0, 69);
-  const IPAddress groundStation2(10, 0, 0, 70);
+  const IPAddress ip(10, 0, 0, ID);
+  const IPAddress groundStation1(10, 0, 0, 169);
+  const IPAddress groundStation2(10, 0, 0, 170);
 
   struct Packet
   {
@@ -78,6 +78,8 @@ namespace Comms
    * @param packet The packet in which the data is stored.
    */
   void emitPacket(Packet *packet);
+  void finishPacket(Packet *packet);
+  void emitPacketToGS(Packet *packet);
 
   /**
    * @brief Sends the packet to arbitrary address
@@ -86,6 +88,7 @@ namespace Comms
    * @param custom IP address to send to
    */
   void emitPacket(Packet *packet, uint8_t end);
+  void emitPacket(Packet *packet, uint8_t end, uint8_t port);
 
   void emitPacket(Packet *packet, HardwareSerial *serialBus);
 

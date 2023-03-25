@@ -1,27 +1,57 @@
 #include <Arduino.h>
-
-#include <Wire.h>
+#include <Common.h>
 #include <FDC2214.h>
-#include <TMP236.h>
-
+#include <Wire.h>
+#include <TeensyComms.h>
 #include <CircularBuffer.h>
 
-#include <TeensyComms.h>
-#include <Common.h>
-
-#define STATUS_LED 34
-#define TEMP_PIN 1
-#define EN_485 20 // switch between transmit and receive
-#define TE_485 19 // terminate enable
 
 FDC2214 _capSens;
-TMP236 _tempSens = TMP236(TEMP_PIN);
 
-char rs485Buffer[sizeof(Comms::Packet)];
-int cnt = 0;
-int indicatorDuty = 500;
-int indicatorPeriod = 1000;
-int indicatorLastTime = 0;
+Comms::Packet capPacket = {.id = 21};
+
+
+float runningAverage(float total, int numSamples){
+  if (numSamples == 0) {
+    return 0;
+  }
+  return total / numSamples;
+}
+
+uint32_t print_Cap() {
+    float capValue = _capSens.readCapacitance(00);
+    float sensor0 = _capSens.readSensor(00);
+    float sensor1 = _capSens.readSensor(01);
+    float refValue = _capSens.readCapacitance(01);
+
+    Serial.print("Capacitance: ");
+    Serial.println(capValue);
+    Serial.print("Sensor 0: ");
+    Serial.println(sensor0);
+    Serial.print("Sensor 1: ");
+    Serial.println(sensor1);
+    Serial.print("Reference: ");
+    Serial.println(refValue);
+    Serial.println();
+    return 200 * 1000;
+}
+
+Comms::Packet hello = {.id = 0, .len = 0};
+uint32_t helloPacket() {
+    hello.len = 0;
+    Comms::packetAddFloat(&hello, 420.69);
+    Comms::emitPacketToGS(&hello);
+    Serial.println("Packet sent");
+    return 100 * 1000;
+}
+
+bool on = false;
+uint32_t oscillate1819() {
+    digitalWrite(18, on);
+    digitalWrite(19, !on);
+    on = !on;
+    return 5000 * 1000;
+}
 
 // samhitag3 added variables for maintaining running average
 int numSamples = 0;
@@ -31,119 +61,14 @@ float samples[sampleSize];
 float total = 0;
 float baseline = 0;
 
-const int timeBetweenTransmission = 100; // ms
-int lastTransmissionTime = 0;
-
-//samhitag3 added runningAverage method
-float runningAverage(float total, int numSamples){
-  if (numSamples == 0) {
-    return 0;
-  }
-  return total / numSamples;
-}
-
-void setup()
-{
-  Serial.begin(115200);
-  //samhitag3 testing slower baud rate
-  // Serial.begin(9600);
-  // samhitag3 commented out
-  Serial1.begin(115200);
-
-  Wire.begin();
-  _capSens = FDC2214();
-  _capSens.begin(0x2A, &Wire);
-
-  _tempSens.init();
-
-  pinMode(EN_485, OUTPUT);
-  pinMode(TE_485, OUTPUT);
-  pinMode(STATUS_LED, OUTPUT);
-
-  digitalWrite(EN_485, LOW); // put in receive mode by default
-  #ifdef FUEL
-  digitalWrite(TE_485, HIGH);
-  #else
-  digitalWrite(TE_485, LOW);
-  #endif
-  digitalWrite(STATUS_LED, LOW);
-
-  #ifdef FUEL
-  delay(50);
-  #endif
-}
-
-unsigned long previousMillis = 0;
-const long interval = 25;
-
 const uint8_t logSecs = 5;
+const long readInterval = 25; //ms
+CircularBuffer<float, (logSecs * 1000 / readInterval)> capBuffer;
+CircularBuffer<float, (logSecs * 1000 / readInterval)> refBuffer;
+CircularBuffer<float, (logSecs * 1000 / readInterval)> correctedBuffer;
 
-CircularBuffer<float, (logSecs * 1000 / interval)> capBuffer;
-CircularBuffer<float, (logSecs * 1000 / interval)> refBuffer;
-CircularBuffer<float, (logSecs * 1000 / interval)> correctedBuffer;
+uint32_t readCap() {
 
-Comms::Packet capPacket = {.id = PACKET_ID};
-
-void loop()
-{
-  // while(Serial1.available()) {
-  //   rs485Buffer[cnt] = Serial1.read();
-  //   // DEBUG((uint8_t)rs485Buffer[cnt]);
-  //   // DEBUG(" ");
-  //   // DEBUG_FLUSH();
-  //   if(cnt == 0 && rs485Buffer[cnt] != PACKET_ID) {
-  //     break;
-  //   }
-
-  //   if(rs485Buffer[cnt] == '\n') {
-  //     Comms::Packet *packet = (Comms::Packet *)&rs485Buffer;
-  //     if(Comms::verifyPacket(packet)) {
-  //       cnt = 0;
-
-  //       // Comms::emitPacket(&capPacket, &Serial);
-  //       digitalWrite(EN_485, HIGH);
-  //       Comms::emitPacket(&capPacket, &Serial1);
-  //       Serial1.flush();
-  //       digitalWrite(EN_485, LOW);
-  //       break;
-  //     }
-  //   }
-  //   cnt++;
-
-  //   if(cnt >= 20) {
-  //     cnt = 0;
-  //   }
-  // }
-  if(millis() - lastTransmissionTime >= timeBetweenTransmission) {
-    DEBUG("Transmitting ");
-    DEBUG(Comms::packetGetFloat(&capPacket, 0));
-    DEBUG("\n");
-    DEBUG_FLUSH();
-    lastTransmissionTime = lastTransmissionTime + timeBetweenTransmission;
-    digitalWrite(EN_485, HIGH);
-    Comms::emitPacket(&capPacket, &Serial1);
-    Serial1.flush();
-    digitalWrite(EN_485, LOW);
-  }
-
-  #ifdef FUEL
-  if(Serial1.available() && millis() - lastTransmissionTime >= timeBetweenTransmission/4) {
-    DEBUG("R\n");
-    lastTransmissionTime = millis() - timeBetweenTransmission/2;
-    while(Serial1.available()) {
-      Serial1.read();
-    }
-  }
-  #endif
-
-
-
-
-  unsigned long currentMillis = millis();
-
-  if (currentMillis - previousMillis >= interval)
-  {
-    previousMillis = currentMillis;
     // samhitag3 changed readCapacitance input value
     float capValue = _capSens.readCapacitance(00);
     // samhitag3 defined refValue, sensor0, sensor1
@@ -163,24 +88,13 @@ void loop()
       }
       numSamples++;
     }
-    //  else {
-    //   float total0 = total;
-    //   total -= samples[oldestSampleIndex];
-    //   total += refValue;
-    //   oldestSampleIndex = (oldestSampleIndex + 1) % sampleSize;
-    //   // Serial.print(total0 - total);
-    // }
-    // float refAvg = runningAverage(total, numSamples);
 
     if(capValue < 0.0) {
       // error reading from sensor
-      indicatorDuty = 200;
-    } else {
-      indicatorDuty = 500;
-    }
-    DEBUG(capValue);
-    DEBUG('\n');
-    DEBUG_FLUSH();
+      Serial.println("Error reading from sensor");
+    } 
+    Serial.print("Cap value: ");
+    Serial.println(capValue);
 
     capBuffer.push(capValue);
     refBuffer.push(refValue);
@@ -194,7 +108,7 @@ void loop()
     avgCap /= capBuffer.size();
     avgRef /= refBuffer.size();
 
-    float tempValue = _tempSens.readTemperature();
+    //float tempValue = _tempSens.readTemperature();
     float corrected = _capSens.correctedCapacitance(avgRef, baseline);
 
     correctedBuffer.push(corrected);
@@ -204,67 +118,80 @@ void loop()
     }
     avgCorrected /= correctedBuffer.size();
 
-
-    // samhitag3 test print statements
-    // Serial.print("temp: ");
-    Serial.print(PACKET_ID);
-    Serial.print(tempValue);
-    Serial.print("\t");
+    //print stuff
+    Serial.print("S0: ");
     Serial.print(sensor0);
     Serial.print("\t");
+    Serial.print("S1: ");
     Serial.print(sensor1);
     Serial.print("\t");
+    Serial.print("Cap: ");
     Serial.print(capValue);
     Serial.print("\t");
-    Serial.print(refValue);
-    Serial.print("\t");
+    Serial.print("Ref: ");
+    Serial.println(refValue);
+    Serial.print("Avg cap: ");
     Serial.print(avgCap);
     Serial.print("\t");
+    Serial.print("Avg ref: ");
     Serial.print(avgRef);
     Serial.print("\t");
+    Serial.print("Corrected: ");
     Serial.print(corrected);
     Serial.print("\t");
+    Serial.print("Avg corrected: ");
     Serial.println(avgCorrected);
-    // Serial.print(corrected);
-    // Serial.print("  numSamp: ");
-    // Serial.print(numSamples);
-    // Serial.print("  avg: ");
-    // Serial.print(refAvg);
-    // Serial.print("  total: ");
-    // Serial.print(total);
-    // Serial.print("  amt: ");
-    // Serial.print(numSamples);
-    // Serial.print("  base: ");
-    // Serial.print(baseline);
-    // Serial.println();
 
     capPacket.len = 0;
-    // samhitag3 changed packet variable from capValue to corrected
+    
     Comms::packetAddFloat(&capPacket, corrected);
     Comms::packetAddFloat(&capPacket, avgCap);
-    Comms::packetAddFloat(&capPacket, tempValue);
-    // samhitag3 added packet variable refValue
     Comms::packetAddFloat(&capPacket, refValue);
-    // Comms::packetAddFloat(&capPacket, 0.0);
-    
-    uint32_t timestamp = millis();
-    capPacket.timestamp[0] = timestamp & 0xFF;
-    capPacket.timestamp[1] = (timestamp >> 8) & 0xFF;
-    capPacket.timestamp[2] = (timestamp >> 16) & 0xFF;
-    capPacket.timestamp[3] = (timestamp >> 24) & 0xFF;
+    Comms::emitPacketToGS(&capPacket);
 
-    //calculate and append checksum to struct
-    uint16_t checksum = Comms::computePacketChecksum(&capPacket);
-    capPacket.checksum[0] = checksum & 0xFF;
-    capPacket.checksum[1] = checksum >> 8;
-  }
+    return readInterval*1000;
+}
 
-  int timeNow = currentMillis = millis();
-  if(timeNow - indicatorLastTime >= indicatorDuty) {
-    digitalWrite(STATUS_LED, HIGH);
-  }
-  if(timeNow - indicatorLastTime >= indicatorPeriod) {
-    digitalWrite(STATUS_LED, LOW);
-    indicatorLastTime = timeNow;
+
+Task taskTable[] = {
+    //{print_Cap, 0, true},
+    //{helloPacket, 0, true}
+    //{oscillate1819, 0, true}
+    {readCap, 0, true}
+};
+
+#define TASK_COUNT (sizeof(taskTable) / sizeof (struct Task))
+
+void setup() {
+    Serial.begin(115200);
+    Comms::initComms();
+
+
+    Wire.begin();
+    _capSens = FDC2214();
+    _capSens.begin(0x2A, &Wire);
+
+    /* pinMode(18, OUTPUT);
+    pinMode(19, OUTPUT);
+    digitalWrite(18, LOW);
+    digitalWrite(19, LOW); */
+ 
+  while(1) {
+    // main loop here to avoid arduino overhead
+    for(uint32_t i = 0; i < TASK_COUNT; i++) { // for each task, execute if next time >= current time
+      uint32_t ticks = micros(); // current time in microseconds
+      if (taskTable[i].nexttime - ticks > UINT32_MAX / 2 && taskTable[i].enabled) {
+        uint32_t nextTime = taskTable[i].taskCall();
+        if (nextTime == 0){
+          taskTable[i].enabled = false;
+        }
+        else {
+        taskTable[i].nexttime = ticks + taskTable[i].taskCall();
+        }
+      }
+    }
+    //Comms::processWaitingPackets();
   }
 }
+
+void loop() {} // unused
