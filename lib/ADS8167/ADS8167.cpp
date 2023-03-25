@@ -135,7 +135,7 @@ uint16_t ADS8167::readChannel(uint8_t* channel_out) {
   // return buffer[1] << 8 | buffer[2];
 }
 
-long ADS8167::readData(uint8_t channel_no) {
+uint16_t ADS8167::readData(uint8_t channel_no) {
   setChannel(channel_no);
   return readChannel();
 }
