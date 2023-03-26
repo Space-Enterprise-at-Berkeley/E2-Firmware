@@ -42,7 +42,7 @@ void flow(Comms::Packet packet, uint8_t ip) {
         Serial.printf("bad flow packet len %d\n", packet.len);
         return;
     }
-    uint32_t flowLength = packetGetUint32(&packet, 1);
+    uint32_t flowLength = packetGetUint32(&packet, 1) * 1000;
     if ((flowLength < 1 * 1000 * 1000) || (flowLength > 70 * 1000 * 1000)) {
         Serial.printf("bad flow duration %d\n", flowLength);
         return;
