@@ -174,7 +174,7 @@ namespace Ducers {
         }
 
         if (channelCounter == rtd0Channel || channelCounter == rtd1Channel){
-            data[channelCounter] = adc1.readData(channelCounter)*5000/65536; //* -2.65385 + 2420;
+            data[channelCounter] = adc1.readData(channelCounter)*5000/(float)65536; //* -2.65385 + 2420;
             Comms::packetAddFloat(&ptPacket, data[channelCounter]);
         } else {
             data[channelCounter] = multiplier[channelCounter] * (interpolate1000(adc1.readData(channelCounter)) + offset[channelCounter]);
