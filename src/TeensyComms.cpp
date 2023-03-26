@@ -178,10 +178,42 @@ namespace Comms
 
   void emitPacketToGS(Packet *packet)
   {
-    finishPacket(packet);
-    emitPacket(packet, 169, 42069);
-    emitPacket(packet, 170, 42070);
-    emitPacket(packet, 171, 42071);
+    // add timestamp to struct
+    uint32_t timestamp = millis();
+    packet->timestamp[0] = timestamp & 0xFF;
+    packet->timestamp[1] = (timestamp >> 8) & 0xFF;
+    packet->timestamp[2] = (timestamp >> 16) & 0xFF;
+    packet->timestamp[3] = (timestamp >> 24) & 0xFF;
+
+    // calculate and append checksum to struct
+    uint16_t checksum = computePacketChecksum(packet);
+    packet->checksum[0] = checksum & 0xFF;
+    packet->checksum[1] = checksum >> 8;
+
+    Udp.beginPacket(IPAddress(10, 0, 0, 169), 42069);
+    Udp.write(packet->id);
+    Udp.write(packet->len);
+    Udp.write(packet->timestamp, 4);
+    Udp.write(packet->checksum, 2);
+    Udp.write(packet->data, packet->len);
+    Udp.endPacket();
+
+    Udp.beginPacket(IPAddress(10, 0, 0, 170), 42070);
+    Udp.write(packet->id);
+    Udp.write(packet->len);
+    Udp.write(packet->timestamp, 4);
+    Udp.write(packet->checksum, 2);
+    Udp.write(packet->data, packet->len);
+    Udp.endPacket();
+
+    Udp.beginPacket(IPAddress(10, 0, 0, 171), 42071);
+    Udp.write(packet->id);
+    Udp.write(packet->len);
+    Udp.write(packet->timestamp, 4);
+    Udp.write(packet->checksum, 2);
+    Udp.write(packet->data, packet->len);
+    Udp.endPacket();
+
   }
 
   void finishPacket(Packet *packet)
@@ -203,10 +235,6 @@ namespace Comms
   {
     finishPacket(packet);
 
-    for (commFunction func : emitterList)
-    {
-      func(*packet, Udp.remoteIP()[3]);
-    }
 
     Udp.beginPacket(IPAddress(10, 0, 0, end), port);
     Udp.write(packet->id);
