@@ -101,7 +101,7 @@ namespace TVC {
 
 uint32_t moveTVC() {
 
-    if (tvcState) { // moving with PID
+    if (tvcState) { // moving with PID is state 1
         // Serial.println("PID time");
 
         if (circleEnabled) { 
@@ -157,7 +157,7 @@ uint32_t moveTVC() {
 
     void enableCircle(bool en) { 
         circleEnabled = en;
-        // add delay after? 
+        // add delay after? this would start tvc mode
     }
 
     void setXSpeed(int spdx) { 

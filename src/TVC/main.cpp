@@ -39,9 +39,9 @@ void setup() {
   HAL::resetEncoders();
   TVC::init();
   Comms::registerCallback(1, TVC::definePosition);
+  Comms::registerCallback(2, TVC::enableCircle);
   //Comms::registerCallback(101, joystickCommand);
   // Comms::registerCallback(2, TVC::printEncoders);
-  // Comms::registerCallback(2, TVC::slowRun);
 
   while(1) {
     // main loop here to avoid arduino overhead
