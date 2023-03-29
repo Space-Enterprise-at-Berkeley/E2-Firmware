@@ -21,6 +21,7 @@ namespace Packets {
     uint8_t ac1_ip = 11;
     uint8_t ac2_ip = 12;
     uint8_t ACTUATE_IP = 100;
+    uint32_t lastTelemetry = 0;
 
 
     void sendTelemetry(
@@ -69,7 +70,8 @@ namespace Packets {
         sendPhaseCurrents();
         sendLimitSwitches();
 
-        if (millis() % 2000 == 0) {
+        if (millis() - lastTelemetry > 2000) {
+            lastTelemetry = millis();
             Serial.println("Upstream Pressure 1: filtered" + String(filteredUpstreamPressure1) + ", raw" + String(rawUpstreamPressure1));
             Serial.println("Upstream Pressure 2: filtered" + String(filteredUpstreamPressure2) + ", raw" + String(rawUpstreamPressure2));
             Serial.println("Downstream Pressure 1: filtered" + String(filteredDownstreamPressure1) + ", raw" + String(rawDownstreamPressure1));
