@@ -13,8 +13,9 @@ namespace TVC {
     uint32_t moveTVC();
     void enableCircle(Comms::Packet statePacket, uint8_t ip); 
     void setMode(int mode);
+    void setTVCMode(Comms::Packet statePacket, uint8_t ip);
     void setXSpeed(int spdx);
     void setYSpeed(int spdy);
-    void stopTVC();
+    void stopTVC(Comms::Packet statePacket, uint8_t ip);
     uint32_t zero();
 }

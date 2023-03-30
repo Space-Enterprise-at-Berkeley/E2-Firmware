@@ -50,6 +50,8 @@ void setup() {
   Comms::registerCallback(1, TVC::definePosition);
   Comms::registerCallback(2, TVC::enableCircle);
   Comms::registerCallback(3, zeroTVC);
+  Comms::registerCallback(4, TVC::stopTVC);
+  Comms::registerCallback(5, TVC::setTVCMode);
   //Comms::registerCallback(101, joystickCommand);
   // Comms::registerCallback(2, TVC::printEncoders);
 
