@@ -20,13 +20,22 @@ void joystickCommand(Comms::Packet joystickCommand, uint8_t ip) {
 }
  */
 Task taskTable[] = {
+  {TVC::zero, 0, false}, //disabled by default
+  {TVC::moveTVC, 0, true},
+
   // {task_example, 0, true},
-  {TVC::updatePID, 0, true},
+  // {TVC::updatePID, 0, true},
   // {HAL::printEncoder_0, 0, true},
   // {HAL::printEncoder_1, 0, true}
 };
 
 #define TASK_COUNT (sizeof(taskTable) / sizeof (struct Task))
+
+void zeroTVC(Comms::Packet packet, uint8_t ip) { 
+  if (taskTable[0].enabled) return; 
+  taskTable[0].enabled = true;
+  taskTable[0].nexttime = micros();
+}
 
 void setup() {
   // setup stuff here
@@ -40,6 +49,9 @@ void setup() {
   TVC::init();
   Comms::registerCallback(1, TVC::definePosition);
   Comms::registerCallback(2, TVC::enableCircle);
+  Comms::registerCallback(3, zeroTVC);
+  Comms::registerCallback(4, TVC::stopTVC);
+  Comms::registerCallback(5, TVC::setTVCMode);
   //Comms::registerCallback(101, joystickCommand);
   // Comms::registerCallback(2, TVC::printEncoders);
 
