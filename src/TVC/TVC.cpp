@@ -20,8 +20,8 @@ namespace TVC {
     int MIN_SPD = -20;
     int INNER_BUFFER_SIZE = 2;
     
-    int speed_x = 10;
-    int speed_y = 10;
+    int speed_x = 0;
+    int speed_y = 0;
 
     int idx = 0;
     int idy = 150;
