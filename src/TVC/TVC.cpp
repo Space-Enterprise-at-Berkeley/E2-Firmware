@@ -684,8 +684,8 @@ namespace TVC {
                 x_motor_ticksp = 2*circleTicks[idx]/3 - 500;
                 y_motor_ticksp = 2*circleTicks[idy]/3 - 500;
 
-                idx += 15;
-                idy += 15;
+                idx += 5;
+                idy += 5;
                 if(idx >= sizeof(circleTicks)/4) idx = 0;
                 if(idy >= sizeof(circleTicks)/4) idy = 0;
             }
@@ -702,6 +702,11 @@ namespace TVC {
             Comms::packetAddUint32(&tmp, HAL::getEncoderCount_0());
             Comms::packetAddUint32(&tmp, HAL::getEncoderCount_1());
             Comms::emitPacketToGS(&tmp);
+
+            Comms::Packet stp = {.id=43};
+            Comms::packetAddUint32(&stp, x_motor_ticksp);
+            Comms::packetAddUint32(&stp, y_motor_ticksp);
+            Comms::emitPacketToGS(&stp);
 
             ledcWrite(0, speed_x + MID_SPD);
             ledcWrite(1, speed_y + MID_SPD);
