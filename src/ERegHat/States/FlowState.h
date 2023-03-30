@@ -4,13 +4,13 @@
 #include <data_buff.h>
 #include <PIDController.h>
 #include <TimeUtil.h>
-#include "EReg/StateMachine.h"
-#include "Ereg/HAL.h"
-#include "Ereg/Util.h"
-#include "Ereg/Comms.h"
-#include "Ereg/Config.h"
-#include "EReg/FlowProfiles.h"
-#include "EReg/Packets.h"
+#include "ERegHat/StateMachine.h"
+#include "ERegHat/HAL.h"
+#include "ERegHat/Util.h"
+#include "ERegHat/Comms.h"
+#include "ERegHat/Config.h"
+#include "ERegHat/FlowProfiles.h"
+#include "ERegHat/Packets.h"
 
 namespace StateMachine {
     

@@ -6,7 +6,6 @@
 namespace TVC {
 
     void init();
-    // uint32_t updatePID();
     void definePosition(Comms::Packet defPos, uint8_t id);
     void defineSpeeds(Comms::Packet defSpeeds, uint8_t id);
 

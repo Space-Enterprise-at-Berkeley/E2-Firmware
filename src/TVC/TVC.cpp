@@ -727,7 +727,6 @@ namespace TVC {
         setMode(1);
         circleEnabled = (int)(packetGetUint8(&packet, 0));
         Serial.println("Circle enabled");
-        // add delay after? this would start tvc mode
     }
 
     void setXSpeed(int spdx) { 
@@ -757,7 +756,6 @@ namespace TVC {
                 Serial.println("in zeroing");
                 return 5*1000*1000;
             case 1:
-                // HAL::resetEncoders();
                 HAL::setEncoderCount_0(650);
                 HAL::setEncoderCount_1(650);
                 x_motor_ticksp = 0;
@@ -768,8 +766,5 @@ namespace TVC {
         }
         return 0;
     }
-
-    // possible states: move at constant power for x time; move to setpoints (pid)
-
     
 }

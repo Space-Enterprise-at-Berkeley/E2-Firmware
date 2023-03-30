@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Common.h>
+#include <ERegHat/Common.h>
 #include <Arduino.h>
 #include <Ethernet.h>
 #include <EthernetUdp.h>
@@ -14,8 +14,8 @@ namespace Comms {
     extern EthernetUDP Udp;
     const int port = 42069;
     const IPAddress ip(10, 0, 0, IP_ADDRESS_END);
-    const IPAddress groundStation1(10, 0, 0, 69);
-    const IPAddress groundStation2(10, 0, 0, 70);
+    const IPAddress groundStation1(10, 0, 0, 169);
+    const IPAddress groundStation2(10, 0, 0, 170);
 
     struct Packet {
         uint8_t id;

@@ -2,11 +2,11 @@
 
 #include <Arduino.h>
 #include <PIDController.h>
-#include "EReg/StateMachine.h"
-#include "Ereg/HAL.h"
-#include "Ereg/Util.h"
-#include "Ereg/Packets.h"
-#include "Ereg/Config.h"
+#include "ERegHat/StateMachine.h"
+#include "ERegHat/HAL.h"
+#include "ERegHat/Util.h"
+#include "ERegHat/Packets.h"
+#include "ERegHat/Config.h"
 
 namespace StateMachine {
 

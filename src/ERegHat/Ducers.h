@@ -1,6 +1,6 @@
 #include "Arduino.h"
 #include "HAL.h"
-#include "Util.h"
+#include "ERegHat/Util.h"
 
 namespace Ducers {
     void init();

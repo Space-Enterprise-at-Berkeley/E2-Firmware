@@ -22,11 +22,6 @@ void joystickCommand(Comms::Packet joystickCommand, uint8_t ip) {
 Task taskTable[] = {
   {TVC::zero, 0, false}, //disabled by default
   {TVC::moveTVC, 0, true},
-
-  // {task_example, 0, true},
-  // {TVC::updatePID, 0, true},
-  // {HAL::printEncoder_0, 0, true},
-  // {HAL::printEncoder_1, 0, true}
 };
 
 #define TASK_COUNT (sizeof(taskTable) / sizeof (struct Task))
@@ -40,9 +35,6 @@ void zeroTVC(Comms::Packet packet, uint8_t ip) {
 void setup() {
   // setup stuff here
   Comms::init();
-  // Comms::init(10, );
-  // int cs, int spiMisoPin, int spiMosiPin, int spiSclkPin, int ETH_intN
-  // Serial.begin(921600);
   HAL::init();
   HAL::setupEncoders();
   HAL::resetEncoders();

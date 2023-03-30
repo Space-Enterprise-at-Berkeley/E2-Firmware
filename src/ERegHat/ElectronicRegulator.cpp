@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "HAL.h"
-#include "Util.h"
-#include "Comms.h"
+#include "ERegHat/Util.h"
+#include "ERegHat/Comms.h"
 #include "Config.h"
 #include "StateMachine.h"
 #include "Packets.h"
@@ -67,13 +67,14 @@ void setup() {
     Comms::registerCallback(203, pressurize);
     Comms::registerCallback(204, runDiagnostics);
     Comms::registerCallback(205, zero);
-    Comms::registerCallback(206, actuateMainValve);
+    // Comms::registerCallback(206, actuateMainValve);
     
     Packets::sendConfig();
 }
 
 void loop() {
     Comms::processWaitingPackets();
+    Serial.println("ereg moment");
     switch (StateMachine::getCurrentState()) {
         case StateMachine::IDLE_CLOSED:
         idleClosedState->update();
