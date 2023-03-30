@@ -55,15 +55,9 @@ namespace Actuators {
     }
 
     void driveBackwards(uint8_t pin1, uint8_t pin2, uint8_t *actState, uint8_t actuatorID){
-        if (channelTypes[actuatorID] == RBV) {
-            digitalWriteFast(pin1, LOW);
-            digitalWriteFast(pin2, HIGH);
-            *actState = 2;
-        } else {
-            digitalWriteFast(pin1, LOW);
-            digitalWriteFast(pin2, LOW);
-            *actState = 0;
-        }
+        digitalWriteFast(pin1, LOW);
+        digitalWriteFast(pin2, HIGH);
+        *actState = 2;
     }
 
     void stopAct(uint8_t pin1, uint8_t pin2, uint8_t *actState, uint8_t actuatorID){
@@ -188,7 +182,7 @@ namespace Actuators {
         Comms::packetAddUint8(packet, *actState);
         Comms::packetAddFloat(packet, *voltage);
         Comms::packetAddFloat(packet, *current);
-        Comms::emitPacket(packet);
+        Comms::emitPacketToGS(packet);
     }
 
     uint32_t act1Sample() {
@@ -227,46 +221,12 @@ namespace Actuators {
     }
 
     void initActuators() {
-        Comms::registerCallback(10, act1PacketHandler);
-        Comms::registerCallback(11, act2PacketHandler);
-        Comms::registerCallback(12, act3PacketHandler);
-        Comms::registerCallback(13, act4PacketHandler);
-        Comms::registerCallback(14, act5PacketHandler);
-        Comms::registerCallback(15, act6PacketHandler);
-        Comms::registerCallback(16, act7PacketHandler);
+        Comms::registerCallback(170, act1PacketHandler);
+        Comms::registerCallback(171, act2PacketHandler);
+        Comms::registerCallback(172, act3PacketHandler);
+        Comms::registerCallback(173, act4PacketHandler);
+        Comms::registerCallback(174, act5PacketHandler);
+        Comms::registerCallback(175, act6PacketHandler);
+        Comms::registerCallback(176, act7PacketHandler);
     }
-
-
-
-    void openValve(uint8_t valvePin) {
-        digitalWriteFast(valvePin, HIGH); // turn on the physical pin
-        // valveStates |= (0x01 << valve->valveID); // set bit <valveID> to 1
-
-
-        // Comms::Packet tmp = {.id = valve->statePacketID}; // valve packets have an offset of 40 (check the E-1 Design spreadsheet)
-        // Comms::packetAddUint8(&tmp, 1); // a value of 1 indicates the valve was turned on
-        // Comms::emitPacket(&tmp);
-        
-        // sendStatusPacket();
-        DEBUG("Opened valve");
-    }
-
-    // common function for closing a valve
-    void closeValve(uint8_t valvePin) { //optional argument overcurrentShutoff
-        digitalWriteFast(valvePin, LOW); // turn off the physical pin
-        // valveStates &= ~(0x01 << valve->valveID); // set bit <valveID> to 1
-
-        // Comms::Packet tmp = {.id = valve->statePacketID}; // valve packets have an offset of 40 (check the E-1 Design spreadsheet)
-        // Comms::packetAddUint8(&tmp, OCShutoff << 1); // a value of 0 indicates the valve was turned off, 2 indicates overcurrent shutoff
-        // Comms::emitPacket(&tmp);
-        
-        // sendStatusPacket();
-        DEBUG("Closed valve");
-    }
-
-
-    void activateIgniter() { openValve(HAL::ctl12vChan1); }
-    void deactivateIgniter(uint8_t OCShutoff = 0) { closeValve(HAL::ctl12vChan1); }
-    void igniterPacketHandler(Comms::Packet tmp, uint8_t ip) { return tmp.data[0] ? activateIgniter() : deactivateIgniter(); }
-
 };

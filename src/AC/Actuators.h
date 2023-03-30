@@ -3,17 +3,14 @@
 #include <Common.h>
 
 #include "HAL.h"
-#include "../Comms.h" 
+#include <TeensyComms.h>  
 
 #include <Arduino.h>
 #include <INA219.h>
 
 namespace Actuators {
     
-    extern uint32_t actuatorCheckPeriod; // interval for checking valve current and voltages
-
-    enum channelType  {RBV, VALVE};
-    const channelType channelTypes[7] = {RBV, RBV, VALVE, VALVE, RBV, VALVE, VALVE};
+    extern uint32_t heaterCheckPeriod; // interval for checking valve current and voltages
 
     const float maxValveCurrent = 1.0;
 
@@ -126,11 +123,4 @@ namespace Actuators {
     uint32_t act5Sample();
     uint32_t act6Sample();
     uint32_t act7Sample();
-
-
-    void openValve(uint8_t valvePin);
-    void closeValve(uint8_t pin);
-    void activateIgniter();
-    void deactivateIgniter(uint8_t OCShutoff = 0);
-    void igniterPacketHandler(Comms::Packet tmp, uint8_t ip);
 };

@@ -76,8 +76,6 @@ namespace Comms
   {
     if (Udp.parsePacket())
     {
-      if (Udp.remotePort() != port)
-        return; // make sure this packet is for the right port
       Udp.read(packetBuffer, sizeof(Packet));
 
       Packet *packet = (Packet *)&packetBuffer;
@@ -176,7 +174,7 @@ namespace Comms
     emitPacket(packet, 170);
   }
 
-  void emitPacket(Packet *packet, uint8_t end)
+  void emitPacketToGS(Packet *packet)
   {
     // add timestamp to struct
     uint32_t timestamp = millis();
@@ -190,20 +188,69 @@ namespace Comms
     packet->checksum[0] = checksum & 0xFF;
     packet->checksum[1] = checksum >> 8;
 
+    Udp.beginPacket(IPAddress(10, 0, 0, 169), 42069);
+    Udp.write(packet->id);
+    Udp.write(packet->len);
+    Udp.write(packet->timestamp, 4);
+    Udp.write(packet->checksum, 2);
+    Udp.write(packet->data, packet->len);
+    Udp.endPacket();
+
+    Udp.beginPacket(IPAddress(10, 0, 0, 170), 42070);
+    Udp.write(packet->id);
+    Udp.write(packet->len);
+    Udp.write(packet->timestamp, 4);
+    Udp.write(packet->checksum, 2);
+    Udp.write(packet->data, packet->len);
+    Udp.endPacket();
+
+    Udp.beginPacket(IPAddress(10, 0, 0, 171), 42071);
+    Udp.write(packet->id);
+    Udp.write(packet->len);
+    Udp.write(packet->timestamp, 4);
+    Udp.write(packet->checksum, 2);
+    Udp.write(packet->data, packet->len);
+    Udp.endPacket();
+
+  }
+
+  void finishPacket(Packet *packet)
+  {
+    // add timestamp to struct
+    uint32_t timestamp = millis();
+    packet->timestamp[0] = timestamp & 0xFF;
+    packet->timestamp[1] = (timestamp >> 8) & 0xFF;
+    packet->timestamp[2] = (timestamp >> 16) & 0xFF;
+    packet->timestamp[3] = (timestamp >> 24) & 0xFF;
+
+    // calculate and append checksum to struct
+    uint16_t checksum = computePacketChecksum(packet);
+    packet->checksum[0] = checksum & 0xFF;
+    packet->checksum[1] = checksum >> 8;
+  }
+
+  void emitPacket(Packet *packet, uint8_t end)
+  {
+    finishPacket(packet);
+
+
+    Udp.beginPacket(IPAddress(10, 0, 0, end), port);
+    Udp.write(packet->id);
+    Udp.write(packet->len);
+    Udp.write(packet->timestamp, 4);
+    Udp.write(packet->checksum, 2);
+    Udp.write(packet->data, packet->len);
+    Udp.endPacket();
+  }
+
+  void emitPacket(Packet *packet, uint8_t end, uint8_t port)
+  {
+    finishPacket(packet);
+
     for (commFunction func : emitterList)
     {
       func(*packet, Udp.remoteIP()[3]);
     }
-
-    // Send over serial, but disable if in debug mode
-    // #ifndef DEBUG_MODE
-    // Serial.write(packet->id);
-    // Serial.write(packet->len);
-    // Serial.write(packet->timestamp, 4);
-    // Serial.write(packet->checksum, 2);
-    // Serial.write(packet->data, packet->len);
-    // Serial.write('\n');
-    // #endif
 
     Udp.beginPacket(IPAddress(10, 0, 0, end), port);
     Udp.write(packet->id);
