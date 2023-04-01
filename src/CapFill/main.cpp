@@ -49,7 +49,7 @@ void setup()
   //samhitag3 testing slower baud rate
   // Serial.begin(9600);
   // samhitag3 commented out
-  Serial1.begin(921600);
+  Serial1.set
 
   Wire.begin();
   _capSens = FDC2214();
