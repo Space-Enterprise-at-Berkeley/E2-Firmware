@@ -12,8 +12,8 @@
 
 #define STATUS_LED 34
 #define TEMP_PIN 1
-#define EN_485 20 // switch between transmit and receive
-#define TE_485 19 // terminate enable
+// #define EN_485 20 // switch between transmit and receive
+// #define TE_485 19 // terminate enable
 
 FDC2214 _capSens;
 TMP236 _tempSens = TMP236(TEMP_PIN);
@@ -47,27 +47,27 @@ void setup()
 {
   Serial.begin(115200);
   //samhitag3 testing slower baud rate
-  // Serial.begin(9600);
+  Serial1.begin(115200);
+  Serial1.setPins(17, 18);
   // samhitag3 commented out
-  Serial1.set
 
-  Wire.begin();
+  Wire.begin(8, 9, 100000);
   _capSens = FDC2214();
   _capSens.init(&Wire, 0x2A);
 
   _tempSens.init();
 
-  pinMode(EN_485, OUTPUT);
-  pinMode(TE_485, OUTPUT);
+  // pinMode(EN_485, OUTPUT);
+  // pinMode(TE_485, OUTPUT);
   pinMode(STATUS_LED, OUTPUT);
 
-  digitalWrite(EN_485, LOW); // put in receive mode by default
-  #ifdef FUEL
-  digitalWrite(TE_485, HIGH);
-  #else
-  digitalWrite(TE_485, LOW);
-  #endif
-  digitalWrite(STATUS_LED, LOW);
+  // digitalWrite(EN_485, LOW); // put in receive mode by default
+  // #ifdef FUEL
+  // digitalWrite(TE_485, HIGH);
+  // #else
+  // digitalWrite(TE_485, LOW);
+  // #endif
+  // digitalWrite(STATUS_LED, LOW);
 
   #ifdef FUEL
   delay(50);
@@ -121,21 +121,25 @@ void loop()
     DEBUG("\n");
     DEBUG_FLUSH();
     lastTransmissionTime = lastTransmissionTime + timeBetweenTransmission;
-    digitalWrite(EN_485, HIGH);
-    Comms::emitPacket(&capPacket);
+    // Comms::emitPacket(&capPacket);
+    Serial1.write(capPacket.id);
+    Serial1.write(capPacket.len);
+    Serial1.write(capPacket.timestamp, 4);
+    Serial1.write(capPacket.checksum, 2);
+    Serial1.write(capPacket.data, capPacket.len);
+    Serial1.write('\n');
     Serial1.flush();
-    digitalWrite(EN_485, LOW);
   }
 
-  #ifdef FUEL
-  if(Serial1.available() && millis() - lastTransmissionTime >= timeBetweenTransmission/4) {
-    DEBUG("R\n");
-    lastTransmissionTime = millis() - timeBetweenTransmission/2;
-    while(Serial1.available()) {
-      Serial1.read();
-    }
-  }
-  #endif
+  // #ifdef FUEL
+  // if(Serial1.available() && millis() - lastTransmissionTime >= timeBetweenTransmission/4) {
+  //   DEBUG("R\n");
+  //   lastTransmissionTime = millis() - timeBetweenTransmission/2;
+  //   while(Serial1.available()) {
+  //     Serial1.read();
+  //   }
+  // }
+  // #endif
 
 
 

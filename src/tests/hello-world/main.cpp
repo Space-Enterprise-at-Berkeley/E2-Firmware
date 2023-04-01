@@ -21,26 +21,19 @@
 // }
 
 #include <Arduino.h>
-#include <tusb.h>
 
 void setup() {
-  // Initialize TinyUSB
-  tusb_init();
-
-  // Wait for USB to be ready
-  while (!tud_ready()) {}
-
-  // Set up serial communication
+  pinMode(34, OUTPUT);
+  pinMode(35, OUTPUT);
   Serial.begin(115200);
-  while (!Serial) {
-    ; // wait for serial port to connect
-  }
 }
 
 void loop() {
-  Serial.println("Hello World");
+  Serial.println("test");
+  digitalWrite(34, HIGH);
+  digitalWrite(35, LOW);
   delay(1000);
-
-  // Process any pending USB events
-  tud_task();
+  digitalWrite(34, LOW);
+  digitalWrite(35, HIGH);
+  delay(1000);
 }
