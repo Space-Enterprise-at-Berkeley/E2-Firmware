@@ -19,11 +19,20 @@ namespace Packets {
 
 
 
+    uint8_t ac1_ip = 11;
+    uint8_t ac2_ip = 12;
+    uint8_t ACTUATE_IP = 100;
+    uint32_t lastTelemetry = 0;
+
     void sendTelemetry(
-        float upstreamPressure1,
-        float upstreamPressure2,
-        float downstreamPressure1,
-        float downstreamPressure2,
+        float filteredUpstreamPressure1,
+        float filteredUpstreamPressure2,
+        float filteredDownstreamPressure1,
+        float filteredDownstreamPressure2,
+        float rawUpstreamPressure1,
+        float rawUpstreamPressure2,
+        float rawDownstreamPressure1,
+        float rawDownstreamPressure2,
         float encoderAngle,
         float angleSetpoint,
         float pressureSetpoint,
@@ -33,11 +42,21 @@ namespace Packets {
         float pressureControlD
     ) {
 
-        Comms::Packet packet = {.id = TELEMETRY_ID};
-        Comms::packetAddFloat(&packet, upstreamPressure1);
-        Comms::packetAddFloat(&packet, upstreamPressure2);
-        Comms::packetAddFloat(&packet, downstreamPressure1);
-        Comms::packetAddFloat(&packet, downstreamPressure2);
+        //pressure data
+        Comms::Packet packet = {.id = PT_TELEMETRY_ID, .len=0};
+        Comms::packetAddFloat(&packet, filteredUpstreamPressure1);
+        Comms::packetAddFloat(&packet, filteredUpstreamPressure2);
+        Comms::packetAddFloat(&packet, filteredDownstreamPressure1);
+        Comms::packetAddFloat(&packet, filteredDownstreamPressure2);
+        Comms::packetAddFloat(&packet, rawUpstreamPressure1);
+        Comms::packetAddFloat(&packet, rawUpstreamPressure2);
+        Comms::packetAddFloat(&packet, rawDownstreamPressure1);
+        Comms::packetAddFloat(&packet, rawDownstreamPressure2);
+        Comms::emitPacket(&packet);
+
+        //misc data
+        packet.id = MISC_TELEMETRY_ID;
+        packet.len = 0;
         Comms::packetAddFloat(&packet, encoderAngle);
         Comms::packetAddFloat(&packet, angleSetpoint);
         Comms::packetAddFloat(&packet, pressureSetpoint);
@@ -46,9 +65,20 @@ namespace Packets {
         Comms::packetAddFloat(&packet, pressureControlI);
         Comms::packetAddFloat(&packet, pressureControlD);
         Comms::emitPacket(&packet);
+
         sendTemperatures();
         sendPhaseCurrents();
         sendLimitSwitches();
+
+        if (millis() - lastTelemetry > 2000) {
+            lastTelemetry = millis();
+            Serial.println("Upstream Pressure 1: filtered" + String(filteredUpstreamPressure1) + ", raw" + String(rawUpstreamPressure1));
+            Serial.println("Upstream Pressure 2: filtered" + String(filteredUpstreamPressure2) + ", raw" + String(rawUpstreamPressure2));
+            Serial.println("Downstream Pressure 1: filtered" + String(filteredDownstreamPressure1) + ", raw" + String(rawDownstreamPressure1));
+            Serial.println("Downstream Pressure 2: filtered" + String(filteredDownstreamPressure2) + ", raw" + String(rawDownstreamPressure2));
+            Serial.println("Encoder Angle: " + String(encoderAngle) + ", Setpoint: " + String(angleSetpoint) + ", Pressure Setpoint: " + String(pressureSetpoint) + ", Motor Power: " + String(motorPower));
+            Serial.println("Pressure Control P: " + String(pressureControlP) + ", I: " + String(pressureControlI) + ", D: " + String(pressureControlD));
+        }
         // Serial.printf("packet sent\n");
     }
 

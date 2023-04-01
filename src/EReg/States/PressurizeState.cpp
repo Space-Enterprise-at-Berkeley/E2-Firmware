@@ -60,6 +60,10 @@ namespace StateMachine {
         //send data to AC
         if (TimeUtil::timeInterval(lastPrint_, micros()) > Config::telemetryInterval) {
             Packets::sendTelemetry(
+                filteredUpstreamPT1,
+                filteredUpstreamPT2,
+                filteredDownstreamPT1,
+                filteredDownstreamPT2,
                 rawUpstreamPT1,
                 rawUpstreamPT2,
                 rawDownstreamPT1,

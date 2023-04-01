@@ -106,6 +106,10 @@ namespace StateMachine {
         //send data to AC
         if (TimeUtil::timeInterval(lastPrint_, micros()) > Config::telemetryInterval) {
             Packets::sendTelemetry(
+                filteredUpstreamPT1,
+                filteredUpstreamPT2,
+                filteredDownstreamPT1,
+                filteredDownstreamPT2,
                 rawUpstreamPT1,
                 rawUpstreamPT2,
                 rawDownstreamPT1,
@@ -176,6 +180,10 @@ namespace StateMachine {
         // send data to AC
         if (TimeUtil::timeInterval(lastPrint_, micros()) > Config::telemetryInterval) {
             Packets::sendTelemetry(
+                filteredUpstreamPT1,
+                filteredUpstreamPT2,
+                filteredDownstreamPT1,
+                filteredDownstreamPT2,
                 rawUpstreamPT1,
                 rawUpstreamPT2,
                 rawDownstreamPT1,
@@ -230,6 +238,10 @@ namespace StateMachine {
                 float downstreamPsi = Ducers::chooseDucerRead(downstreamPT1, downstreamPT2);
 
                 Packets::sendTelemetry(
+                    filteredUpstreamPT1,
+                    filteredUpstreamPT2,
+                    filteredDownstreamPT1,
+                    filteredDownstreamPT2,
                     rawUpstreamPT1,
                     rawUpstreamPT2,
                     rawDownstreamPT1,
@@ -291,6 +303,10 @@ namespace StateMachine {
                 float downstreamPsi = Ducers::chooseDucerRead(downstreamPT1, downstreamPT2);
 
                 Packets::sendTelemetry(
+                    filteredUpstreamPT1,
+                    filteredUpstreamPT2,
+                    filteredDownstreamPT1,
+                    filteredDownstreamPT2,
                     rawUpstreamPT1,
                     rawUpstreamPT2,
                     rawDownstreamPT1,

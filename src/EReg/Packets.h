@@ -4,22 +4,27 @@
 
 namespace Packets {
 
-    const uint8_t TELEMETRY_ID = 1;
-    const uint8_t CONFIG_ID = 2;
-    const uint8_t DIAGNOSTIC_ID = 3;
-    const uint8_t STATE_TRANSITION_FAIL_ID = 4;
-    const uint8_t FLOW_STATE = 5;
-    const uint8_t LIMIT_SWITCHES = 6;
-    const uint8_t PHASE_CURRENTS = 7;
-    const uint8_t TEMPS = 8;
+    const uint8_t PT_TELEMETRY_ID = 1;
+    const uint8_t MISC_TELEMETRY_ID = 2;
+    const uint8_t CONFIG_ID = 3;
+    const uint8_t DIAGNOSTIC_ID = 4;
+    const uint8_t STATE_TRANSITION_FAIL_ID = 5;
+    const uint8_t FLOW_STATE = 6;
+    const uint8_t LIMIT_SWITCHES = 7;
+    const uint8_t PHASE_CURRENTS = 8;
+    const uint8_t TEMPS = 9;
     const uint8_t ABORT_ID = 133;
     const uint8_t OVERCURRENT_ID = 10;
 
     void sendTelemetry(
-        float upstreamPressure1,
-        float upstreamPressure2,
-        float downstreamPressure1,
-        float downstreamPressure2,
+        float filteredUpstreamPressure1,
+        float filteredUpstreamPressure2,
+        float filteredDownstreamPressure1,
+        float filteredDownstreamPressure2,
+        float rawUpstreamPressure1,
+        float rawUpstreamPressure2,
+        float rawDownstreamPressure1,
+        float rawDownstreamPressure2,
         float encoderAngle,
         float angleSetpoint,
         float pressureSetpoint,
