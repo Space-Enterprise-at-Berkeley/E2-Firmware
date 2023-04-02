@@ -1,8 +1,9 @@
-//to do
+//to do;
 //fix comms stuff
 //have correct pin values, top/bottom values
 
 #include "CPStrip.h"
+#include <Arduino.h>
 
 #define LOX_BOT 112
 #define LOX_TOP 137
@@ -19,7 +20,7 @@ CRGB lox_color(0, 50, 98);
 CRGB fuel_color(100, 60, 0);
 
 CRGB loxLed[NUM_LEDS];
-CRGB fuelLed[NUM_LEDS];gt
+CRGB fuelLed[NUM_LEDS];
 CRGB leds2[NUM_LEDS2];
 
 void loxLedPacketHandler(Comms::Packet tmp);
@@ -32,9 +33,9 @@ void setup()
   FastLED.addLeds<NEOPIXEL, FUEL_DATA_PIN>(fuelLed, NUM_LEDS);
   FastLED.addLeds<NEOPIXEL, DATA_PIN2>(leds2, NUM_LEDS2);
 
-  Comms::initComms();
-  Comms::registerCallback(221, loxLedPacketHandler);
-  Comms::registerCallback(222, fuelLedPacketHandler);
+  //Comms::initComms();
+  Comms::registerCallback(21, loxLedPacketHandler);
+  Comms::registerCallback(22, fuelLedPacketHandler);
 }
 
 unsigned long previousMillis = 0;
