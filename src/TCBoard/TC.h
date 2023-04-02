@@ -18,4 +18,5 @@ namespace TC {
 
   void setAbort(bool on);
   void setAbort(bool on, uint32_t temp, uint32_t abortTime);
+  uint32_t disableAbortTask();
 }

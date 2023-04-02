@@ -38,6 +38,11 @@ namespace TC {
     abortOn = on;
   }
 
+  uint32_t disableAbortTask() {
+    abortOn = false;
+    return 0;
+  }
+
   float sample(uint8_t index) {
     if (abortOn){
       float temp = tcs[index].readCelsius();
