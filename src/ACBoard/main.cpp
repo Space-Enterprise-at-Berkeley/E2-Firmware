@@ -67,7 +67,7 @@ uint32_t launchDaemon(){
           Serial.println("launch step 0, igniter on");
           AC::actuate(IGNITER, AC::ON, 0);
           launchStep++;
-          return 2000 * 1000;
+          return 1000 * 1000;
         } else {
           Serial.println("launch step 0, not hotfire, skip");
           launchStep++;
