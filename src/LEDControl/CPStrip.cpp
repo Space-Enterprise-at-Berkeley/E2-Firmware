@@ -23,8 +23,8 @@ CRGB loxLed[NUM_LEDS];
 CRGB fuelLed[NUM_LEDS];
 CRGB leds2[NUM_LEDS2];
 
-void loxLedPacketHandler(Comms::Packet tmp);
-void fuelLedPacketHandler(Comms::Packet tmp);
+void loxLedPacketHandler(Comms::Packet tmp, uint8_t ip);
+void fuelLedPacketHandler(Comms::Packet tmp, uint8_t ip);
 
 void setup()
 {
