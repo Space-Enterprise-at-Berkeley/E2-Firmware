@@ -19,20 +19,24 @@ namespace ADS {
     //painfully determined through experimentation and datasheets, may not be completely accurate
     //theory gave 3896
 
-    /*
-    const int accumulatorSize = 100;
-    long accumulator1[accumulatorSize];
-    long accumulator2[accumulatorSize];
-    long accumulator3[accumulatorSize];
-    long accumulator4[accumulatorSize];
-    int accumulatorIndex = 0;
-    */
+    
+    // const int accumulatorSize = 100;
+    // float accumulator[4][accumulatorSize];
+    // int accumulatorIndex=0;
+    
 
 
     void refreshReadings(){
         for(int i = 0 ; i < ADCsize; i++){
             int ErrorValue = adcs[i].getValue(data[i]);
             lbs[i] = multiplier[i] * (data[i]*adc_to_lbs + offset[i]);
+            //add to accumulator instead
+            // accumulator[i][accumulatorIndex] = multiplier[i] * (data[i]*adc_to_lbs + offset[i]);
+            // double sum = 0;
+            // for(int j = 0; j < accumulatorSize; j++){
+            //     sum += accumulator[i][j];
+            // }
+            // lbs[i] = sum / (double) accumulatorSize;
             if(ErrorValue != 1){//if we fail to read
                 // Serial.println("failed to fetch loadcell data for " + String(i) + "th loadcell. error number: " + String(ErrorValue));
             }else{
@@ -40,6 +44,10 @@ namespace ADS {
             }; //write the new value into data[i]
             
         }
+        // accumulatorIndex++;
+        // if(accumulatorIndex >= accumulatorSize){
+        //     accumulatorIndex = 0;
+        // }
     }
 
     float zeroChannel(uint8_t i){
@@ -55,7 +63,8 @@ namespace ADS {
     }
 
     float calChannel(uint8_t i, float value){
-        multiplier[i] *= (value) / lbs[i];
+        Serial.println("read: " + String(lbs[i]) + " lbs, calibrating to " + String(value) + " lbs");
+        multiplier[i] *= (float) value / (float)lbs[i];
         Serial.println("calibrated channel multiplier" + String(i) + " to " + String(multiplier[i]));
         if(persistentCalibration){
             //EEPROM takes 3.3 ms, we need different addresses for each channel. A float uses 4 bytes.
@@ -91,6 +100,20 @@ namespace ADS {
         return;
     }
 
+    void resetCal(Comms::Packet packet, uint8_t ip){
+        uint8_t channel = Comms::packetGetUint8(&packet, 0);
+        offset[channel] = 0;
+        multiplier[channel] = 1;
+        if(persistentCalibration){
+            //EEPROM takes 3.3 ms, we need different addresses for each channel. A float uses 4 bytes.
+            EEPROM.begin(ADCsize*2*sizeof(float));
+            EEPROM.put(channel*sizeof(float),offset[channel]);
+            EEPROM.put((channel+ADCsize)*sizeof(float),multiplier[channel]);
+            EEPROM.end();
+        }
+        Serial.println("reset calibration for channel " + String(channel));
+    }
+
     void init(){
         for(int i = 0; i < ADCsize; i++) {
             adcs[i].init(clockPins[i],dataPins[i]);
@@ -99,6 +122,8 @@ namespace ADS {
         Comms::registerCallback(ZERO_CMD, onZeroCommand);
         Comms::registerCallback(CAL_CMD, onCalCommand);
         Comms::registerCallback(SEND_CAL, sendCal);
+        Comms::registerCallback(RESET_CAL, resetCal);
+
 
         //load offset from flash or set to 0
         if (persistentCalibration){
