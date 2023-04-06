@@ -60,26 +60,12 @@ uint32_t print_task() {
   return 1000 * 1000;
 }
 
-// TC abort triggers when over 200 C for 0.5 seconds, and only during a hotfire
-uint32_t maxTemp = 200;
+// TC abort triggers when over 250 C for 0.5 seconds, and only during a hotfire
+uint32_t maxTemp = 250;
 uint32_t abortTime = 500;
 
-void onFlowStart(Comms::Packet packet, uint8_t ip) {
-  Mode systemMode = (Mode)Comms::packetGetUint8(&packet, 0);
-  if (systemMode != HOTFIRE) {
-    return;
-  }
-  //start TC abort check when hotfire starts
-  TC::setAbort(true, maxTemp, abortTime);
-
-}
-void onAbortOrEndFlow(Comms::Packet packet, uint8_t ip){
-  //stop TC abort check when abort or endflow is received
-  TC::setAbort(false);
-}
-
 Task taskTable[] = {
-  {Power::task_readSendPower,0,true},
+  {TC::disableAbortTask, 0, false},
   {LED_roll, 0, true},
   //{hello_packet, 0, true},
   {TC::task_sampleTCs, 0, true},
@@ -87,6 +73,24 @@ Task taskTable[] = {
 };
 
 #define TASK_COUNT (sizeof(taskTable) / sizeof (struct Task))
+
+void onFlowStart(Comms::Packet packet, uint8_t ip) {
+  Mode systemMode = (Mode)Comms::packetGetUint8(&packet, 0);
+  uint32_t length = Comms::packetGetUint32(&packet, 1);
+  if (systemMode != HOTFIRE) {
+    return;
+  }
+  //start TC abort check when hotfire starts
+  TC::setAbort(true, maxTemp, abortTime);
+  taskTable[0].enabled = true;
+  taskTable[0].nexttime = micros() + length * 1000;
+
+}
+void onAbortOrEndFlow(Comms::Packet packet, uint8_t ip){
+  //stop TC abort check when abort or endflow is received
+  TC::setAbort(false);
+  taskTable[0].enabled = false;
+}
 
 void setup() {
   // setup stuff here

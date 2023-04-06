@@ -207,8 +207,8 @@ void onAbort(Comms::Packet packet, uint8_t ip) {
       if(ID == AC1){
         //arm and close main valves   
         AC::actuate(FUEL_MAIN_VALVE, AC::OFF, 0);
-        AC::delayedActuate(LOX_MAIN_VALVE, AC::OFF, 0, 500);
-        AC::delayedActuate(ARM, AC::ON, 0, 100);
+        AC::actuate(LOX_MAIN_VALVE, AC::OFF, 0);
+        AC::actuate(ARM, AC::ON, 0);
         AC::delayedActuate(ARM, AC::OFF, 0, 2500);
         AC::delayedActuate(ARM_VENT, AC::ON, 0, 2550);
         AC::delayedActuate(ARM_VENT, AC::OFF, 0, 3000);
@@ -223,8 +223,8 @@ void onAbort(Comms::Packet packet, uint8_t ip) {
       if(ID == AC1){
         //arm and close main valves
         AC::actuate(FUEL_MAIN_VALVE, AC::OFF, 0);
-        AC::delayedActuate(LOX_MAIN_VALVE, AC::OFF, 0, 500);
-        AC::delayedActuate(ARM, AC::ON, 0, 100);
+        AC::actuate(LOX_MAIN_VALVE, AC::OFF, 0);
+        AC::actuate(ARM, AC::ON, 0);
         AC::delayedActuate(ARM, AC::OFF, 0, 2500);
         AC::delayedActuate(ARM_VENT, AC::ON, 0, 2550);
         AC::delayedActuate(ARM_VENT, AC::OFF, 0, 3000);
