@@ -1,34 +1,74 @@
-// //to do;
-// //fix comms stuff
 // //have correct pin values, top/bottom values
- //#include "CPStrip.h"
 
- #include <Arduino.h>
- #include <EspComms.h>
- #include <Common.h>
+#include <Arduino.h>
+#include <EspComms.h>
+#include <Common.h>
+#include "FastLED.h"
+#include <Arduino.h>
+
+const uint16_t NUM_LEDS = 270;
+const uint8_t DATA_PIN = 15;
+float lox_capval;
+float fuel_capval;
+CRGB leds[NUM_LEDS];
 
 
-void setup(){
-
-  Serial.begin(115200);
-
-  pinMode(17, OUTPUT);
-
-  digitalWrite(17, HIGH);
-  delay(3000);
-
-  Comms::init(15, 12, 13, 14, 18); 
-}
-
-void loop() {
-
+uint32_t helloWorld(){
   Comms::Packet hello = {.id = 3};
   Comms::emitPacketToGS(&hello);
-  delay(100);
-  Serial.println("hello");
-
-
+  return 100 * 1000;
 }
+
+uint16_t i = 0;
+
+uint32_t LEDTest(){
+  
+
+  // for (int i = 50; i < 1000; i++){
+  //   leds[i] = CRGB(255,0,0); 
+  //   Serial.println(i);
+  //   delay(1000);
+  // }
+
+  leds[i] = CRGB(0,255 - i,i);
+  i = (i + 1) % NUM_LEDS; 
+  FastLED.show(); 
+  Serial.println(i);
+  return 100 * 1000;
+}
+Task taskTable[] = {
+  //{task_example, 0, true},
+  //{helloWorld, 0, true},
+  {LEDTest, 0, true}
+};
+
+#define TASK_COUNT (sizeof(taskTable) / sizeof (struct Task))
+
+void setup() {
+  // setup stuff here
+  Serial.begin(115200);
+  Comms::init(); // takes care of Serial.begin()
+  FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
+  
+  while(1) {
+    // main loop here to avoid arduino overhead
+    for(uint32_t i = 0; i < TASK_COUNT; i++) { // for each task, execute if next time >= current time
+      uint32_t ticks = micros(); // current time in microseconds
+      if (taskTable[i].nexttime - ticks > UINT32_MAX / 2 && taskTable[i].enabled) {
+        uint32_t nextTime = taskTable[i].taskCall();
+        if (nextTime == 0){
+          taskTable[i].enabled = false;
+        }
+        else {
+        taskTable[i].nexttime = ticks + taskTable[i].taskCall();
+        }
+      }
+    }
+    Comms::processWaitingPackets();
+  }
+}
+
+void loop() {} // unused
 
 
 
@@ -39,11 +79,13 @@ void loop() {
 // #define FUEL_BOT 107
 // #define FUEL_TOP 157
 
-// #define NUM_LEDS 144
-// #define LOX_DATA_PIN 21
-// #define FUEL_DATA_PIN 17
-// #define NUM_LEDS2 300
-// #define DATA_PIN2 12
+// #define NUM_LEDS_TOTAL 144
+// #define DATA_PIN 15
+// #define NUM_LEDS_LOX
+// #define NUM_LEDS_FUEL
+
+// #define TANK_OFFSET 
+    //distance to bottom of fuel = offset + lox length
 
 // CRGB lox_color(0, 50, 98);
 // CRGB fuel_color(100, 60, 0);
