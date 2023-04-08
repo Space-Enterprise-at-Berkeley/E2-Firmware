@@ -390,17 +390,22 @@ unsigned long lastExecutedMillis = 0; // create a variable to save the last exec
 KalmanFilter filter1(Config::transition, Config::transition_dt, Config::state_noise, Config::obs, Config::obs_noise);
 
 void setup(){
-  Serial.begin(115200);
+  // Serial.begin(115200);
 //   Serial1.begin(GPSBaud, SERIAL_8N1, TXPin, RXPin);
 //   spi.begin(SCK, MISO, MOSI, CS);
 //   init_gps();
-  Wire.begin(1,2);
+  // Wire.begin(1,2);
 
 //   if (!SD.begin(CS,spi,80000000)) {
 //     Serial.println("Card Mount Failed");
 //     return;
 //   }    
 
+  Serial.begin(921600);
+  Serial.println("Initializing....");
+  Wire.setClock(400000);
+  Wire.setPins(1,2);
+  Wire.begin();
 
   
   if (!bmp.begin_I2C(0x76)) {
