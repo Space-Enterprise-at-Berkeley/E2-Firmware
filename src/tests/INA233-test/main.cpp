@@ -4,7 +4,7 @@
 
 #include <INA233.h>
 
-INA233 ina(INA233_ADDRESS_41, Wire);
+INA233 ina(INA233_ADDRESS_45, Wire);
 float rShunt = 0.004;
 
 void setup(){

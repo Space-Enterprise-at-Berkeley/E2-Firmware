@@ -20,7 +20,7 @@
 #include <Adafruit_Sensor.h>
 #include <Wire.h>
 
-#define LSM6DS_I2CADDR_DEFAULT 0x6A ///< LSM6DS default i2c address
+#define LSM6DS_I2CADDR_DEFAULT 0x6B ///< LSM6DS default i2c address
 
 #define LSM6DS_FUNC_CFG_ACCESS 0x1 ///< Enable embedded functions register
 #define LSM6DS_INT1_CTRL 0x0D      ///< Interrupt control for INT 1
