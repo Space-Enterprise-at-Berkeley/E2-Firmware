@@ -6,7 +6,7 @@
 #include "FastLED.h"
 #include <Arduino.h>
 
-const uint16_t NUM_LEDS = 270;
+const uint16_t NUM_LEDS = 500;
 const uint8_t DATA_PIN = 15;
 float lox_capval;
 float fuel_capval;
@@ -23,32 +23,96 @@ uint16_t i = 0;
 
 uint32_t LEDTest(){
   
-
-  // for (int i = 50; i < 1000; i++){
-  //   leds[i] = CRGB(255,0,0); 
-  //   Serial.println(i);
-  //   delay(1000);
-  // }
-
   leds[i] = CRGB(0,255 - i,i);
   i = (i + 1) % NUM_LEDS; 
   FastLED.show(); 
   Serial.println(i);
-  return 100 * 1000;
+  return 50 * 1000;
 }
+
+uint8_t r = 0;
+uint32_t rainbowMode(){
+  for (uint16_t i = 0; i < NUM_LEDS; i++){
+    leds[i] = CHSV(r+i, 255, 255);
+  }
+  r++;
+  FastLED.show();
+  return 40 * 1000;
+}
+
+float lox_lowerLimit = 100;
+float lox_upperLimit = 180;
+float fuel_lowerLimit = 100;
+float fuel_upperLimit = 180;
+bool rIncreasing = true;
+uint32_t fillMode(){
+  for (uint16_t i = 0; i < NUM_LEDS/2; i++){
+    if (i < NUM_LEDS * (lox_capval - lox_lowerLimit) / (lox_upperLimit - lox_lowerLimit)){
+      //hover around shades of blue
+      leds[i] = CHSV(180 + r*100/(float)255, 255, 255);
+    }
+    else {
+      leds[i] = CRGB(255,0,0);
+    }
+  }
+  for (uint16_t i = NUM_LEDS/2; i < NUM_LEDS; i++){
+    if (i < NUM_LEDS * (fuel_capval - fuel_lowerLimit) / (fuel_upperLimit - fuel_lowerLimit)){
+      //hover around shades of green
+      leds[i] = CHSV(60 + r*100/(float)255, 255, 255);
+    }
+    else {
+      leds[i] = CRGB(255,0,0);
+    }
+  }
+  if (rIncreasing){
+    r++;
+    if (r == 255){
+      rIncreasing = false;
+    }
+  }
+  else {
+    r--;
+    if (r == 0){
+      rIncreasing = true;
+    }
+  }
+  FastLED.show();
+  return 40 * 1000;
+}
+
+void updateCapVal(Comms::Packet pckt, uint8_t ip){
+  if (ip == 72){
+    lox_capval = Comms::packetGetFloat(&pckt, 0);
+  }
+  else if (ip == 42){
+    fuel_capval = Comms::packetGetFloat(&pckt, 0);
+  }
+}
+
 Task taskTable[] = {
-  //{task_example, 0, true},
-  //{helloWorld, 0, true},
-  {LEDTest, 0, true}
+  {rainbowMode, 0, true},
+  {fillMode, 0, false},
 };
 
 #define TASK_COUNT (sizeof(taskTable) / sizeof (struct Task))
+
+void changeMode(Comms::Packet pckt, uint8_t ip){
+  uint8_t mode = Comms::packetGetUint8(&pckt, 0);
+  for (uint32_t i = 0; i < TASK_COUNT; i++){
+    taskTable[i].enabled = false;
+  }
+  taskTable[mode].enabled = true;
+}
 
 void setup() {
   // setup stuff here
   Serial.begin(115200);
   Comms::init(); // takes care of Serial.begin()
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
+  FastLED.setBrightness(255);
+
+  Comms::registerCallback(21, updateCapVal);
+  Comms::registerCallback(100, changeMode);
   
   while(1) {
     // main loop here to avoid arduino overhead
