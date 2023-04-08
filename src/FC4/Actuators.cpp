@@ -66,10 +66,6 @@ namespace Actuators {
     void sampleActuator(Actuator *actuator) {
         actuator->current = actuator->muxChannel->readChannel1();
         actuator->voltage = actuator->muxChannel->readChannel2();
-        DEBUG("Actuator current: ");
-        DEBUG(actuator->current);
-        DEBUG("\n");
-        DEBUG_FLUSH();
 
         if (actuator->current > OClimit){
             switch(actuator->actuatorID){
@@ -88,7 +84,7 @@ namespace Actuators {
         Comms::packetAddUint8(&tmp, actuator->state);
         Comms::packetAddFloat(&tmp, actuator->voltage);
         Comms::packetAddFloat(&tmp, actuator->current);
-        Comms::emitPacket(&tmp);
+        Comms::emitPacketToGS(&tmp);
     }
 
 

@@ -77,8 +77,8 @@ namespace ChannelMonitor {
             Comms::packetAddFloat(&contPacket, cont);
             Comms::packetAddFloat(&currPacket, curr);
         }  
-        Comms::emitPacket(&currPacket);
-        Comms::emitPacket(&contPacket);
+        Comms::emitPacketToGS(&currPacket);
+        Comms::emitPacketToGS(&contPacket);
         return cmUpdatePeriod;
     }
 

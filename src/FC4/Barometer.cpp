@@ -24,16 +24,8 @@ namespace Barometer {
         Comms::packetAddFloat(&baroPacket, baroAltitude - altitudeOffset);
         Comms::packetAddFloat(&baroPacket, baroPressure);
         Comms::packetAddFloat(&baroPacket, baroTemperature);
-        Comms::emitPacket(&baroPacket);
-        Comms::emitPacket(&baroPacket, &RADIO_SERIAL, "\r\n\n", 3);
-        DEBUG("Barometer Altitude: ");
-        DEBUG(baroAltitude - altitudeOffset);
-        DEBUG("     Barometer Pressure: ");
-        DEBUG(baroPressure);
-        DEBUG("     Barometer Temperature: ");
-        DEBUG(baroTemperature);
-        DEBUG("\n");
-        DEBUG_FLUSH();
+        Comms::emitPacketToGS(&baroPacket);
+        Comms::emitPacketToGS(&baroPacket, &RADIO_SERIAL, "\r\n\n", 3);
 
         return bmUpdatePeriod;
     }
