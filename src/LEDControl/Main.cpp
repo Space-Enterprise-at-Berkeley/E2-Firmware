@@ -8,6 +8,15 @@
 
 const uint16_t NUM_LEDS = 500;
 const uint8_t DATA_PIN = 15;
+
+const uint8_t TANK_LENGTH = 58;
+const uint8_t TANK_SEPERATION = 15;
+const uint8_t TANK_END = TANK_LENGTH + TANK_SEPERATION + TANK_LENGTH;
+
+CRGB lox_color(0, 50, 98);
+CRGB fuel_color(100, 60, 0);
+
+
 float lox_capval;
 float fuel_capval;
 CRGB leds[NUM_LEDS];
@@ -23,7 +32,7 @@ uint16_t i = 0;
 
 uint32_t LEDTest(){
   
-  leds[i] = CRGB(0,255 - i,i);
+  leds[i] = CRGB(0,255,0);
   i = (i + 1) % NUM_LEDS; 
   FastLED.show(); 
   Serial.println(i);
@@ -40,28 +49,34 @@ uint32_t rainbowMode(){
   return 40 * 1000;
 }
 
-float lox_lowerLimit = 100;
+float lox_lowerLimit = 101;
 float lox_upperLimit = 180;
-float fuel_lowerLimit = 100;
+float fuel_lowerLimit = 101;
 float fuel_upperLimit = 180;
 bool rIncreasing = true;
 uint32_t fillMode(){
-  for (uint16_t i = 0; i < NUM_LEDS/2; i++){
-    if (i < NUM_LEDS * (lox_capval - lox_lowerLimit) / (lox_upperLimit - lox_lowerLimit)){
+  for (uint16_t i = 0; i < TANK_LENGTH; i++){
+    if (i < TANK_LENGTH * (lox_capval - lox_lowerLimit) / (lox_upperLimit - lox_lowerLimit)){
       //hover around shades of blue
-      leds[i] = CHSV(180 + r*100/(float)255, 255, 255);
+      //leds[i] = CHSV(180 + r*100/(float)255, 255, 255);
+      leds[i] = lox_color;
     }
     else {
-      leds[i] = CRGB(255,0,0);
+      //leds[i] = CRGB(255,0,0);
+      leds[i] = CRGB(0,0,0);
     }
   }
-  for (uint16_t i = NUM_LEDS/2; i < NUM_LEDS; i++){
-    if (i < NUM_LEDS * (fuel_capval - fuel_lowerLimit) / (fuel_upperLimit - fuel_lowerLimit)){
+  for (uint16_t i = TANK_LENGTH + TANK_SEPERATION; i < TANK_END; i++){
+    if (i < TANK_LENGTH * (fuel_capval - fuel_lowerLimit) / (fuel_upperLimit - fuel_lowerLimit) + TANK_LENGTH + TANK_SEPERATION){
       //hover around shades of green
-      leds[i] = CHSV(60 + r*100/(float)255, 255, 255);
+      //leds[i] = CHSV(60 + r*100/(float)255, 255, 255);
+      leds[i] = fuel_color;
+      
     }
     else {
-      leds[i] = CRGB(255,0,0);
+      //leds[i] = CRGB(255,0,0);
+      leds[i] = CRGB(0,0,0);
+      
     }
   }
   if (rIncreasing){
@@ -80,18 +95,34 @@ uint32_t fillMode(){
   return 40 * 1000;
 }
 
-void updateCapVal(Comms::Packet pckt, uint8_t ip){
-  if (ip == 72){
-    lox_capval = Comms::packetGetFloat(&pckt, 0);
-  }
-  else if (ip == 42){
+void updateLoxCapVal(Comms::Packet pckt, uint8_t ip){
+   
+     lox_capval = Comms::packetGetFloat(&pckt, 0);
+     Serial.println(lox_capval);
+   }
+
+  void updateFuelCapVal(Comms::Packet pckt, uint8_t ip){
+  
     fuel_capval = Comms::packetGetFloat(&pckt, 0);
+    Serial.println(fuel_capval);
   }
-}
+
+
+// void updateCapVal(Comms::Packet pckt, uint8_t ip){
+//   if (ip == 72){
+//     lox_capval = Comms::packetGetFloat(&pckt, 0);
+//     Serial.println(lox_capval);
+//   }
+//   else if (ip == 42){
+//     fuel_capval = Comms::packetGetFloat(&pckt, 0);
+//     Serial.println(fuel_capval);
+//   }
+// }
 
 Task taskTable[] = {
-  {rainbowMode, 0, true},
-  {fillMode, 0, false},
+  {rainbowMode, 0, false},
+  {fillMode, 0, true},
+  {LEDTest, 0, false},
 };
 
 #define TASK_COUNT (sizeof(taskTable) / sizeof (struct Task))
@@ -111,7 +142,8 @@ void setup() {
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
   FastLED.setBrightness(255);
 
-  Comms::registerCallback(21, updateCapVal);
+  Comms::registerCallback(21, updateLoxCapVal);
+  Comms::registerCallback(22, updateFuelCapVal);
   Comms::registerCallback(100, changeMode);
   
   while(1) {
