@@ -2,7 +2,6 @@
 #include <SPI.h>
 #include <EthernetUdp.h>
 #include <Ethernet.h>
-
 int count;
 EthernetUDP Udp;
 byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0x99};
@@ -13,8 +12,13 @@ int port = 42069;
 void setup()
 {
   Serial.begin(921600);
+  pinMode(39, OUTPUT);
+  // pinMode(8, INPUT);
+  // pinMode(9, OUTPUT);
+  // pinMode(7, OUTPUT);
+  pinMode(35, INPUT);
   Ethernet.init(39);
-  Ethernet.begin((uint8_t *)mac, ip, 37, 36, 38);
+  Ethernet.begin((uint8_t *)mac, ip, 37, 36, 38, 35);
   Udp.begin(port);
 
   Udp.beginPacket(groundStation1, port);
