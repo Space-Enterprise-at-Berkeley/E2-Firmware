@@ -4,7 +4,7 @@
 
 // Replace these values with the correct ones for your I2C device
 const byte DEVICE_ADDRESS = 0x76; // I2C device address
-const byte REGISTER_ADDRESS = 0x00; // Register address to read from
+const byte REGISTER_ADDRESS = 0x04; // Register address to read from
 
 void setup() {
   Serial.begin(921600);
