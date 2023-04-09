@@ -49,10 +49,10 @@ uint32_t rainbowMode(){
   return 40 * 1000;
 }
 
-float lox_lowerLimit = 101;
-float lox_upperLimit = 180;
-float fuel_lowerLimit = 101;
-float fuel_upperLimit = 180;
+float lox_lowerLimit = 150;
+float lox_upperLimit = 200;
+float fuel_lowerLimit = 150;
+float fuel_upperLimit = 200;
 bool rIncreasing = true;
 uint32_t fillMode(){
   for (uint16_t i = 0; i < TANK_LENGTH; i++){
@@ -95,6 +95,36 @@ uint32_t fillMode(){
   return 40 * 1000;
 }
 
+uint8_t lox_bottomLED = 0;
+uint8_t lox_topLED = 55;
+uint8_t fuel_bottomLED = 72;
+uint8_t fuel_topLED = 127;
+uint8_t s = 0;
+uint32_t combinedMode(){
+  for (uint16_t i = 0; i < NUM_LEDS; i++){
+    if (i >= lox_bottomLED && i <= lox_topLED){
+      if ((lox_capval-lox_lowerLimit)/(float)(lox_upperLimit-lox_lowerLimit) > (i-lox_bottomLED)/(float)(lox_topLED - lox_bottomLED)){
+        leds[i] = lox_color;
+      } else {
+        leds[i] = CRGB(255, 255, 255);
+      }
+    }
+    else if (i >= fuel_bottomLED && i <= fuel_topLED){
+      if ((fuel_capval - fuel_lowerLimit)/(float)(fuel_upperLimit-fuel_lowerLimit) > (i-fuel_bottomLED)/(float)(fuel_topLED - fuel_bottomLED)){
+        leds[i] = fuel_color;
+      } else {
+        leds[i] = CRGB(255, 255, 255);
+      }
+    }
+    else{
+      leds[i] = CHSV(s+i, 255, 255);
+    }
+  }
+  s++;
+  FastLED.show();
+  return 40 * 1000;
+}
+
 void updateLoxCapVal(Comms::Packet pckt, uint8_t ip){
    
      lox_capval = Comms::packetGetFloat(&pckt, 0);
@@ -121,8 +151,8 @@ void updateLoxCapVal(Comms::Packet pckt, uint8_t ip){
 
 Task taskTable[] = {
   {rainbowMode, 0, false},
-  {fillMode, 0, true},
-  {LEDTest, 0, false},
+  {fillMode, 0, false},
+  {combinedMode, 0, true},
 };
 
 #define TASK_COUNT (sizeof(taskTable) / sizeof (struct Task))
