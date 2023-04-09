@@ -18,9 +18,10 @@ enum Actuators {
   ARM = 3,
   LOX_MAIN_VALVE = 4,
   FUEL_MAIN_VALVE = 5,
+  HP_N2_FILL = 6, //red
 
   //AC2
-  N2_FILL = 0,
+  LP_N2_FILL = 0, 
   N2_VENT = 1,
   N2_FLOW = 2,
   N2_RQD = 3,
@@ -123,7 +124,7 @@ uint32_t launchDaemon(){
         AC::delayedActuate(ARM, AC::OFF, 0, 2000);
         AC::delayedActuate(ARM_VENT, AC::ON, 0, 2050);
         AC::delayedActuate(ARM_VENT, AC::OFF, 0, 2500);
-
+        AC::actuate(HP_N2_FILL,AC::RETRACT_FULLY, 0);
 
 
         //open lox and fuel gems via abort only to AC2
@@ -193,6 +194,7 @@ void onAbort(Comms::Packet packet, uint8_t ip) {
     case TANK_OVERPRESSURE:
       if(ID == AC1){
         //leave main valves in current state
+        AC::actuate(HP_N2_FILL,AC::RETRACT_FULLY, 0);
       } else if (ID == AC2){
         //open lox and fuel gems
         AC::actuate(LOX_GEMS, AC::ON, 0);
@@ -200,7 +202,9 @@ void onAbort(Comms::Packet packet, uint8_t ip) {
         //open lox and fuel vent rbvs
         //AC::actuate(LOX_VENT_RBV, AC::RETRACT_FULLY, 0);
         //AC::actuate(FUEL_VENT_RBV, AC::RETRACT_FULLY, 0);
-        AC::actuate(N2_FLOW, AC::RETRACT_FULLY, 0);
+        //close n2 flow and fill
+        AC::actuate(N2_FLOW,AC::RETRACT_FULLY, 0);
+        AC::actuate(LP_N2_FILL,AC::RETRACT_FULLY, 0);
       }
       break;
     case ENGINE_OVERTEMP:
@@ -212,11 +216,15 @@ void onAbort(Comms::Packet packet, uint8_t ip) {
         AC::delayedActuate(ARM, AC::OFF, 0, 2500);
         AC::delayedActuate(ARM_VENT, AC::ON, 0, 2550);
         AC::delayedActuate(ARM_VENT, AC::OFF, 0, 3000);
+        AC::actuate(HP_N2_FILL,AC::RETRACT_FULLY, 0);
       } else if (ID == AC2){
         //open lox and fuel gems
         AC::actuate(LOX_GEMS, AC::ON, 0);
         AC::actuate(FUEL_GEMS, AC::ON, 0);
-        AC::actuate(N2_FLOW, AC::RETRACT_FULLY, 0);
+        //close n2 flow and fill
+        AC::actuate(N2_FLOW,AC::RETRACT_FULLY, 0);
+        AC::actuate(LP_N2_FILL,AC::RETRACT_FULLY, 0);
+
       }
       break;
     case LC_UNDERTHRUST:
@@ -228,12 +236,17 @@ void onAbort(Comms::Packet packet, uint8_t ip) {
         AC::delayedActuate(ARM, AC::OFF, 0, 2500);
         AC::delayedActuate(ARM_VENT, AC::ON, 0, 2550);
         AC::delayedActuate(ARM_VENT, AC::OFF, 0, 3000);
+        AC::actuate(HP_N2_FILL,AC::RETRACT_FULLY, 0);
 
       } else if (ID == AC2){
         //open lox and fuel gems
         AC::actuate(LOX_GEMS, AC::ON, 0);
         AC::actuate(FUEL_GEMS, AC::ON, 0);
-        AC::actuate(N2_FLOW, AC::RETRACT_FULLY, 0);
+        //AC::actuate(N2_FLOW, AC::RETRACT_FULLY, 0);
+
+        //close n2 flow and fill
+        AC::actuate(N2_FLOW,AC::RETRACT_FULLY, 0);
+        AC::actuate(LP_N2_FILL,AC::RETRACT_FULLY, 0);
       }    
       break;
     case MANUAL_ABORT:
@@ -248,6 +261,7 @@ void onAbort(Comms::Packet packet, uint8_t ip) {
         // AC::delayedActuate(ARM, AC::OFF, 0, 1000);
         // AC::delayedActuate(ARM_VENT, AC::ON, 0, 1050);
         // AC::delayedActuate(ARM_VENT, AC::OFF, 0, 1500);
+        AC::actuate(HP_N2_FILL,AC::RETRACT_FULLY, 0);
       } else if (ID == AC2){
         //open lox and fuel gems
         AC::actuate(LOX_GEMS, AC::ON, 0);
@@ -262,6 +276,10 @@ void onEndFlow(Comms::Packet packet, uint8_t ip) {
     //open lox and fuel gems
     AC::actuate(LOX_GEMS, AC::ON, 0);
     AC::actuate(FUEL_GEMS, AC::ON, 0);
+
+    //close n2 flow and fill
+    AC::actuate(N2_FLOW,AC::RETRACT_FULLY, 0);
+    AC::actuate(LP_N2_FILL,AC::RETRACT_FULLY, 0);
   }
 }
 
