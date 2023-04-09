@@ -101,7 +101,7 @@ uint32_t launchDaemon(){
         //arm and open main valves
         AC::actuate(ARM, AC::ON, 0);
         AC::delayedActuate(LOX_MAIN_VALVE, AC::ON, 0, 100);
-        AC::delayedActuate(FUEL_MAIN_VALVE, AC::ON, 0, 150);
+        AC::delayedActuate(FUEL_MAIN_VALVE, AC::ON, 0, 250);
         AC::delayedActuate(ARM, AC::OFF, 0, 2000);
         AC::delayedActuate(ARM_VENT, AC::ON, 0, 2050);
         AC::delayedActuate(ARM_VENT, AC::OFF, 0, 2500);
