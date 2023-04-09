@@ -73,7 +73,7 @@ Task taskTable[] = {
 // Triggers abort if any load cell is over -100 from flow start weight for 0.5 seconds
 uint32_t minThrust = 100;
 uint32_t abortTime = 500;
-uint32_t abortStartDelay = 2000;
+uint32_t abortStartDelay = 4000;
 uint32_t timeSinceBad = 0;
 float flowStartWeight[4] = {0, 0, 0, 0};
 

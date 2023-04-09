@@ -44,7 +44,7 @@ namespace TC {
   }
 
   float sample(uint8_t index) {
-    if (abortOn){
+    if (abortOn && (index == 1 || index == 2)){
       float temp = tcs[index].readCelsius();
       if (temp > abortTemp){
         if (abortStart[index] == 0){

@@ -14,7 +14,7 @@ enum Actuators {
   IGNITER = 7,
   BREAKWIRE = 1,
 
-  ARM_VENT = 2,
+  ARM_VENT = 2, 
   ARM = 3,
   LOX_MAIN_VALVE = 4,
   FUEL_MAIN_VALVE = 5,
@@ -124,7 +124,7 @@ uint32_t launchDaemon(){
         AC::delayedActuate(ARM, AC::OFF, 0, 2000);
         AC::delayedActuate(ARM_VENT, AC::ON, 0, 2050);
         AC::delayedActuate(ARM_VENT, AC::OFF, 0, 2500);
-        AC::actuate(HP_N2_FILL,AC::RETRACT_FULLY, 0);
+        AC::actuate(HP_N2_FILL,AC::EXTEND_FULLY, 0);
 
 
         //open lox and fuel gems via abort only to AC2
@@ -194,7 +194,7 @@ void onAbort(Comms::Packet packet, uint8_t ip) {
     case TANK_OVERPRESSURE:
       if(ID == AC1){
         //leave main valves in current state
-        AC::actuate(HP_N2_FILL,AC::RETRACT_FULLY, 0);
+        AC::actuate(HP_N2_FILL,AC::EXTEND_FULLY, 0);
       } else if (ID == AC2){
         //open lox and fuel gems
         AC::actuate(LOX_GEMS, AC::ON, 0);
@@ -203,8 +203,8 @@ void onAbort(Comms::Packet packet, uint8_t ip) {
         //AC::actuate(LOX_VENT_RBV, AC::RETRACT_FULLY, 0);
         //AC::actuate(FUEL_VENT_RBV, AC::RETRACT_FULLY, 0);
         //close n2 flow and fill
-        AC::actuate(N2_FLOW,AC::RETRACT_FULLY, 0);
-        AC::actuate(LP_N2_FILL,AC::RETRACT_FULLY, 0);
+        //AC::actuate(N2_FLOW,AC::RETRACT_FULLY, 0);
+        AC::actuate(LP_N2_FILL,AC::EXTEND_FULLY, 0);
       }
       break;
     case ENGINE_OVERTEMP:
@@ -216,14 +216,14 @@ void onAbort(Comms::Packet packet, uint8_t ip) {
         AC::delayedActuate(ARM, AC::OFF, 0, 2500);
         AC::delayedActuate(ARM_VENT, AC::ON, 0, 2550);
         AC::delayedActuate(ARM_VENT, AC::OFF, 0, 3000);
-        AC::actuate(HP_N2_FILL,AC::RETRACT_FULLY, 0);
+        AC::actuate(HP_N2_FILL,AC::EXTEND_FULLY, 0);
       } else if (ID == AC2){
         //open lox and fuel gems
         AC::actuate(LOX_GEMS, AC::ON, 0);
         AC::actuate(FUEL_GEMS, AC::ON, 0);
         //close n2 flow and fill
-        AC::actuate(N2_FLOW,AC::RETRACT_FULLY, 0);
-        AC::actuate(LP_N2_FILL,AC::RETRACT_FULLY, 0);
+        AC::actuate(N2_FLOW,AC::TIMED_RETRACT, 8000);
+        AC::actuate(LP_N2_FILL,AC::EXTEND_FULLY, 0);
 
       }
       break;
@@ -236,7 +236,7 @@ void onAbort(Comms::Packet packet, uint8_t ip) {
         AC::delayedActuate(ARM, AC::OFF, 0, 2500);
         AC::delayedActuate(ARM_VENT, AC::ON, 0, 2550);
         AC::delayedActuate(ARM_VENT, AC::OFF, 0, 3000);
-        AC::actuate(HP_N2_FILL,AC::RETRACT_FULLY, 0);
+        AC::actuate(HP_N2_FILL,AC::EXTEND_FULLY, 0);
 
       } else if (ID == AC2){
         //open lox and fuel gems
@@ -245,11 +245,23 @@ void onAbort(Comms::Packet packet, uint8_t ip) {
         //AC::actuate(N2_FLOW, AC::RETRACT_FULLY, 0);
 
         //close n2 flow and fill
-        AC::actuate(N2_FLOW,AC::RETRACT_FULLY, 0);
-        AC::actuate(LP_N2_FILL,AC::RETRACT_FULLY, 0);
+        AC::actuate(N2_FLOW,AC::TIMED_RETRACT, 8000);
+        AC::actuate(LP_N2_FILL,AC::EXTEND_FULLY, 0);
       }    
       break;
     case MANUAL_ABORT:
+      if(ID == AC1){
+        AC::actuate(HP_N2_FILL,AC::EXTEND_FULLY, 0);
+      } else if (ID == AC2){
+        //open lox and fuel gems
+        AC::actuate(LOX_GEMS, AC::ON, 0);
+        AC::actuate(FUEL_GEMS, AC::ON, 0);
+        //close n2 flow and fill
+        AC::actuate(N2_FLOW,AC::TIMED_RETRACT, 8000);
+        AC::actuate(LP_N2_FILL,AC::EXTEND_FULLY, 0);
+
+      }
+      break;
     case IGNITER_NO_CONTINUITY:
     case BREAKWIRE_NO_CONTINUITY:
     case BREAKWIRE_NO_BURNT:
@@ -261,7 +273,7 @@ void onAbort(Comms::Packet packet, uint8_t ip) {
         // AC::delayedActuate(ARM, AC::OFF, 0, 1000);
         // AC::delayedActuate(ARM_VENT, AC::ON, 0, 1050);
         // AC::delayedActuate(ARM_VENT, AC::OFF, 0, 1500);
-        AC::actuate(HP_N2_FILL,AC::RETRACT_FULLY, 0);
+        AC::actuate(HP_N2_FILL,AC::EXTEND_FULLY, 0);
       } else if (ID == AC2){
         //open lox and fuel gems
         AC::actuate(LOX_GEMS, AC::ON, 0);
@@ -278,8 +290,8 @@ void onEndFlow(Comms::Packet packet, uint8_t ip) {
     AC::actuate(FUEL_GEMS, AC::ON, 0);
 
     //close n2 flow and fill
-    AC::actuate(N2_FLOW,AC::RETRACT_FULLY, 0);
-    AC::actuate(LP_N2_FILL,AC::RETRACT_FULLY, 0);
+    AC::actuate(N2_FLOW,AC::TIMED_RETRACT, 8000);
+    AC::actuate(LP_N2_FILL,AC::EXTEND_FULLY, 0);
   }
 }
 
