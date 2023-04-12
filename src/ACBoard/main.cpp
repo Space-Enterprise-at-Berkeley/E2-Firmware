@@ -11,16 +11,17 @@
 //Actuators
 enum Actuators {
   //AC1
-  IGNITER = 0,
+  IGNITER = 7,
   BREAKWIRE = 1,
 
-  ARM_VENT = 2,
+  ARM_VENT = 2, 
   ARM = 3,
   LOX_MAIN_VALVE = 4,
   FUEL_MAIN_VALVE = 5,
+  HP_N2_FILL = 6, //red
 
   //AC2
-  N2_FILL = 0,
+  LP_N2_FILL = 0, 
   N2_VENT = 1,
   N2_FLOW = 2,
   N2_RQD = 3,
@@ -31,16 +32,26 @@ enum Actuators {
   FUEL_GEMS = 7,
 };
 
-
+uint8_t heartCounter = 0;
 Comms::Packet heart = {.id = HEARTBEAT, .len = 0};
-//uint8_t counter = 0;
-uint32_t task_heartbeat() {
+void heartbeat(Comms::Packet p, uint8_t ip){
+  uint8_t id = Comms::packetGetUint8(&p, 0);
+  if (id != ip){
+    Serial.println("Heartbeat ID mismatch of " + String(ip) + " and " + String(id));
+    return;
+  }
+  uint8_t recievedCounter = Comms::packetGetUint8(&p, 1);
+  if (heartCounter != recievedCounter){
+    Serial.println(String(recievedCounter-heartCounter) + " packets dropped");
+  }
+  Serial.println("Ping from " + String(id) + " with counter " + String(recievedCounter));
+  heartCounter = recievedCounter;
+
+  //send it back
   heart.len = 0;
   Comms::packetAddUint8(&heart, ID);
-  //Comms::packetAddUint8(&heart, counter++);
+  Comms::packetAddUint8(&heart, heartCounter);
   Comms::emitPacketToGS(&heart);
-  Serial.println("Heartbeat");
-  return 1000 * 1000; //1 sec
 }
 
 Mode systemMode = HOTFIRE;
@@ -52,12 +63,12 @@ uint32_t launchDaemon(){
     switch(launchStep){
       case 0:
       {
-        // Light igniter and wait for 0.5 sec
+        // Light igniter and wait for 2.0 sec
         if (systemMode == HOTFIRE || systemMode == LAUNCH){
           Serial.println("launch step 0, igniter on");
           AC::actuate(IGNITER, AC::ON, 0);
           launchStep++;
-          return 500 * 1000;
+          return 2000 * 1000;
         } else {
           Serial.println("launch step 0, not hotfire, skip");
           launchStep++;
@@ -76,10 +87,6 @@ uint32_t launchDaemon(){
           ChannelMonitor::readChannels();
           if (ChannelMonitor::isChannelContinuous(BREAKWIRE)){
             Serial.println("breakwire still has continuity, aborting");
-/*             Comms::Packet abort = {.id = 43, .len = 0};
-            Comms::packetAddUint8(&abort, systemMode);
-            Comms::packetAddUint8(&abort, BREAKWIRE_NO_BURNT);
-            Comms::emitPacket(&abort, ALL); */
             Comms::sendAbort(systemMode, BREAKWIRE_NO_BURNT);
             launchStep = 0;
             return 0;
@@ -94,11 +101,11 @@ uint32_t launchDaemon(){
 
         //arm and open main valves
         AC::actuate(ARM, AC::ON, 0);
-        AC::actuate(LOX_MAIN_VALVE, AC::ON, 0);
-        AC::actuate(FUEL_MAIN_VALVE, AC::ON, 0);
-        AC::delayedActuate(ARM, AC::OFF, 0, 1000);
-        AC::delayedActuate(ARM_VENT, AC::ON, 0, 1050);
-        AC::delayedActuate(ARM_VENT, AC::OFF, 0, 1500);
+        AC::delayedActuate(LOX_MAIN_VALVE, AC::ON, 0, 100);
+        AC::delayedActuate(FUEL_MAIN_VALVE, AC::ON, 0, 250);
+        AC::delayedActuate(ARM, AC::OFF, 0, 2000);
+        AC::delayedActuate(ARM_VENT, AC::ON, 0, 2050);
+        AC::delayedActuate(ARM_VENT, AC::OFF, 0, 2500);
         launchStep++;
         return flowLength * 1000;
       }
@@ -111,13 +118,13 @@ uint32_t launchDaemon(){
         Comms::emitPacketToAll(&endFlow);
 
         //arm and close main valves
-        AC::actuate(ARM, AC::ON, 0);
         AC::actuate(LOX_MAIN_VALVE, AC::OFF, 0);
         AC::actuate(FUEL_MAIN_VALVE, AC::OFF, 0);
-        AC::delayedActuate(ARM, AC::OFF, 0, 1000);
-        AC::delayedActuate(ARM_VENT, AC::ON, 0, 1050);
-        AC::delayedActuate(ARM_VENT, AC::OFF, 0, 1500);
-
+        AC::delayedActuate(ARM, AC::ON, 0, 100);
+        AC::delayedActuate(ARM, AC::OFF, 0, 2000);
+        AC::delayedActuate(ARM_VENT, AC::ON, 0, 2050);
+        AC::delayedActuate(ARM_VENT, AC::OFF, 0, 2500);
+        AC::actuate(HP_N2_FILL,AC::EXTEND_FULLY, 0);
 
 
         //open lox and fuel gems via abort only to AC2
@@ -141,8 +148,7 @@ Task taskTable[] = {
   {AC::task_actuatorStates, 0, true},
   {ChannelMonitor::readChannels, 0, true},
   {Power::task_readSendPower, 0, true},
-  {AC::task_printActuatorStates, 0, true},
-  {task_heartbeat, 0, true},
+  // {AC::task_printActuatorStates, 0, true},
 };
 
 #define TASK_COUNT (sizeof(taskTable) / sizeof (struct Task))
@@ -172,6 +178,9 @@ Task taskTable[] = {
 void onAbort(Comms::Packet packet, uint8_t ip) {
   Mode systemMode = (Mode)packetGetUint8(&packet, 0);
   AbortReason abortReason = (AbortReason)packetGetUint8(&packet, 1);
+  Serial.println("abort received");
+  Serial.println(abortReason);
+  Serial.println(systemMode);
 
   if (launchStep != 0){
     Serial.println("mid-flow abort");
@@ -185,59 +194,86 @@ void onAbort(Comms::Packet packet, uint8_t ip) {
     case TANK_OVERPRESSURE:
       if(ID == AC1){
         //leave main valves in current state
+        AC::actuate(HP_N2_FILL,AC::EXTEND_FULLY, 0);
       } else if (ID == AC2){
         //open lox and fuel gems
         AC::actuate(LOX_GEMS, AC::ON, 0);
         AC::actuate(FUEL_GEMS, AC::ON, 0);
         //open lox and fuel vent rbvs
-        AC::actuate(LOX_VENT_RBV, AC::RETRACT_FULLY, 0);
-        AC::actuate(FUEL_VENT_RBV, AC::RETRACT_FULLY, 0);
+        //AC::actuate(LOX_VENT_RBV, AC::RETRACT_FULLY, 0);
+        //AC::actuate(FUEL_VENT_RBV, AC::RETRACT_FULLY, 0);
+        //close n2 flow and fill
+        //AC::actuate(N2_FLOW,AC::RETRACT_FULLY, 0);
+        AC::actuate(LP_N2_FILL,AC::EXTEND_FULLY, 0);
       }
       break;
     case ENGINE_OVERTEMP:
       if(ID == AC1){
-        //arm and close main valves
-        AC::actuate(ARM, AC::ON, 0);
-        AC::actuate(LOX_MAIN_VALVE, AC::OFF, 0);
+        //arm and close main valves   
         AC::actuate(FUEL_MAIN_VALVE, AC::OFF, 0);
-        AC::delayedActuate(ARM, AC::OFF, 0, 1000);
-        AC::delayedActuate(ARM_VENT, AC::ON, 0, 1050);
-        AC::delayedActuate(ARM_VENT, AC::OFF, 0, 1500);
+        AC::actuate(LOX_MAIN_VALVE, AC::OFF, 0);
+        AC::actuate(ARM, AC::ON, 0);
+        AC::delayedActuate(ARM, AC::OFF, 0, 2500);
+        AC::delayedActuate(ARM_VENT, AC::ON, 0, 2550);
+        AC::delayedActuate(ARM_VENT, AC::OFF, 0, 3000);
+        AC::actuate(HP_N2_FILL,AC::EXTEND_FULLY, 0);
       } else if (ID == AC2){
         //open lox and fuel gems
         AC::actuate(LOX_GEMS, AC::ON, 0);
         AC::actuate(FUEL_GEMS, AC::ON, 0);
+        //close n2 flow and fill
+        AC::actuate(N2_FLOW,AC::TIMED_RETRACT, 8000);
+        AC::actuate(LP_N2_FILL,AC::EXTEND_FULLY, 0);
+
       }
       break;
     case LC_UNDERTHRUST:
       if(ID == AC1){
         //arm and close main valves
-        AC::actuate(ARM, AC::ON, 0);
         AC::actuate(FUEL_MAIN_VALVE, AC::OFF, 0);
-        //trigger delayed execution of lox valve closure
-        AC::delayedActuate(LOX_MAIN_VALVE, AC::OFF, 0, 500);
-        AC::delayedActuate(ARM, AC::OFF, 0, 1500);
-        AC::delayedActuate(ARM_VENT, AC::ON, 0, 1550);
-        AC::delayedActuate(ARM_VENT, AC::OFF, 0, 2000);
+        AC::actuate(LOX_MAIN_VALVE, AC::OFF, 0);
+        AC::actuate(ARM, AC::ON, 0);
+        AC::delayedActuate(ARM, AC::OFF, 0, 2500);
+        AC::delayedActuate(ARM_VENT, AC::ON, 0, 2550);
+        AC::delayedActuate(ARM_VENT, AC::OFF, 0, 3000);
+        AC::actuate(HP_N2_FILL,AC::EXTEND_FULLY, 0);
 
       } else if (ID == AC2){
         //open lox and fuel gems
         AC::actuate(LOX_GEMS, AC::ON, 0);
         AC::actuate(FUEL_GEMS, AC::ON, 0);
+        //AC::actuate(N2_FLOW, AC::RETRACT_FULLY, 0);
+
+        //close n2 flow and fill
+        AC::actuate(N2_FLOW,AC::TIMED_RETRACT, 8000);
+        AC::actuate(LP_N2_FILL,AC::EXTEND_FULLY, 0);
       }    
       break;
     case MANUAL_ABORT:
+      if(ID == AC1){
+        AC::actuate(HP_N2_FILL,AC::EXTEND_FULLY, 0);
+      } else if (ID == AC2){
+        //open lox and fuel gems
+        AC::actuate(LOX_GEMS, AC::ON, 0);
+        AC::actuate(FUEL_GEMS, AC::ON, 0);
+        //close n2 flow and fill
+        AC::actuate(N2_FLOW,AC::TIMED_RETRACT, 8000);
+        AC::actuate(LP_N2_FILL,AC::EXTEND_FULLY, 0);
+
+      }
+      break;
     case IGNITER_NO_CONTINUITY:
     case BREAKWIRE_NO_CONTINUITY:
     case BREAKWIRE_NO_BURNT:
       if(ID == AC1){
         //arm and close main valves
-        AC::actuate(ARM, AC::ON, 0);
-        AC::actuate(LOX_MAIN_VALVE, AC::OFF, 0);
-        AC::actuate(FUEL_MAIN_VALVE, AC::OFF, 0);
-        AC::delayedActuate(ARM, AC::OFF, 0, 1000);
-        AC::delayedActuate(ARM_VENT, AC::ON, 0, 1050);
-        AC::delayedActuate(ARM_VENT, AC::OFF, 0, 1500);
+        // AC::actuate(ARM, AC::ON, 0);
+        // AC::actuate(LOX_MAIN_VALVE, AC::OFF, 0);
+        // AC::actuate(FUEL_MAIN_VALVE, AC::OFF, 0);
+        // AC::delayedActuate(ARM, AC::OFF, 0, 1000);
+        // AC::delayedActuate(ARM_VENT, AC::ON, 0, 1050);
+        // AC::delayedActuate(ARM_VENT, AC::OFF, 0, 1500);
+        AC::actuate(HP_N2_FILL,AC::EXTEND_FULLY, 0);
       } else if (ID == AC2){
         //open lox and fuel gems
         AC::actuate(LOX_GEMS, AC::ON, 0);
@@ -252,6 +288,10 @@ void onEndFlow(Comms::Packet packet, uint8_t ip) {
     //open lox and fuel gems
     AC::actuate(LOX_GEMS, AC::ON, 0);
     AC::actuate(FUEL_GEMS, AC::ON, 0);
+
+    //close n2 flow and fill
+    AC::actuate(N2_FLOW,AC::TIMED_RETRACT, 8000);
+    AC::actuate(LP_N2_FILL,AC::EXTEND_FULLY, 0);
   }
 }
 
@@ -264,6 +304,8 @@ void onLaunchQueue(Comms::Packet packet, uint8_t ip){
     }
     systemMode = (Mode)packetGetUint8(&packet, 0);
     flowLength = packetGetUint32(&packet, 1);
+    Serial.println("System mode: " + String(systemMode));
+    Serial.println("Flow length: " + String(flowLength));
 
     if (systemMode == LAUNCH || systemMode == HOTFIRE){
       // check igniter and breakwire continuity
@@ -282,6 +324,7 @@ void onLaunchQueue(Comms::Packet packet, uint8_t ip){
     //start launch daemon
     launchStep = 0;
     taskTable[0].enabled = true;
+    taskTable[0].nexttime = micros(); // this has to be here for timestamp overflowing
     Serial.println("launch command recieved, starting sequence");
 
   }
@@ -300,6 +343,7 @@ void setup() {
   Comms::registerCallback(LAUNCH_QUEUE, onLaunchQueue);
   //endflow register
   Comms::registerCallback(ENDFLOW, onEndFlow);
+  Comms::registerCallback(HEARTBEAT, heartbeat);
 
 
   for (int i = 0; i < 8; i++) {
@@ -338,6 +382,8 @@ void setup() {
   
   uint32_t ticks;
   uint32_t nextTime;
+
+  
   while(1) {
     // main loop here to avoid arduino overhead
     for(uint32_t i = 0; i < TASK_COUNT; i++) { // for each task, execute if next time >= current time
