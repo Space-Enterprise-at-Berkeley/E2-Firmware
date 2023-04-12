@@ -28,5 +28,5 @@ namespace Radio {
     void transmitTestPattern() ;
 
     void forwardPacket(Comms::Packet *packet);
-    // bool processWaitingRadioPacket();
+    bool processWaitingRadioPacket();
 }

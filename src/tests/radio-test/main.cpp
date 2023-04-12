@@ -1,16 +1,11 @@
 #include <Arduino.h>
 
-#include <EspComms.h>
-#include "Radio.h"
+#include <Comms.h>
+#include <Radio.h>
 #include <Si446x.h>
+
 int arr[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09};
 int ctr = 0;
-
-long sizePacketPeriod = 1e6;
-long lastTime = micros();
-
-Comms::Packet sizePacket = {.id = 153};
-
 void SI446X_CB_SENT(void)
 {
     Radio::transmitting = false;
@@ -40,33 +35,39 @@ void SI446X_CB_RXINVALID(int16_t rssi)
 	Serial.println(F(")"));
 }
 
-
 void setup() 
 {
-  Comms::init();
+  Serial.begin(115200);
+  Serial.println("starting up");
+  
   Radio::initRadio();
+  
   Serial.println("hi");
-//   pinMode(33, OUTPUT);
   Serial.println("HII");
+  #ifdef FLIGHT
+  Serial.println("starting in flight mode");
+  #endif
+  #ifdef REPLAY
+  Serial.println("replaying flight...");
+  delay(1000);
+  #endif
+
 }
+
+int delayS;
+
+long sizePacketPeriod = 1e6;
+long lastTime = micros();
+
 void loop() {
+  // send blackbox size used
+  static int cnt = 0;
   if (micros() - lastTime > sizePacketPeriod) {
-    sizePacket.len = 0;
-    Comms::packetAddUint8(&sizePacket, 42);
-    Radio::forwardPacket(&sizePacket);
+    Serial.print("transmitting... ");
+    Serial.println(cnt++);
+    Comms::Packet tmp = {.id = 12};
+    Radio::forwardPacket(&tmp);
     lastTime = micros();
   }
-//   Comms::processWaitingPackets();
-
-  //Comms::processWaitingPackets();
-  //Radio::txCalib10(arr, 0);
-  //delay(1000);
-  // digitalWrite(33, LOW);
-  // digitalWrite(33, HIGH);
-
-
-  // Radio::txZeros(33); //tx's [0, 1, 2]
-  // delayMicroseconds(2000000);  
-  // Radio::txZeros(33); //tx's [0, 1, 2]
-  // delayMicroseconds(5000000);
+  Si446x_SERVICE();
 }
