@@ -17,6 +17,7 @@ namespace StateMachine {
         PIDController *outerController_ = Util::getOuterController(); 
         unsigned long timeStarted_;
         unsigned long lastPrint_;
+        float startPressure_;
         float pressureSetpoint_ = Config::pressureSetpoint;;
         float angleSetpoint_;
 

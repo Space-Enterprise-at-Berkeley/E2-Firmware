@@ -44,8 +44,12 @@ namespace StateMachine {
         float upstreamPsi = upstreamPT1;
         float downstreamPsi = Ducers::chooseDucerRead(downstreamPT1, downstreamPT2);
 
+        if (lastPrint_ == 0) {
+            startPressure_ = downstreamPsi;
+        }
+
         unsigned long flowTime = TimeUtil::timeInterval(timeStarted_, micros());
-        pressureSetpoint_ = FlowProfiles::pressurizationRamp(flowTime);
+        pressureSetpoint_ = FlowProfiles::pressurizationRamp(flowTime, startPressure_);
 
         float speed = 0;
 
