@@ -8,7 +8,7 @@ long lastTime = 0; //Simple local timer. Limits amount if I2C traffic to u-blox 
 
 void setup()
 {
-  Serial.begin(115200);
+  Serial.begin(921600);
   while (!Serial); //Wait for user to open terminal
   Serial.println("SparkFun u-blox Example");
 
@@ -36,12 +36,12 @@ void loop()
     
     long latitude = myGNSS.getLatitude();
     Serial.print(F("Lat: "));
-    Serial.print(latitude);
+    Serial.print(latitude/(1e7));
 
     long longitude = myGNSS.getLongitude();
     Serial.print(F(" Long: "));
-    Serial.print(longitude);
-    Serial.print(F(" (degrees * 10^-7)"));
+    Serial.print(longitude/(1e7));
+    Serial.print(F(" (degrees)"));
 
     long altitude = myGNSS.getAltitude();
     Serial.print(F(" Alt: "));
