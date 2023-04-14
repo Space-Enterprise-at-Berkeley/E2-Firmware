@@ -4,7 +4,6 @@
 #include "Barometer.h"
 #include "IMU.h"
 #include "GPS.h"
-#include "IMUHighG.h"
 #include <Common.h>
 
 namespace FlightStatus {
