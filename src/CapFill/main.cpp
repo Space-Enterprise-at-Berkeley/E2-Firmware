@@ -12,8 +12,8 @@
 
 #define STATUS_LED 34
 #define TEMP_PIN 1
-// #define EN_485 20 // switch between transmit and receive
-// #define TE_485 19 // terminate enable
+#define EN_485 20 // switch between transmit and receive
+#define TE_485 19 // terminate enable
 
 FDC2214 _capSens;
 TMP236 _tempSens = TMP236(TEMP_PIN);
@@ -47,8 +47,9 @@ void setup()
 {
   Serial.begin(115200);
   //samhitag3 testing slower baud rate
+  // Serial.println("start");
   Serial1.begin(115200);
-  Serial1.setPins(17, 18);
+  // Serial1.setPins(17, 18);
   // samhitag3 commented out
 
   Wire.begin(8, 9, 100000);
@@ -115,6 +116,9 @@ void loop()
   //     cnt = 0;
   //   }
   // }
+
+  // Serial.println("hello world");
+
   if(millis() - lastTransmissionTime >= timeBetweenTransmission) {
     DEBUG("Transmitting ");
     DEBUG(Comms::packetGetFloat(&capPacket, 0));
@@ -212,24 +216,24 @@ void loop()
 
     // samhitag3 test print statements
     // Serial.print("temp: ");
-    Serial.print(tempValue);
-    Serial.print("\t");
-    Serial.print(sensor0);
-    Serial.print("\t");
-    Serial.print(sensor1);
-    Serial.print("\t");
-    Serial.print(capValue);
-    Serial.print("\t");
-    Serial.print(refValue);
-    Serial.print("\t");
-    Serial.print(avgCap);
-    Serial.print("\t");
-    Serial.print(avgRef);
-    Serial.print("\t");
-    Serial.print(corrected);
-    Serial.print("\t");
-    Serial.println(avgCorrected);
+    // Serial.print(tempValue);
+    // Serial.print("\t");
+    // Serial.print(sensor0);
+    // Serial.print("\t");
+    // Serial.print(sensor1);
+    // Serial.print("\t");
+    Serial.println(capValue);
+    // Serial.print("\t");
+    // Serial.print(refValue);
+    // Serial.println("\t");
+    // Serial.print(avgCap);
+    // Serial.print("\t");
+    // Serial.print(avgRef);
+    // Serial.print("\t");
     // Serial.print(corrected);
+    // Serial.print("\t");
+    // Serial.println(avgCorrected);
+    // // Serial.print(corrected);
     // Serial.print("  numSamp: ");
     // Serial.print(numSamples);
     // Serial.print("  avg: ");
