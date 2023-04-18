@@ -7,7 +7,7 @@
 #include <Arduino.h>
 
 const uint16_t NUM_LEDS = 500;
-const uint8_t DATA_PIN = 15;
+const uint8_t DATA_PIN = 36;
 
 const uint8_t TANK_LENGTH = 58;
 const uint8_t TANK_SEPERATION = 15;
@@ -41,6 +41,7 @@ uint32_t LEDTest(){
 
 uint8_t r = 0;
 uint32_t rainbowMode(){
+  //Serial.println("Rainbow cycle");
   for (uint16_t i = 0; i < NUM_LEDS; i++){
     leds[i] = CHSV(r+i, 255, 255);
   }
@@ -97,10 +98,11 @@ uint32_t fillMode(){
 
 uint8_t lox_bottomLED = 0;
 uint8_t lox_topLED = 55;
-uint8_t fuel_bottomLED = 72;
-uint8_t fuel_topLED = 127;
+uint8_t fuel_bottomLED = 75;
+uint8_t fuel_topLED = 130;
 uint8_t s = 0;
 uint32_t combinedMode(){
+  //Serial.println("Combined cycle");
   for (uint16_t i = 0; i < NUM_LEDS; i++){
     if (i >= lox_bottomLED && i <= lox_topLED){
       if ((lox_capval-lox_lowerLimit)/(float)(lox_upperLimit-lox_lowerLimit) > (i-lox_bottomLED)/(float)(lox_topLED - lox_bottomLED)){
@@ -153,6 +155,8 @@ Task taskTable[] = {
   {rainbowMode, 0, false},
   {fillMode, 0, false},
   {combinedMode, 0, true},
+  {LEDTest, 0, false},
+  {helloWorld, 0, true}
 };
 
 #define TASK_COUNT (sizeof(taskTable) / sizeof (struct Task))
@@ -165,16 +169,35 @@ void changeMode(Comms::Packet pckt, uint8_t ip){
   taskTable[mode].enabled = true;
 }
 
+void changeCapBounds(Comms::Packet pckt, uint8_t ip){
+   lox_lowerLimit = Comms::packetGetFloat(&pckt, 0);
+ lox_upperLimit = Comms::packetGetFloat(&pckt, 4);
+ fuel_lowerLimit = Comms::packetGetFloat(&pckt, 8);
+ fuel_upperLimit = Comms::packetGetFloat(&pckt, 12);
+ Serial.println("Set bounds for lox to " + String(lox_lowerLimit) + " and " + String(lox_upperLimit));
+ Serial.println("Set bounds for fuel to " + String(fuel_lowerLimit) + " and " + String(fuel_upperLimit));
+
+}
+
 void setup() {
   // setup stuff here
   Serial.begin(115200);
   Comms::init(); // takes care of Serial.begin()
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
   FastLED.setBrightness(255);
+  pinMode(DATA_PIN, OUTPUT);
 
   Comms::registerCallback(21, updateLoxCapVal);
   Comms::registerCallback(22, updateFuelCapVal);
   Comms::registerCallback(100, changeMode);
+  Comms::registerCallback(101, changeCapBounds);
+
+  // while(1){
+  //   digitalWrite(DATA_PIN, HIGH);
+  //   delay(1000);
+  //   digitalWrite(DATA_PIN, LOW);
+  //   delay(1000);
+  // }
   
   while(1) {
     // main loop here to avoid arduino overhead

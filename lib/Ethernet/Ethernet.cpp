@@ -112,7 +112,7 @@ void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress g
 }
 
 bool EthernetClass::detectRead() {
-	if (digitalRead(9)) {
+	if (!digitalRead(9)) {
 		W5500.writeSnIR(0, 0xff);
 		INTnFlag = false;
 		return true;
