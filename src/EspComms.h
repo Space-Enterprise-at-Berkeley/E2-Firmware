@@ -34,6 +34,9 @@ namespace Comms
    */
   void registerCallback(uint8_t id, commFunction function);
 
+  //ever wanted to send a packet not to the GS??? Here.
+  void initExtraSocket(int port, uint8_t ip);
+
   void processWaitingPackets();
 
   void packetAddFloat(Packet *packet, float value);
@@ -77,6 +80,8 @@ namespace Comms
 
   // Broadcast
   void emitPacketToAll(Packet *packet);
+
+  void emitPacketToExtra(Packet *packet);
 
   bool verifyPacket(Packet *packet);
 

@@ -15,6 +15,10 @@ namespace Packets {
     const uint8_t TEMPS = 9;
     const uint8_t ABORT_ID = 133;
     const uint8_t OVERCURRENT_ID = 10;
+    const uint8_t PT_TO_AC = 11;
+
+    extern int ac2_port;
+    extern uint8_t ac2_ip;
 
     void sendTelemetry(
         float filteredUpstreamPressure1,

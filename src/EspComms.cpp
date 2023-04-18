@@ -16,6 +16,8 @@ namespace Comms {
   // IPAddress groundStations[groundStationCount] = {IPAddress(10, 0, 0, GROUND1)};
   // int ports[groundStationCount] = {42069};
 
+  bool extraSocketOpen = false;
+
   IPAddress ip(10, 0, 0, IP_ADDRESS_END);
 
   void init(int cs, int spiMisoPin, int spiMosiPin, int spiSclkPin, int ETH_intN)
@@ -43,6 +45,12 @@ namespace Comms {
 
   void init() {
     init(10, -1, -1, -1, -1);
+  }
+
+  void initExtraSocket(int port, uint8_t ip) {
+    Udp.begin(port, groundStationCount+1);
+    Udp.beginPacket(groundStationCount+1, IPAddress(10, 0, 0, ip), port);
+    extraSocketOpen = true;
   }
 
   void sendFirmwareVersionPacket(Packet unused, uint8_t ip)
@@ -294,6 +302,22 @@ namespace Comms {
     Udp.write(0, packet->checksum, 2);
     Udp.write(0, packet->data, packet->len);
     Udp.endPacket(0);
+  }
+
+  void emitPacketToExtra(Packet *packet) {
+    if (!extraSocketOpen){
+      Serial.println("The Extra Socket is not open. Packet not sent.");
+      return;
+    }
+    finishPacket(packet);
+
+    Udp.resetSendOffset(groundStationCount+1);
+    Udp.write(groundStationCount+1, packet->id);
+    Udp.write(groundStationCount+1, packet->len);
+    Udp.write(groundStationCount+1, packet->timestamp, 4);
+    Udp.write(groundStationCount+1, packet->checksum, 2);
+    Udp.write(groundStationCount+1, packet->data, packet->len);
+    Udp.endPacket(groundStationCount+1);
   }
   // void emitPacket(Packet *packet, uint8_t ip){
   //   Serial.println("Emitting packet to " + String(ip));

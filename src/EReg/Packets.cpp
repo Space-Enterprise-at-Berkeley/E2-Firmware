@@ -21,8 +21,10 @@ namespace Packets {
 
     uint8_t ac1_ip = 11;
     uint8_t ac2_ip = 12;
-    uint8_t ACTUATE_IP = 100;
+    int ac2_port = 42042;
     uint32_t lastTelemetry = 0;
+    uint32_t lastPT_to_AC = 0;
+    uint32_t ac2_freq = 500; //ms
 
     void sendTelemetry(
         float filteredUpstreamPressure1,
@@ -69,6 +71,16 @@ namespace Packets {
         sendTemperatures();
         sendPhaseCurrents();
         sendLimitSwitches();
+
+        //send PT to AC data for GEMS autovent
+        if (millis() - lastPT_to_AC > ac2_freq) {
+            lastPT_to_AC = millis();
+            packet.id = PT_TO_AC;
+            packet.len = 0;
+            Comms::packetAddFloat(&packet, filteredDownstreamPressure1);
+            Comms::packetAddFloat(&packet, filteredDownstreamPressure2);
+            Comms::emitPacketToExtra(&packet);
+        }
 
         if (millis() - lastTelemetry > 2000) {
             lastTelemetry = millis();
