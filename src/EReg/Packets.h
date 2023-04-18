@@ -18,7 +18,6 @@ namespace Packets {
     const uint8_t PT_TO_AC = 11;
 
     extern int ac2_port;
-    extern uint8_t ac2_ip;
 
     void sendTelemetry(
         float filteredUpstreamPressure1,

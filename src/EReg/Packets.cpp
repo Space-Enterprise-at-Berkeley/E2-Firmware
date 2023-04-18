@@ -19,8 +19,6 @@ namespace Packets {
 
 
 
-    uint8_t ac1_ip = 11;
-    uint8_t ac2_ip = 12;
     int ac2_port = 42042;
     uint32_t lastTelemetry = 0;
     uint32_t lastPT_to_AC = 0;

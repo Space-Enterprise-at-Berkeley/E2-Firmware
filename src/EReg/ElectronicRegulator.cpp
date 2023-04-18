@@ -103,7 +103,7 @@ void setup() {
     Comms::registerCallback(204, runDiagnostics);
     Comms::registerCallback(205, zero);
     //Init extra socket for sending pressures to the AC2 board, port 42042, ip 12
-    Comms::initExtraSocket(Packets::ac2_port, Packets::ac2_ip);
+    Comms::initExtraSocket(Packets::ac2_port, AC2);
     
     Packets::sendConfig();
 }
