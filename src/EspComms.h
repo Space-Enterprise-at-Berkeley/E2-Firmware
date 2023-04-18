@@ -81,6 +81,9 @@ namespace Comms
   // Broadcast
   void emitPacketToAll(Packet *packet);
 
+  void initExtraSocket(int port, uint8_t ip);
+  void emitPacketToExtra(Packet *packet, uint8_t ip);
+
   bool verifyPacket(Packet *packet);
 
   uint16_t computePacketChecksum(Packet *packet);

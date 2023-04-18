@@ -99,6 +99,10 @@ namespace AC {
     delayedActuationCount++;
   }
 
+  uint8_t getActuatorState(uint8_t channel) {
+    return actuators[channel].state;
+  }
+
   void init() {
     // Initialise every actuator channel, default state is 0
     for (int i = 0; i < 8; i++) {

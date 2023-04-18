@@ -32,8 +32,8 @@ enum BoardID
   TC1 = 51,
   TC2 = 52,
   FC = 42,
-  EREG1 = 61,
-  EREG2 = 62,
+  LOX_EREG = 61,
+  FUEL_EREG = 62,
   EREG3 = 63,
   GROUND1 = 169,
   GROUND2 = 170,
@@ -68,7 +68,12 @@ enum PacketID {
   AC_STATE = 2,
   AC_CONTINUITY = 3,
   AC_CURRENT = 4,
+  AC_CONFIG = 5,
   ACTUATE_CMD = 100,
+  AC_CHANGE_CONFIG = 105,
+
+  //GEMS autovent
+  EREG_PRESSURE = 11,
   
 };
 
