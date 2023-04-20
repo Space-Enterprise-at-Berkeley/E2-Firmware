@@ -167,32 +167,6 @@ double KalmanFilter::get_acceleration() {
     return state(2);
 }
 
-
-namespace Chutes { 
-
-    struct Chute {
-        uint8_t chuteID;
-        uint8_t statePacketID;
-        uint8_t statusPacketID;
-
-        uint8_t pin; // use either pin or expanderPin, and set the other to 255
-        uint8_t expanderPin;
-        float voltage;
-        float current;
-        float ocThreshold;
-        uint32_t period;
-    };
-
-    uint32_t deploy_drogue() { 
-
-    }
-
-    uint32_t deploy_main() { 
-        
-    }
-
-}
-
 namespace FlightStatus { 
     
     KalmanFilter filter1(Config::transition, Config::transition_dt, Config::state_noise, Config::obs, Config::obs_noise);

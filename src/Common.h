@@ -69,6 +69,19 @@ enum PacketID {
   AC_CONTINUITY = 3,
   AC_CURRENT = 4,
   ACTUATE_CMD = 100,
+
+  //FC
+  //PWR_DATA = 1,
+  BOARD_STATE = 2,
+  FLIGHT_STATE = 3,
+  IMU_DATA = 4,
+  BARO_DATA = 5,
+  GPS_DATA = 6,
+  //TO FC
+  MODE_CHANGE = 100,
+  REPLAY_MODE = 101,
+
+
   
 };
 
