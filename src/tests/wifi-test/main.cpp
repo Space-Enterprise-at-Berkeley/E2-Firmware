@@ -5,11 +5,11 @@
 
 WiFiUDP udp;
 char packetBuffer[255];
-unsigned int localPort = 3333;
+unsigned int localPort = 42069;
 //IPAddress groundStation1(192, 168, 1, 169);
-IPAddress groundStation1(172, 20, 10, 2);
+IPAddress groundStation1(10, 0, 0, 169);
 //IPAddress ip(192, 168, 1, IP_ADDRESS_END);
-IPAddress ip(172, 20, 10, IP_ADDRESS_END);
+IPAddress ip(10, 0, 0, IP_ADDRESS_END);
 //IPAddress gateway(192, 168, 1, 1);
 IPAddress gateway(172, 20, 10, 1);
 //IPAddress subnet(255, 255, 255, 0);
@@ -88,10 +88,10 @@ uint32_t udpSend(){
     udp.write(packet.checksum, 2);
     udp.write(packet.data, packet.len);
 
-    Serial.println(udp.endPacket());
-    digitalWrite(LED_3, LOW);
+    udp.endPacket();
+    //digitalWrite(LED_3, LOW);
 
-    return 2000*1000;
+    return 50*1000;
 }
 
 // uint32_t leds(){
