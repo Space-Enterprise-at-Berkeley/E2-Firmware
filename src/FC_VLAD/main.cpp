@@ -5,6 +5,8 @@
 #include <Wire.h>
 #include <SPI.h>
 
+#include "ReadPower.h"
+
 // 0: IDLE, 1: FLIGHT, 2: REPLAY
 enum BoardMode {
     IDLE = 0,
@@ -34,6 +36,28 @@ uint32_t sendState(){
     return 1000;
 }
 
+uint8_t heartCounter = 0;
+Comms::Packet heart = {.id = HEARTBEAT, .len = 0};
+void heartbeat(Comms::Packet p, uint8_t ip){
+  uint8_t id = Comms::packetGetUint8(&p, 0);
+  if (id != ip){
+    Serial.println("Heartbeat ID mismatch of " + String(ip) + " and " + String(id));
+    return;
+  }
+  uint8_t recievedCounter = Comms::packetGetUint8(&p, 1);
+  if (heartCounter != recievedCounter){
+    Serial.println(String(recievedCounter-heartCounter) + " packets dropped");
+  }
+  Serial.println("Ping from " + String(id) + " with counter " + String(recievedCounter));
+  heartCounter = recievedCounter;
+
+  //send it back
+  heart.len = 0;
+  Comms::packetAddUint8(&heart, ID);
+  Comms::packetAddUint8(&heart, heartCounter);
+  Comms::emitPacketToGS(&heart);
+}
+
 //VLAD needs to:
 // Read both barometers
 // Read both IMUs
@@ -47,23 +71,38 @@ uint32_t sendState(){
 //Replay blackbox data
 
 Task taskTable[] = {
-    {sendState, 0, true},
+  {Power::task_readSendPower, 0, true},
+  {sendState, 0, true},
 };
+
 #define TASK_COUNT (sizeof(taskTable) / sizeof (struct Task))
 
 void setup() {
-    // hardware setup
-    Serial.begin(115200);
+  // setup stuff here
+  Comms::init(); // takes care of Serial.begin()
+  initWire();
+  Power::init();
+  Comms::registerCallback(HEARTBEAT, heartbeat);
 
-    while(1) {
-        for(uint32_t i = 0; i < TASK_COUNT; i++) { // for each task, execute if next time >= current time
-            uint32_t ticks = micros(); // current time in microseconds
-            if (taskTable[i].nexttime - ticks > UINT32_MAX / 2 && taskTable[i].enabled) {
-                taskTable[i].nexttime = ticks + taskTable[i].taskCall();
-            }
+
+  while(1) {
+    // main loop here to avoid arduino overhead
+    for(uint32_t i = 0; i < TASK_COUNT; i++) { // for each task, execute if next time >= current time
+      uint32_t ticks = micros(); // current time in microseconds
+      if (taskTable[i].nexttime - ticks > UINT32_MAX / 2 && taskTable[i].enabled) {
+        uint32_t delayoftask = taskTable[i].taskCall();
+        if (delayoftask == 0) {
+          taskTable[i].enabled = false;
         }
-        Comms::processWaitingPackets();
+        else {
+          taskTable[i].nexttime = ticks + delayoftask;
+        }
+      }
     }
+    Comms::processWaitingPackets();
+  }
 }
 
-void loop(){}
+void loop() {
+
+} // unused
