@@ -67,7 +67,7 @@ void setup() {
     // Wire.setPins(1,2);
     Wire.begin(1, 2);
 
-    bmp388.begin(0x76);
+    bmp388.begin(0x77);
 }
 
 void loop() {
