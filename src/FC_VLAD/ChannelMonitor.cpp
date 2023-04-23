@@ -50,8 +50,8 @@ float adcToCurrent(uint16_t counts) {
 // reads currents and continuity, reports them via packets and by setting the above arrays
 // also updates relevant LEDs based on thresholds
 uint32_t readChannels() {
-    Comms::Packet contPacket = {.id = 3};
-    Comms::Packet currPacket = {.id = 4};
+    Comms::Packet contPacket = {.id = 6};
+    Comms::Packet currPacket = {.id = 7};
 
     // iterate through MUX channels
     for (int i = 0; i < 8; i ++){

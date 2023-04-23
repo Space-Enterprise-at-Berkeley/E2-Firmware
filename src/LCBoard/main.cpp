@@ -1,5 +1,5 @@
 #include <Common.h>
-#include <EspComms.h>
+#include <WiFiComms.h>
 #include "ADS.h"
 #include "ReadPower.h"
 
@@ -31,7 +31,7 @@ void heartbeat(Comms::Packet p, uint8_t ip){
 
   //send it back
   heart.len = 0;
-  Comms::packetAddUint8(&heart, ID);
+  Comms::packetAddUint8(&heart, IPADDR);
   Comms::packetAddUint8(&heart, heartCounter);
   Comms::emitPacketToGS(&heart);
 }

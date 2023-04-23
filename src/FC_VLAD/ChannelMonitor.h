@@ -1,6 +1,6 @@
 #pragma once
 #include <Arduino.h>
-#include <EspComms.h>
+#include <WiFiComms.h>
 
 namespace ChannelMonitor {
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Arduino.h>
-#include <EspComms.h>
+#include <WiFiComms.h>
 #include <ArduinoEigenDense.h>
 #include <Wire.h>
 #include <Adafruit_Sensor.h>

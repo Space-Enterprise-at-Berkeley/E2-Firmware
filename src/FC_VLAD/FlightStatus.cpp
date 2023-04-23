@@ -350,26 +350,26 @@ class KalmanFilter{
     
     set_barometer_ground_altitude();
 
-    if (!kx134.begin()) {
-      Serial.println("Could not communicate with the the KX13X. Freezing.");
-      while (1);
-    }
+    // if (!kx134.begin()) {
+    //   Serial.println("Could not communicate with the the KX13X. Freezing.");
+    //   while (1);
+    // }
 
-    if (kx134.softwareReset())
-      Serial.println("Reset.");
+    // if (kx134.softwareReset())
+    //   Serial.println("Reset.");
 
     // Give some time for the accelerometer to reset.
     // It needs two, but give it five for good measure.
-    delay(5);
-    kx134.enableAccel(false);
-    kx134.setRange(SFE_KX134_RANGE64G);         // 16g for the KX134
-    kx134.enableDataEngine(); // Enables the bit that indicates data is ready.
+    // delay(5);
+    // kx134.enableAccel(false);
+    // kx134.setRange(SFE_KX134_RANGE64G);         // 16g for the KX134
+    // kx134.enableDataEngine(); // Enables the bit that indicates data is ready.
     // kx134.setOutputDataRate(); // Default is 50Hz
-    kx134.enableAccel();
+    // kx134.enableAccel();
 
-    if(ms5607.connect()>0) {
-      Serial.println("Error connecting...");
-    }
+    // if(ms5607.connect()>0) {
+    //   Serial.println("Error connecting...");
+    // }
   }
 
   // Packet definitions
@@ -383,9 +383,9 @@ class KalmanFilter{
     acceleration = get_acceleration_y();
     gps_altitude = get_gps_altitude();
 
-    update_accel_2();
+    // update_accel_2();
 
-    baro_pressure_2 = get_baro2_pressure();
+    // baro_pressure_2 = get_baro2_pressure();
 
     longitude = get_longitude();
     latitude = get_latitude();

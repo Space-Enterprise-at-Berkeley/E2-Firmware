@@ -3,23 +3,23 @@
 namespace Comms {
   std::map<uint8_t, commFunction> callbackMap;
 
-  WiFiUdp Udp;
+  WiFiUDP Udp;
   char packetBuffer[sizeof(Packet)];
 
-  byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, ID};
-  uint8_t ip_start[] = {10, 0, 0};
+  byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, IPADDR};
+  uint8_t ip_start[] = {192, 168, 43}; //{10, 0, 0};
   IPAddress subnet = IPAddress(255, 255, 255, 0);
   IPAddress gateway = IPAddress(ip_start[0], ip_start[1], ip_start[2], 1);
 
 // TODO: multiple ports. 
-//   const uint8_t groundStationCount = 3;
+  const uint8_t groundStationCount = 1;
 //   IPAddress groundStations[groundStationCount] = {IPAddress(ip_start[0], ip_start[1], ip_start[2], GROUND1), IPAddress(ip_start[0], ip_start[1], ip_start[2], GROUND2), IPAddress(ip_start[0], ip_start[1], ip_start[2], GROUND3)};
 //   int ports[groundStationCount] = {42069, 42070, 42071};
 
-  IPAddress groundStations[groundStationCount] = {IPAddress(10, 0, 0, GROUND1)};
+  IPAddress groundStations[groundStationCount] = {IPAddress(ip_start[0], ip_start[1], ip_start[2], 69)}; //{IPAddress(10, 0, 0, GROUND1)};
   int ports[groundStationCount] = {42069};
 
-  IPAddress ip(ip_start[0], ip_start[1], ip_start[2], ID);
+  IPAddress ip(ip_start[0], ip_start[1], ip_start[2], IPADDR);
 
   void setSubnet(uint8_t one, uint8_t two, uint8_t three, uint8_t four) {
     subnet = IPAddress(one, two, three, four);
@@ -34,7 +34,7 @@ namespace Comms {
       groundStations[i] = IPAddress(ip_start[0], ip_start[1], ip_start[2], GROUND1 + i);
     }
 
-    ip = IPAddress(ip_start[0], ip_start[1], ip_start[2], IP_ADDRESS_END);
+    ip = IPAddress(ip_start[0], ip_start[1], ip_start[2], IPADDR);
     WiFi.config(ip, gateway, subnet);
   }
 
@@ -62,7 +62,7 @@ void sendFirmwareVersionPacket(Packet unused, uint8_t ip)
 
     char commit[] = FW_COMMIT;
     memcpy(&(version.data), &commit, 7);
-    emitPacket(&version);
+    emitPacketToGS(&version);
   }
 
   void registerCallback(uint8_t id, commFunction function)
@@ -290,7 +290,7 @@ void sendFirmwareVersionPacket(Packet unused, uint8_t ip)
       Udp.write(packet->timestamp, 4);
       Udp.write(packet->checksum, 2);
       Udp.write(packet->data, packet->len);
-      Udp.endPacket(i+1);
+      Udp.endPacket();
     }
   }
 
@@ -300,7 +300,7 @@ void sendFirmwareVersionPacket(Packet unused, uint8_t ip)
 
     // Send over UDP
     // Udp.resetSendOffset();
-    Udp.beginPacket(ALL, 42099)
+    Udp.beginPacket(ALL, 42099);
     Udp.write(packet->id);
     Udp.write(packet->len);
     Udp.write(packet->timestamp, 4);

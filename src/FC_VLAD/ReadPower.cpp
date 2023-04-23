@@ -8,7 +8,7 @@ namespace Power
     float iMax = 5.0;
     float sendRate = 500 * 1000; // 0.5 second
     
-    Comms::Packet p = {.id = 1};
+    Comms::Packet p = {.id = 8};
 
     void init()
     {
