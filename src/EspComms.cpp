@@ -8,7 +8,7 @@ namespace Comms {
   char packetBuffer[sizeof(Packet)];
   bool multicast = false;
 
-  byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, IP};
+  byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, IPADDR};
   // Define groundstation ips
   const uint8_t groundStationCount = 3;
   IPAddress groundStations[groundStationCount] = {IPAddress(10, 0, 0, GROUND1), IPAddress(10, 0, 0, GROUND2), IPAddress(10, 0, 0, GROUND3)};
@@ -16,7 +16,7 @@ namespace Comms {
   // IPAddress groundStations[groundStationCount] = {IPAddress(10, 0, 0, GROUND1)};
   // int ports[groundStationCount] = {42069};
 
-  IPAddress ip(10, 0, 0, IP);
+  IPAddress ip(10, 0, 0, IPADDR);
 
   void init(int cs, int spiMisoPin, int spiMosiPin, int spiSclkPin, int ETH_intN)
   {
@@ -51,16 +51,16 @@ namespace Comms {
     DEBUG("sending firmware version packet\n");
     DEBUG_FLUSH();
 
-    Packet version = {.IP = FW_STATUS, .len = 7};
+    Packet version = {.id = FW_STATUS, .len = 7};
 
     char commit[] = FW_COMMIT;
     memcpy(&(version.data), &commit, 7);
     emitPacket(&version);
   }
 
-  void registerCallback(uint8_t IP, commFunction function)
+  void registerCallback(uint8_t id, commFunction function)
   {
-    callbackMap.insert(std::pair<int, commFunction>(IP, function));
+    callbackMap.insert(std::pair<int, commFunction>(id, function));
   }
 
   /**
@@ -74,25 +74,25 @@ namespace Comms {
     uint16_t checksum = *(uint16_t *)&packet->checksum;
     if (checksum == computePacketChecksum(packet))
     {
-      Serial.print("Packet with IP ");
-      Serial.print(packet->IP);
+      Serial.print("Packet with IPADDR ");
+      Serial.print(packet->id);
       Serial.print(" has correct checksum!\n");
       // try to access function, checking for out of range exception
-      if (callbackMap.count(packet->IP))
+      if (callbackMap.count(packet->id))
       {
-        callbackMap.at(packet->IP)(*packet, ip);
+        callbackMap.at(packet->id)(*packet, ip);
       }
       else
       {
-        Serial.print("IP ");
-        Serial.print(packet->IP);
+        Serial.print("IPADDR ");
+        Serial.print(packet->id);
         Serial.print(" does not have a registered callback function.\n");
       }
     }
     else
     {
-      Serial.print("Packet with IP ");
-      Serial.print(packet->IP);
+      Serial.print("Packet with IPADDR ");
+      Serial.print(packet->id);
       Serial.print(" does not have correct checksum!\n");
     }
   }
@@ -120,20 +120,20 @@ namespace Comms {
           cnt++;
         }
         Packet *packet = (Packet *)&packetBuffer;
-        // DEBUG("Got unverified packet with IP ");
-        // DEBUG(packet->IP);
+        // DEBUG("Got unverified packet with IPADDR ");
+        // DEBUG(packet->id);
         // DEBUG('\n');
         evokeCallbackFunction(packet, 255); // 255 signifies a USB packet
         */
        
-       //Instead I want to read commands in the form of "IP data"
+       //Instead I want to read commands in the form of "id data"
        //And then make the packet and trigger the callback
 
         Serial.println("Got a command");
-        uint8_t IP = (uint8_t)Serial.parseInt();
-        Serial.print("IP" + String(IP));
-        if (IP == -1) return;
-        Packet packet = {.IP = IP, .len = 0};
+        uint8_t id = (uint8_t)Serial.parseInt();
+        Serial.print("id" + String(id));
+        if (id == -1) return;
+        Packet packet = {.id = id, .len = 0};
         while(Serial.available()){
           if (Serial.peek() == ' ') Serial.read();
           if (Serial.peek() == '\n') {Serial.read(); break;}
@@ -278,7 +278,7 @@ namespace Comms {
     // Udp.resetSendOffset();
     for (int i = 0; i < groundStationCount; i++){
       Udp.resetSendOffset(i+1);
-      Udp.write(i+1, packet->IP);
+      Udp.write(i+1, packet->id);
       Udp.write(i+1, packet->len);
       Udp.write(i+1, packet->timestamp, 4);
       Udp.write(i+1, packet->checksum, 2);
@@ -294,7 +294,7 @@ namespace Comms {
     // Send over UDP
     // Udp.resetSendOffset();
     Udp.resetSendOffset(0);
-    Udp.write(0, packet->IP);
+    Udp.write(0, packet->id);
     Udp.write(0, packet->len);
     Udp.write(0, packet->timestamp, 4);
     Udp.write(0, packet->checksum, 2);
@@ -308,7 +308,7 @@ namespace Comms {
   //   // Send over UDP
   //   // Udp.resetSendOffset();
   //   Udp.beginPacket(IPAddress(10,0,0,ip), port);
-  //   Udp.write(packet->IP);
+  //   Udp.write(packet->id);
   //   Udp.write(packet->len);
   //   Udp.write(packet->timestamp, 4);
   //   Udp.write(packet->checksum, 2);
@@ -335,7 +335,7 @@ namespace Comms {
     uint8_t sum1 = 0;
     uint8_t sum2 = 0;
 
-    sum1 = sum1 + packet->IP;
+    sum1 = sum1 + packet->id;
     sum2 = sum2 + sum1;
     sum1 = sum1 + packet->len;
     sum2 = sum2 + sum1;
@@ -355,7 +355,7 @@ namespace Comms {
   }
 
   void sendAbort(uint8_t systemMode, uint8_t abortReason){
-    Packet packet = {.IP = ABORT, .len = 0};
+    Packet packet = {.id = ABORT, .len = 0};
     packetAddUint8(&packet, systemMode);
     packetAddUint8(&packet, abortReason);
     emitPacketToAll(&packet);
