@@ -1,8 +1,8 @@
 #include <Common.h>
 #include <EspComms.h>
-#include "ReadPower.h"
-
+#include "FlightStatus.h"
 #include <Arduino.h>
+
 uint8_t heartCounter = 0;
 Comms::Packet heart = {.id = HEARTBEAT, .len = 0};
 void heartbeat(Comms::Packet p, uint8_t ip){
@@ -20,13 +20,14 @@ void heartbeat(Comms::Packet p, uint8_t ip){
 
   //send it back
   heart.len = 0;
-  Comms::packetAddUint8(&heart, ID);
+  Comms::packetAddUint8(&heart, IPADDR);
   Comms::packetAddUint8(&heart, heartCounter);
   Comms::emitPacketToGS(&heart);
 }
 
 Task taskTable[] = {
-  {Power::task_readSendPower, 0, true},
+  // {Power::task_readSendPower, 0, true},
+  {FlightStatus::updateFlight, 0, true},
 };
 
 #define TASK_COUNT (sizeof(taskTable) / sizeof (struct Task))
@@ -35,9 +36,9 @@ void setup() {
   // setup stuff here
   Comms::init(); // takes care of Serial.begin()
   initWire();
-  Power::init();
+  // Power::init();
+  FlightStatus::init();
   Comms::registerCallback(HEARTBEAT, heartbeat);
-
 
   while(1) {
     // main loop here to avoid arduino overhead
