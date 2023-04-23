@@ -9,6 +9,8 @@ namespace TC {
   uint32_t abortTemp = 200;
   uint32_t abortTime = 500;
   ulong abortStart[8] = {0,0,0,0,0,0,0,0};
+  uint8_t ABORTTC1 = 1;
+  uint8_t ABORTTC2 = 2;
 
   void init() {
     //Serial.println("Initializing TCs...");
@@ -44,20 +46,26 @@ namespace TC {
   }
 
   float sample(uint8_t index) {
-    if (abortOn && (index == 1 || index == 2)){
+    if (abortOn && (index == ABORTTC1 || index == ABORTTC2)){
       float temp = tcs[index].readCelsius();
-      if (temp > abortTemp){
-        if (abortStart[index] == 0){
-          abortStart[index] = millis();
+      if (isnan(temp)){
+        //do not reset abort timer
+      } else {
+        if (temp > abortTemp){
+          if (abortStart[index] == 0){
+            abortStart[index] = millis();
+          }
         }
-        else if (millis() - abortStart[index] > abortTime){
-          Comms::sendAbort(HOTFIRE, ENGINE_OVERTEMP);
-          setAbort(false);
+        else{
+          abortStart[index] = 0;
         }
       }
-      else{
-        abortStart[index] = 0;
+
+      if (abortStart[index] != 0 && millis() - abortStart[index] > abortTime){
+        Comms::sendAbort(HOTFIRE, ENGINE_OVERTEMP);
+        setAbort(false);
       }
+      
     }
     return tcs[index].readCelsius();
   }
