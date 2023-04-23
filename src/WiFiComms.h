@@ -1,8 +1,8 @@
 #pragma once
 
 #include <Common.h>
-#include <Ethernet.h>
-#include <EthernetUdp.h>
+#include <WiFi.h>
+#include <WiFiUdp.h>
 
 #include <Arduino.h>
 
@@ -11,10 +11,6 @@
 
 namespace Comms
 {
-  // const int port = 42069;
-  // const IPAddress ip(10, 0, 0, ID);
-  // const IPAddress groundStation1(10, 0, 0, 69);
-  // const IPAddress groundStation2(10, 0, 0, 70);
 
   struct Packet
   {
@@ -25,7 +21,9 @@ namespace Comms
     uint8_t data[256];
   };
 
-  void init(int cs, int spiMisoPin, int spiMosiPin, int spiSclkPin, int ETH_intN);
+  void setSubnetMask(uint8_t one, uint8_t two, uint8_t three, uint8_t four);
+  void setIPStart(uint8_t one, uint8_t two, uint8_t three);
+
   void init();
 
   typedef void (*commFunction)(Packet, uint8_t);
@@ -68,8 +66,7 @@ namespace Comms
    *
    * @param packet The packet in which the data is stored.
    */
-  void finishPacket(Packet *packet);
-  void emitPacket(Packet *packet);
+  void emitPacket(Packet *packet, uint8_t ip, uint16_t port);
 
   /**
    * @brief Sends packet data over ethernet and serial towards a specific ip labeled socketNum
@@ -82,8 +79,6 @@ namespace Comms
   // Broadcast
   void emitPacketToAll(Packet *packet);
 
-  void initExtraSocket(int port, uint8_t ip);
-  void emitPacketToExtra(Packet *packet, uint8_t ip);
 
   bool verifyPacket(Packet *packet);
 

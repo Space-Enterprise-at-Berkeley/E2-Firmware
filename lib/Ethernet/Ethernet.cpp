@@ -107,12 +107,13 @@ void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress g
 		ETH_intN = 9;
 	}
 	pinMode(ETH_intN, INPUT);
-	attachInterrupt(ETH_intN, setRecvFlag, FALLING);
+	//attachInterrupt(ETH_intN, setRecvFlag, FALLING);
 	SPI.endTransaction();
 }
 
 bool EthernetClass::detectRead() {
-	if (INTnFlag) {
+	//if (INTnFlag) {
+	if (!digitalRead(9)) {
 		W5500.writeSnIR(0, 0xff);
 		INTnFlag = false;
 		return true;

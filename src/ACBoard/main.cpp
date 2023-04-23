@@ -7,6 +7,7 @@
 #include "ChannelMonitor.h"
 #include <MCP23008.h>
 #include <Wire.h>
+#include <EEPROM.h>
 
 //Actuators
 enum Actuators {
@@ -142,12 +143,26 @@ uint32_t launchDaemon(){
   return 0;
 }
 
+Comms::Packet config = {.id = AC_CONFIG, .len = 0};
+float lox_autoVentPressure;
+float fuel_autoVentPressure;
+uint32_t sendConfig(){
+  if (ID == AC1){
+    return 0; // don't need for ac1 right now
+  }
+  Comms::packetAddFloat(&config, lox_autoVentPressure);
+  Comms::packetAddFloat(&config, fuel_autoVentPressure);
+  Comms::emitPacketToGS(&config);
+  return 1000;
+}
+
 Task taskTable[] = {
   {launchDaemon, 0, false}, //do not move from index 0
   {AC::actuationDaemon, 0, true},
   {AC::task_actuatorStates, 0, true},
   {ChannelMonitor::readChannels, 0, true},
   {Power::task_readSendPower, 0, true},
+  {sendConfig, 0, true},
   // {AC::task_printActuatorStates, 0, true},
 };
 
@@ -330,6 +345,43 @@ void onLaunchQueue(Comms::Packet packet, uint8_t ip){
   }
 }
 
+void setAutoVent(Comms::Packet packet, uint8_t ip){
+  lox_autoVentPressure = packetGetFloat(&packet, 0);
+  fuel_autoVentPressure = packetGetFloat(&packet, 4);
+  Serial.println("lox auto vent pressure set to: " + String(lox_autoVentPressure));
+  Serial.println("fuel auto vent pressure set to: " + String(fuel_autoVentPressure));
+
+  //add to eeprom
+  EEPROM.begin(2*sizeof(float));
+  EEPROM.put(0, lox_autoVentPressure);
+  EEPROM.put(sizeof(float), fuel_autoVentPressure);
+  EEPROM.end();
+}
+
+void ac2AutoVent(Comms::Packet packet, uint8_t ip){
+  float p1 = packetGetFloat(&packet, 0);
+  float p2 = packetGetFloat(&packet, 4);
+  if (ip == LOX_EREG){
+    if (p1 > lox_autoVentPressure || p2 > lox_autoVentPressure){
+      AC::actuate(LOX_GEMS, AC::ON, 0);
+    } else {
+      //close lox gems if open
+      if (AC::getActuatorState(LOX_GEMS) == AC::ON){
+        AC::actuate(LOX_GEMS, AC::OFF, 0);
+      }
+    }
+  } else if (ip == FUEL_EREG){
+    if (p1 > fuel_autoVentPressure || p2 > fuel_autoVentPressure){
+      AC::actuate(FUEL_GEMS, AC::ON, 0);
+    } else {
+      //close fuel gems if open
+      if (AC::getActuatorState(FUEL_GEMS) == AC::ON){
+        AC::actuate(FUEL_GEMS, AC::OFF, 0);
+      }
+    }
+  }
+}
+
 void setup() {
   // setup stuff here
   Comms::init(); // takes care of Serial.begin()
@@ -344,6 +396,24 @@ void setup() {
   //endflow register
   Comms::registerCallback(ENDFLOW, onEndFlow);
   Comms::registerCallback(HEARTBEAT, heartbeat);
+
+  if (ID == AC2) {
+    Comms::initExtraSocket(42042, ALL);
+    Comms::registerCallback(EREG_PRESSURE, ac2AutoVent);
+    Comms::registerCallback(AC_CHANGE_CONFIG, setAutoVent);
+
+    //pull auto vent pressure from eeprom
+    EEPROM.begin(2*sizeof(float));
+    lox_autoVentPressure = EEPROM.get(0, lox_autoVentPressure);
+    if (isnan(lox_autoVentPressure)){
+      lox_autoVentPressure = 600.0;
+    }
+    fuel_autoVentPressure = EEPROM.get(sizeof(float), fuel_autoVentPressure);
+    if (isnan(fuel_autoVentPressure)){
+      fuel_autoVentPressure = 600.0;
+    }
+    EEPROM.end();
+  }
 
 
   for (int i = 0; i < 8; i++) {
