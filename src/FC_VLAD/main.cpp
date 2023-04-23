@@ -7,6 +7,8 @@
 
 #include "FlightStatus.h"
 #include "ReadPower.h"
+#include "BlackBox.h"
+#include "ChannelMonitor.h"
 
 // 0: IDLE, 1: FLIGHT, 2: REPLAY
 enum BoardMode {
@@ -75,6 +77,7 @@ Task taskTable[] = {
   // {Power::task_readSendPower, 0, true},
   {FlightStatus::updateFlight, 0, true},
   {Power::task_readSendPower, 0, true},
+  {ChannelMonitor::readChannels, 0, true},
   {sendState, 0, true},
 };
 
@@ -84,8 +87,10 @@ void setup() {
   // setup stuff here
   Comms::init(); // takes care of Serial.begin()
   initWire();
-  // Power::init();
+  Power::init();
   FlightStatus::init();
+  BlackBox::init();
+  ChannelMonitor::init(40, 39, 38, 15, 14);
   Comms::registerCallback(HEARTBEAT, heartbeat);
 
   while(1) {
