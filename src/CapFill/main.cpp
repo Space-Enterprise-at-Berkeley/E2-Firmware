@@ -32,8 +32,21 @@ float samples[sampleSize];
 float total = 0;
 float baseline = 0;
 
+//ZERO
+int oldestCapIndex = 0;
+float caps[sampleSize];
+float capTotal = 0;
+
 const int timeBetweenTransmission = 100; // ms
 int lastTransmissionTime = 0;
+
+//ZERO
+float capZero = 150; // default
+float capDelta = DELTA; //default from ini
+
+void onZeroCommand() {
+  numSamples = 0;
+}
 
 //samhitag3 added runningAverage method
 float runningAverage(float total, int numSamples){
@@ -161,14 +174,23 @@ void loop()
     float refValue = _capSens.readCapacitance(01);
 
     // samhitag3 passed data to running average method
+
+    // int oldestCapIndex = 0;
+    // float caps[sampleSize];
+    // float capTotal = 0;
+    
     if (numSamples < sampleSize) {
       if (numSamples == 0) {
         baseline = refValue;
+        capZero = capValue;
       }
       samples[numSamples] = refValue;
+      caps[numSamples] = capValue;
       total += refValue;
+      capTotal += capValue;
       if (numSamples == sampleSize - 1) {
         baseline = total / numSamples;
+        capZero = capTotal / numSamples;
       }
       numSamples++;
     }
@@ -213,6 +235,8 @@ void loop()
     }
     avgCorrected /= correctedBuffer.size();
 
+    //ZER0
+    float capPerCent = (avgCorrected - capZero) / capDelta * 100;
 
     // samhitag3 test print statements
     // Serial.print("temp: ");
@@ -249,10 +273,13 @@ void loop()
     capPacket.len = 0;
     // samhitag3 changed packet variable from capValue to corrected
     Comms::packetAddFloat(&capPacket, corrected);
-    Comms::packetAddFloat(&capPacket, avgCap);
+    Comms::packetAddFloat(&capPacket, avgCorrected);
     Comms::packetAddFloat(&capPacket, tempValue);
     // samhitag3 added packet variable refValue
     Comms::packetAddFloat(&capPacket, refValue);
+    //ZERO
+    Comms::packetAddFloat(&capPacket, capValue);
+    Comms::packetAddFloat(&capPacket, capPerCent);
     // Comms::packetAddFloat(&capPacket, 0.0);
     
     uint32_t timestamp = millis();
