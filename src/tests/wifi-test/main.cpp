@@ -6,14 +6,14 @@
 WiFiUDP udp;
 char packetBuffer[255];
 unsigned int localPort = 42069;
-//IPAddress groundStation1(192, 168, 1, 169);
-IPAddress groundStation1(10, 0, 0, 169);
-//IPAddress ip(192, 168, 1, IP_ADDRESS_END);
-IPAddress ip(10, 0, 0, IP_ADDRESS_END);
-//IPAddress gateway(192, 168, 1, 1);
-IPAddress gateway(172, 20, 10, 1);
-//IPAddress subnet(255, 255, 255, 0);
-IPAddress subnet(255, 255, 255, 240);
+IPAddress groundStation1(192, 168, 43, 69);
+// IPAddress groundStation1(10, 0, 0, 169);
+IPAddress ip(192, 168, 43, IP_ADDRESS_END);
+// IPAddress ip(10, 0, 0, IP_ADDRESS_END);
+IPAddress gateway(192, 168, 43, 1);
+// IPAddress gateway(172, 20, 10, 1);
+IPAddress subnet(255, 255, 255, 0);
+// IPAddress subnet(255, 255, 255, 240);
 Comms::Packet packet = {.id = 101, .len = 0};
 
 // uint8_t LED_0 = 18;
@@ -73,7 +73,7 @@ uint32_t udpRead(){
 }
 
 uint32_t udpSend(){
-    //Serial.println(sizeof(Comms::Packet));
+    Serial.println(sizeof(Comms::Packet));
     udp.beginPacket(groundStation1, localPort);
     //digitalWrite(LED_3, HIGH);
 
@@ -90,7 +90,7 @@ uint32_t udpSend(){
 
     udp.endPacket();
     //digitalWrite(LED_3, LOW);
-
+    Serial.println("Packet sent");
     return 50*1000;
 }
 
