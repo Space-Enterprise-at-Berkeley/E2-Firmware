@@ -75,7 +75,7 @@ uint32_t udpRead(){
 }
 
 uint32_t udpSend(){
-    //Serial.println(sizeof(Comms::Packet));
+    Serial.println(sizeof(Comms::Packet));
     udp.beginPacket(groundStation1, localPort);
     //digitalWrite(LED_3, HIGH);
 
@@ -92,7 +92,7 @@ uint32_t udpSend(){
 
     udp.endPacket();
     //digitalWrite(LED_3, LOW);
-
+    Serial.println("Packet sent");
     return 50*1000;
 }
 
