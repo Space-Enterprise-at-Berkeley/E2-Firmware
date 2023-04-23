@@ -1,5 +1,5 @@
 #include "AC.h"
-#include "MAX22201.h"
+#include <MAX22201.h>
 #include <EspComms.h>
 #include "ChannelMonitor.h"
 
@@ -23,9 +23,18 @@
 // 5 corresponds to actuator state 5
 
 
+
+
 // current threshold for a fully extended actuator (i.e less that 0.1A means an actuator has hit its limit switch)
 float FULLY_EXTENDED_CURRENT = 0.1;
 int FULLY_EXTENDED_MIN_TIME = 100;
+
+//for delayed actuation
+uint8_t delayedActuationsChannel[16];
+uint8_t delayedActuationsCmd[16];
+uint32_t delayedActuationsTime[16];
+uint32_t delayedActuationsDelay[16];
+uint8_t delayedActuationCount = 0;
 
 
 namespace AC {
@@ -55,6 +64,14 @@ namespace AC {
 
     Serial.println("Received command to actuate channel " + String(channel) + " with command " + String(cmd) + " w time " + String(time));
 
+    actuate(channel, cmd, time);
+  }
+
+  void actuate(uint8_t channel, uint8_t cmd, uint32_t time) {
+    //do not actuate breakwire
+    if (ID == AC1 && channel == 1) {
+      return;
+    }
     // set states and timers of actuator
     actuators[channel].state = cmd;
     actuators[channel].timeLeft = time;
@@ -73,13 +90,26 @@ namespace AC {
     return;
   }
 
+  void delayedActuate(uint8_t channel, uint8_t cmd, uint32_t time, uint32_t delay) {
+    // add to list of delayed actuations
+    delayedActuationsChannel[delayedActuationCount] = channel;
+    delayedActuationsCmd[delayedActuationCount] = cmd;
+    delayedActuationsTime[delayedActuationCount] = time;
+    delayedActuationsDelay[delayedActuationCount] = delay + millis();
+    delayedActuationCount++;
+  }
+
+  uint8_t getActuatorState(uint8_t channel) {
+    return actuators[channel].state;
+  }
+
   void init() {
     // Initialise every actuator channel, default state is 0
     for (int i = 0; i < 8; i++) {
       actuators[i].init(actuatorPins[2*i], actuatorPins[2*i+1]);
     }
     // Register the actuation task callback to packet 100
-    Comms::registerCallback(100, beginActuation);
+    Comms::registerCallback(ACTUATE_CMD, beginActuation);
   }
 
   // Daemon task which should be run frequently
@@ -109,28 +139,43 @@ namespace AC {
       // don't need to touch anything for commands 4 and 5 - actuator stays on/off
     }
 
+    // check for any delayed actuations
+    for (int i = 0; i < delayedActuationCount; i++) {
+      if (millis() > delayedActuationsDelay[i]) {
+        actuate(delayedActuationsChannel[i], delayedActuationsCmd[i], delayedActuationsTime[i]);
+        // remove from list
+        for (int j = i; j < delayedActuationCount - 1; j++) {
+          delayedActuationsChannel[j] = delayedActuationsChannel[j+1];
+          delayedActuationsCmd[j] = delayedActuationsCmd[j+1];
+          delayedActuationsTime[j] = delayedActuationsTime[j+1];
+          delayedActuationsDelay[j] = delayedActuationsDelay[j+1];
+        }
+        delayedActuationCount--;
+      }
+    }
+
     // run every 10ms, could maybe less time as this is essentially the timing resolution of an actuation
     return 1000 * 10;
   }
 
   // converts command from packet 100 to actuator state in packet 2
   uint8_t formatActuatorState(uint8_t state) {
-    uint8_t mapping[6] = {0, 1, 0, 1, 1, 2};
+    uint8_t mapping[6] = {RETRACTING, EXTENDING, RETRACTING, EXTENDING, EXTENDING, INACTIVE};
     return mapping[state];
   }
 
   // gets every actuator state, formats it, and emits a packet
-  uint32_t actuatorStatesTask() {
-    Comms::Packet acStates = {.id = 2};
+  uint32_t task_actuatorStates() {
+    Comms::Packet acStates = {.id = AC_STATE};
     for (int i = 0; i < 8; i++) {
       packetAddUint8(&acStates, formatActuatorState(actuators[i].state));
     }
-    Comms::emitPacket(&acStates);
-    return 1000 * 1000;
+    Comms::emitPacketToGS(&acStates);
+    return 250 * 1000;
   }
 
   // prints every actuator state to serial
-  uint32_t printActuatorStatesTask() {
+  uint32_t task_printActuatorStates() {
     for (int i = 0; i < 8; i++) {
       Serial.print("Actuator ");
       Serial.print(i);

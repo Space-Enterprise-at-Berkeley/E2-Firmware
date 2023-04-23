@@ -1,6 +1,6 @@
 #pragma once
 #include <Arduino.h>
-#include "MCP23008.h"
+#include <MCP23008.h>
 
 
 namespace ChannelMonitor {
@@ -13,6 +13,7 @@ namespace ChannelMonitor {
     
     float* getCurrents();
     float* getContinuities();
+    bool isChannelContinuous(uint8_t channel);
 
     MCP23008 getMCP1();
     MCP23008 getMCP2();

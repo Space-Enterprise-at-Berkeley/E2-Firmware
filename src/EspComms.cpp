@@ -3,28 +3,54 @@
 namespace Comms {
   std::map<uint8_t, commFunction> callbackMap;
 
+  // Define 3 UDP instances
   EthernetUDP Udp;
   char packetBuffer[sizeof(Packet)];
+  bool multicast = false;
 
-  byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, IP_ADDRESS_END};
-  IPAddress groundStation1(10, 0, 0, 169);
-  IPAddress groundStation2(10, 0, 0, 170);
-  IPAddress ip(10, 0, 0, IP_ADDRESS_END);
-  int port = 42069;
+  byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, ID};
+  // Define groundstation ips
+  const uint8_t groundStationCount = 3;
+  IPAddress groundStations[groundStationCount] = {IPAddress(10, 0, 0, GROUND1), IPAddress(10, 0, 0, GROUND2), IPAddress(10, 0, 0, GROUND3)};
+  int ports[groundStationCount] = {42069, 42070, 42071};
+  // IPAddress groundStations[groundStationCount] = {IPAddress(10, 0, 0, GROUND1)};
+  // int ports[groundStationCount] = {42069};
+  bool extraSocketOpen = false;
+
+  IPAddress ip(10, 0, 0, ID);
 
   void init(int cs, int spiMisoPin, int spiMosiPin, int spiSclkPin, int ETH_intN)
   {
-    Serial.begin(926100);
-    
+    Serial.begin(921600);
     Ethernet.init(cs);
     Ethernet.begin((uint8_t *)mac, ip, spiMisoPin, spiMosiPin, spiSclkPin, ETH_intN);
-    Udp.begin(port);
 
-    Udp.beginPacket(groundStation1, port);
+    // Configure W5500 pins destination/ports
+    for(int i = 0; i < groundStationCount; i++) {
+      Udp.begin(ports[i], i+1);
+      Udp.beginPacket(i+1, groundStations[i], ports[i]);
+    }
+    Udp.begin(42099, 0);
+    Udp.beginPacket(0, IPAddress(10, 0, 0, 255), 42099);
+    
+    // if (multicast) {
+    //   Udp.beginMulticast(multiGround, port);
+    //   Udp.beginPacket(multiGround, port);
+
+    // } else {
+    //   Udp.begin(port);
+    //   Udp.beginPacket(groundStations[0], port);
+    // }
   }
 
   void init() {
     init(10, -1, -1, -1, -1);
+  }
+
+  void initExtraSocket(int port, uint8_t ip){
+    Udp.begin(port, groundStationCount+1);
+    Udp.beginPacket(groundStationCount+1, IPAddress(10, 0, 0, ip), port);
+    extraSocketOpen = true;
   }
 
   void sendFirmwareVersionPacket(Packet unused, uint8_t ip)
@@ -32,7 +58,7 @@ namespace Comms {
     DEBUG("sending firmware version packet\n");
     DEBUG_FLUSH();
 
-    Packet version = {.id = 0, .len = 7};
+    Packet version = {.id = FW_STATUS, .len = 7};
 
     char commit[] = FW_COMMIT;
     memcpy(&(version.data), &commit, 7);
@@ -80,13 +106,13 @@ namespace Comms {
 
   void processWaitingPackets()
   {
-    Udp.resetSendOffset();
     if (Ethernet.detectRead()) {
       if (Udp.parsePacket()) {
-        if(Udp.remotePort() != port) return;
+        // if(Udp.remotePort() != port) return;
         Udp.read(packetBuffer, sizeof(Comms::Packet));
         Packet *packet = (Packet*) &packetBuffer;
         evokeCallbackFunction(packet, Udp.remoteIP()[3]);
+        
       }
     }
 
@@ -111,7 +137,7 @@ namespace Comms {
        //And then make the packet and trigger the callback
 
         Serial.println("Got a command");
-        int id = (uint8_t)Serial.parseInt();
+        uint8_t id = (uint8_t)Serial.parseInt();
         Serial.print("id" + String(id));
         if (id == -1) return;
         Packet packet = {.id = id, .len = 0};
@@ -235,27 +261,6 @@ namespace Comms {
    *
    * @param packet Packet to be sent.
    */
-  void emitPacket(Packet *packet)
-  {
-    finishPacket(packet);
-    // Send over UDP
-    // Udp.resetSendOffset();
-    Udp.beginPacket(groundStation1, port);
-    Udp.write(packet->id);
-    Udp.write(packet->len);
-    Udp.write(packet->timestamp, 4);
-    Udp.write(packet->checksum, 2);
-    Udp.write(packet->data, packet->len);
-    Udp.endPacket();
-
-    Udp.beginPacket(groundStation2, port);
-    Udp.write(packet->id);
-    Udp.write(packet->len);
-    Udp.write(packet->timestamp, 4);
-    Udp.write(packet->checksum, 2);
-    Udp.write(packet->data, packet->len);
-    Udp.endPacket();
-  }
 
   void finishPacket(Packet *packet){
     // add timestamp to struct
@@ -269,9 +274,72 @@ namespace Comms {
     uint16_t checksum = computePacketChecksum(packet);
     packet->checksum[0] = checksum & 0xFF;
     packet->checksum[1] = checksum >> 8;
+
   }
 
+  void emitPacketToGS(Packet *packet)
+  {
+    finishPacket(packet);
 
+    // Send over UDP
+    // Udp.resetSendOffset();
+    for (int i = 0; i < groundStationCount; i++){
+      Udp.resetSendOffset(i+1);
+      Udp.write(i+1, packet->id);
+      Udp.write(i+1, packet->len);
+      Udp.write(i+1, packet->timestamp, 4);
+      Udp.write(i+1, packet->checksum, 2);
+      Udp.write(i+1, packet->data, packet->len);
+      Udp.endPacket(i+1);
+    }
+  }
+
+  void emitPacketToAll(Packet *packet)
+  {
+    finishPacket(packet);
+
+    // Send over UDP
+    // Udp.resetSendOffset();
+    Udp.resetSendOffset(0);
+    Udp.write(0, packet->id);
+    Udp.write(0, packet->len);
+    Udp.write(0, packet->timestamp, 4);
+    Udp.write(0, packet->checksum, 2);
+    Udp.write(0, packet->data, packet->len);
+    Udp.endPacket(0);
+  }
+
+  void emitPacketToExtra(Packet *packet) {
+    if (!extraSocketOpen){
+      Serial.println("Extra socket not open, packet not sent.");
+      return;
+    }
+    finishPacket(packet);
+
+    // Send over UDP
+    // Udp.resetSendOffset();
+    Udp.resetSendOffset(groundStationCount+1);
+    Udp.write(groundStationCount+1, packet->id);
+    Udp.write(groundStationCount+1, packet->len);
+    Udp.write(groundStationCount+1, packet->timestamp, 4);
+    Udp.write(groundStationCount+1, packet->checksum, 2);
+    Udp.write(groundStationCount+1, packet->data, packet->len);
+    Udp.endPacket(groundStationCount+1);
+  }
+  // void emitPacket(Packet *packet, uint8_t ip){
+  //   Serial.println("Emitting packet to " + String(ip));
+  //   finishPacket(packet);
+
+  //   // Send over UDP
+  //   // Udp.resetSendOffset();
+  //   Udp.beginPacket(IPAddress(10,0,0,ip), port);
+  //   Udp.write(packet->id);
+  //   Udp.write(packet->len);
+  //   Udp.write(packet->timestamp, 4);
+  //   Udp.write(packet->checksum, 2);
+  //   Udp.write(packet->data, packet->len);
+  //   Udp.endPacket();
+  // }
 
   bool verifyPacket(Packet *packet)
   {
@@ -309,5 +377,13 @@ namespace Comms {
       sum2 = sum2 + sum1;
     }
     return (((uint16_t)sum2) << 8) | (uint16_t)sum1;
+  }
+
+  void sendAbort(uint8_t systemMode, uint8_t abortReason){
+    Packet packet = {.id = ABORT, .len = 0};
+    packetAddUint8(&packet, systemMode);
+    packetAddUint8(&packet, abortReason);
+    emitPacketToAll(&packet);
+    Serial.println("Abort sent, mode " + String((Mode)systemMode) + " reason " + String((AbortReason)abortReason));
   }
 };

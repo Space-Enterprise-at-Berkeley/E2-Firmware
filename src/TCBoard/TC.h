@@ -15,4 +15,8 @@ namespace TC {
 
   uint32_t task_sampleTCs();
   void print_sampleTCs();
+
+  void setAbort(bool on);
+  void setAbort(bool on, uint32_t temp, uint32_t abortTime);
+  uint32_t disableAbortTask();
 }
