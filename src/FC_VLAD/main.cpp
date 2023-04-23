@@ -1,7 +1,41 @@
 #include <Common.h>
 #include <EspComms.h>
-#include "FlightStatus.h"
+
 #include <Arduino.h>
+#include <Wire.h>
+#include <SPI.h>
+
+#include "FlightStatus.h"
+#include "ReadPower.h"
+
+// 0: IDLE, 1: FLIGHT, 2: REPLAY
+enum BoardMode {
+    IDLE = 0,
+    FLIGHT = 1,
+    REPLAY = 2,
+};
+BoardMode mode = IDLE;
+
+// Flight/Launch mode enable
+uint8_t setVehicleMode(Comms::Packet statePacket, uint8_t ip){      
+    Serial.println("Setting mode to ");           
+    mode = (BoardMode) Comms::packetGetUint8(&statePacket, 0);
+
+    // Setup for apogee
+    if (mode == FLIGHT) { 
+        //Barometer::zeroAltitude();
+        //Apogee::start(); 
+        // start bb recording  
+    } 
+    return mode;
+}
+
+uint32_t sendState(){
+    Comms::Packet state = {.id = 1};
+    Comms::packetAddUint8(&state, mode);
+    Comms::emitPacketToGS(&state);
+    return 1000;
+}
 
 uint8_t heartCounter = 0;
 Comms::Packet heart = {.id = HEARTBEAT, .len = 0};
@@ -25,9 +59,23 @@ void heartbeat(Comms::Packet p, uint8_t ip){
   Comms::emitPacketToGS(&heart);
 }
 
+//VLAD needs to:
+// Read both barometers
+// Read both IMUs
+// Read GPS
+// Run the Kalman filter/apogee detection
+// Read two breakwires
+// Send all data over radio
+// Record to blackbox chip
+
+//Command Runcams
+//Replay blackbox data
+
 Task taskTable[] = {
   // {Power::task_readSendPower, 0, true},
   {FlightStatus::updateFlight, 0, true},
+  {Power::task_readSendPower, 0, true},
+  {sendState, 0, true},
 };
 
 #define TASK_COUNT (sizeof(taskTable) / sizeof (struct Task))
