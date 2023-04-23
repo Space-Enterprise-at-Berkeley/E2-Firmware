@@ -5,11 +5,13 @@
 
 WiFiUDP udp;
 char packetBuffer[255];
-unsigned int localPort = 42069;
+unsigned int localPort = 42070;
 //IPAddress groundStation1(192, 168, 1, 169);
-IPAddress groundStation1(10, 0, 0, 169);
+//IPAddress groundStation1(10, 0, 0, 169);
+IPAddress groundStation1(172, 20, 10, 2);
 //IPAddress ip(192, 168, 1, IP_ADDRESS_END);
-IPAddress ip(10, 0, 0, IP_ADDRESS_END);
+//IPAddress ip(172, 20, 10, IP_ADDRESS_END);
+IPAddress ip(172, 20, 10, IP_ADDRESS_END);
 //IPAddress gateway(192, 168, 1, 1);
 IPAddress gateway(172, 20, 10, 1);
 //IPAddress subnet(255, 255, 255, 0);
