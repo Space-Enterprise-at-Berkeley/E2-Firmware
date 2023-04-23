@@ -7,7 +7,7 @@
 #include <Arduino.h>
 
 const uint16_t NUM_LEDS = 500;
-const uint8_t DATA_PIN = 36;
+const uint8_t DATA_PIN = 15;
 
 const uint8_t TANK_LENGTH = 58;
 const uint8_t TANK_SEPERATION = 15;
