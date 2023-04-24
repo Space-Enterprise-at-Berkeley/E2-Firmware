@@ -302,8 +302,9 @@ namespace HAL {
             PTs[i] = f;
         }
 
-        Ducers::setDownstreamPT1(PTs[0]);
-        Ducers::setDownstreamPT2(PTs[1]);
+        //swapped PT1 and PT2 downstream cuz of wiring ease
+        Ducers::setDownstreamPT1(PTs[1]);
+        Ducers::setDownstreamPT2(PTs[0]);
         Ducers::setUpstreamPT1(PTs[2]);
         Ducers::setUpstreamPT2(PTs[3]);
     }
