@@ -326,6 +326,8 @@ class KalmanFilter{
 
     neom9n.setI2COutput(COM_TYPE_UBX); //Set the I2C port to output UBX only (turn off NMEA noise)
     neom9n.saveConfigSelective(VAL_CFG_SUBSEC_IOPORT); //Save (only) the communications port settings to flash and BBR
+    neom9n.setNavigationFrequency(40);
+    neom9n.setAutoPVT(true);
 
     if (!bmp.begin_I2C(0x77)) {
       Serial.println("Could not find a valid BMP3 sensor, check wiring!");
@@ -350,26 +352,26 @@ class KalmanFilter{
     
     set_barometer_ground_altitude();
 
-    // if (!kx134.begin()) {
-    //   Serial.println("Could not communicate with the the KX13X. Freezing.");
-    //   while (1);
-    // }
+    if (!kx134.begin()) {
+      Serial.println("Could not communicate with the the KX13X. Freezing.");
+      while (1);
+    }
 
     // if (kx134.softwareReset())
     //   Serial.println("Reset.");
 
     // Give some time for the accelerometer to reset.
     // It needs two, but give it five for good measure.
-    // delay(5);
-    // kx134.enableAccel(false);
-    // kx134.setRange(SFE_KX134_RANGE64G);         // 16g for the KX134
-    // kx134.enableDataEngine(); // Enables the bit that indicates data is ready.
+    delay(2);
+    kx134.enableAccel(false);
+    kx134.setRange(SFE_KX134_RANGE64G);         // 16g for the KX134
+    kx134.enableDataEngine(); // Enables the bit that indicates data is ready.
     // kx134.setOutputDataRate(); // Default is 50Hz
-    // kx134.enableAccel();
+    kx134.enableAccel();
 
-    // if(ms5607.connect()>0) {
-    //   Serial.println("Error connecting...");
-    // }
+    if(ms5607.connect()>0) {
+      Serial.println("Error connecting...");
+    }
   }
 
   // Packet definitions
@@ -383,9 +385,9 @@ class KalmanFilter{
     acceleration = get_acceleration_y();
     gps_altitude = get_gps_altitude();
 
-    // update_accel_2();
+    update_accel_2();
 
-    // baro_pressure_2 = get_baro2_pressure();
+    baro_pressure_2 = get_baro2_pressure();
 
     longitude = get_longitude();
     latitude = get_latitude();
@@ -423,43 +425,46 @@ class KalmanFilter{
     Serial.print("FilteredAcceleration:"); Serial.print(accl); Serial.print("  ");
     Serial.print("FilteredAltitude:"); Serial.print(alt); Serial.println();  
 
-    imuPacket.len = 0;
-    Comms::packetAddFloat(&imuPacket, accel_x);
-    Comms::packetAddFloat(&imuPacket, acceleration);
-    Comms::packetAddFloat(&imuPacket, accel_z);
-    Comms::packetAddFloat(&imuPacket, gyro_x);
-    Comms::packetAddFloat(&imuPacket, gyro_y);
-    Comms::packetAddFloat(&imuPacket, gyro_z);
-    Comms::packetAddFloat(&imuPacket, accel_x_2);
-    Comms::packetAddFloat(&imuPacket, accel_y_2);
-    Comms::packetAddFloat(&imuPacket, accel_z_2);
+    // for (int i = 0; i < 10; i++) { 
+      imuPacket.len = 0;
+      Comms::packetAddFloat(&imuPacket, accel_x);
+      Comms::packetAddFloat(&imuPacket, acceleration);
+      Comms::packetAddFloat(&imuPacket, accel_z);
+      Comms::packetAddFloat(&imuPacket, gyro_x);
+      Comms::packetAddFloat(&imuPacket, gyro_y);
+      Comms::packetAddFloat(&imuPacket, gyro_z);
+      Comms::packetAddFloat(&imuPacket, accel_x_2);
+      Comms::packetAddFloat(&imuPacket, accel_y_2);
+      Comms::packetAddFloat(&imuPacket, accel_z_2);
 
-    // emit the packet
-    Comms::emitPacketToGS(&imuPacket);
+      // emit the packet
+      Comms::emitPacketToGS(&imuPacket);
 
-    gpsPacket.len = 0;
-    Comms::packetAddFloat(&gpsPacket, gps_altitude);
-    Comms::packetAddFloat(&gpsPacket, latitude);
-    Comms::packetAddFloat(&gpsPacket, longitude);
-    Comms::packetAddUint8(&gpsPacket, get_gps_sats());
+      gpsPacket.len = 0;
+      Comms::packetAddFloat(&gpsPacket, gps_altitude);
+      Comms::packetAddFloat(&gpsPacket, latitude);
+      Comms::packetAddFloat(&gpsPacket, longitude);
+      Comms::packetAddUint8(&gpsPacket, get_gps_sats());
 
-    // emit the packets
-    Comms::emitPacketToGS(&gpsPacket);
+      // emit the packets
+      Comms::emitPacketToGS(&gpsPacket);
 
-    baroPacket.len = 0;
-    Comms::packetAddFloat(&baroPacket, baro_altitude);
-    Comms::packetAddFloat(&baroPacket, baro_pressure_2);
+      baroPacket.len = 0;
+      Comms::packetAddFloat(&baroPacket, baro_altitude);
+      Comms::packetAddFloat(&baroPacket, baro_pressure_2);
+      Comms::packetAddFloat(&baroPacket, get_baro2_temp());
 
-    // emit the packets
-    Comms::emitPacketToGS(&baroPacket);
+      // emit the packets
+      Comms::emitPacketToGS(&baroPacket);
 
-    filteredPacket.len = 0;
-    Comms::packetAddFloat(&filteredPacket, alt);
-    Comms::packetAddFloat(&filteredPacket, vel);
-    Comms::packetAddFloat(&filteredPacket, accl);
+      filteredPacket.len = 0;
+      Comms::packetAddFloat(&filteredPacket, alt);
+      Comms::packetAddFloat(&filteredPacket, vel);
+      Comms::packetAddFloat(&filteredPacket, accl);
 
-    // emit the packets
-    Comms::emitPacketToGS(&filteredPacket);
+      // emit the packets
+      Comms::emitPacketToGS(&filteredPacket);
+    // }
 
     return updateRate;
   }

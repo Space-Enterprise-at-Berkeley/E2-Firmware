@@ -77,7 +77,7 @@ Task taskTable[] = {
   // {Power::task_readSendPower, 0, true},
   {FlightStatus::updateFlight, 0, true},
   {Power::task_readSendPower, 0, true},
-  // {ChannelMonitor::readChannels, 0, true},
+  {ChannelMonitor::readChannels, 0, true},
   {sendState, 0, true},
 };
 
@@ -90,7 +90,7 @@ void setup() {
   Power::init();
   FlightStatus::init();
   // BlackBox::init();
-  // ChannelMonitor::init(40, 39, 38, 15, 14);
+  ChannelMonitor::init(40, 39, 38, 15, 14);
   Comms::registerCallback(HEARTBEAT, heartbeat);
 
   while(1) {
