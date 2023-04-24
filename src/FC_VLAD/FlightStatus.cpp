@@ -374,11 +374,23 @@ class KalmanFilter{
     }
   }
 
+  uint8_t launched = 0;
+  uint8_t burnout = 0;
+  uint8_t apogee = 0;
+  uint8_t main_parachute = 0;
+  float prev_altitude = 0;
+  uint8_t deploy_vel = 0;
+  uint16_t main_altitude = 500;
+  uint8_t would_deploy_drogue = 0;
+  uint8_t would_deploy_main = 0;
+  
+
   // Packet definitions
   Comms::Packet filteredPacket = {.id = 2};
   Comms::Packet imuPacket = {.id = 3};
   Comms::Packet gpsPacket = {.id = 4};
   Comms::Packet baroPacket = {.id = 5};
+  Comms::Packet eventsPacket = {.id = 10};
 
   uint32_t updateFlight() { 
     baro_altitude = get_barometer_altitude();
@@ -387,7 +399,7 @@ class KalmanFilter{
 
     update_accel_2();
 
-    baro_pressure_2 = get_baro2_pressure();
+    // baro_pressure_2 = get_baro2_pressure();
 
     longitude = get_longitude();
     latitude = get_latitude();
@@ -451,7 +463,7 @@ class KalmanFilter{
 
       baroPacket.len = 0;
       Comms::packetAddFloat(&baroPacket, baro_altitude);
-      Comms::packetAddFloat(&baroPacket, baro_pressure_2);
+      Comms::packetAddFloat(&baroPacket, get_baro2_pressure());
       Comms::packetAddFloat(&baroPacket, get_baro2_temp());
 
       // emit the packets
@@ -465,6 +477,33 @@ class KalmanFilter{
       // emit the packets
       Comms::emitPacketToGS(&filteredPacket);
     // }
+
+    if (vel > 3 & accl > 15 & launched == 0) {
+      launched = 100;
+    }
+
+    if (launched > 0 & accl < 5 & burnout == 0) {
+      burnout = 100;
+    }
+
+    if (burnout > 0 & alt < prev_altitude & apogee == 0 & vel < deploy_vel) {
+      apogee = 100;
+      // deploy_drogue();
+      would_deploy_drogue = 42;
+    }
+
+    if (apogee > 0 & alt < main_altitude & main_parachute == 0) {
+      main_parachute = alt;
+      // deploy_main();
+      would_deploy_main = 42;
+    } 
+
+    eventsPacket.len = 0;
+    Comms::packetAddUint8(&eventsPacket, launched);
+    Comms::packetAddUint8(&eventsPacket, burnout);
+    Comms::packetAddUint8(&eventsPacket, apogee);
+    Comms::packetAddUint8(&eventsPacket, would_deploy_drogue);
+    Comms::packetAddUint8(&eventsPacket, would_deploy_main);
 
     return updateRate;
   }
