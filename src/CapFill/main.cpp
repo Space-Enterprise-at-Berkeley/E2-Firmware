@@ -26,6 +26,7 @@ int indicatorLastTime = 0;
 
 // samhitag3 added variables for maintaining running average
 int numSamples = 0;
+int capNumSamples = 0;
 int oldestSampleIndex = 0;
 int const sampleSize = 100;
 float samples[sampleSize];
@@ -44,8 +45,8 @@ int lastTransmissionTime = 0;
 float capZero = 150; // default
 float capDelta = DELTA; //default from ini
 
-void onZeroCommand() {
-  numSamples = 0;
+void onZeroCommand(Comms::Packet packet) {
+  capNumSamples = 0;
 }
 
 //samhitag3 added runningAverage method
@@ -70,7 +71,7 @@ void setup()
   _capSens.init(&Wire, 0x2A);
 
   _tempSens.init();
-
+  Comms::registerCallback(120, onZeroCommand);
   // pinMode(EN_485, OUTPUT);
   // pinMode(TE_485, OUTPUT);
   pinMode(STATUS_LED, OUTPUT);
@@ -182,17 +183,25 @@ void loop()
     if (numSamples < sampleSize) {
       if (numSamples == 0) {
         baseline = refValue;
-        capZero = capValue;
       }
       samples[numSamples] = refValue;
-      caps[numSamples] = capValue;
       total += refValue;
-      capTotal += capValue;
       if (numSamples == sampleSize - 1) {
         baseline = total / numSamples;
-        capZero = capTotal / numSamples;
       }
       numSamples++;
+    }
+
+    if (capNumSamples < sampleSize) {
+      if (capNumSamples == 0) {
+        capZero = capValue;
+      }
+      caps[numSamples] = capValue;
+      capTotal += capValue;
+      if (capNumSamples == sampleSize - 1) {
+        capZero = capTotal / numSamples;
+      }
+      capNumSamples++;
     }
     //  else {
     //   float total0 = total;
