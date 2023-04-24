@@ -65,7 +65,7 @@ uint32_t launchDaemon(){
       case 0:
       {
         // Light igniter and wait for 2.0 sec
-        if (systemMode == HOTFIRE || systemMode == LAUNCH){
+        if (systemMode == HOTFIRE || systemMode == LAUNCH || systemMode == COLDFLOW_WITH_IGNITER){
           Serial.println("launch step 0, igniter on");
           AC::actuate(IGNITER, AC::ON, 0);
           launchStep++;
@@ -79,7 +79,7 @@ uint32_t launchDaemon(){
       }
       case 1:
       {
-        if (systemMode == HOTFIRE || systemMode == LAUNCH){
+        if (systemMode == HOTFIRE || systemMode == LAUNCH || systemMode == COLDFLOW_WITH_IGNITER){
           //igniter off
           Serial.println("launch step 1, igniter off");
           AC::actuate(IGNITER, AC::OFF, 0);
@@ -322,7 +322,7 @@ void onLaunchQueue(Comms::Packet packet, uint8_t ip){
     Serial.println("System mode: " + String(systemMode));
     Serial.println("Flow length: " + String(flowLength));
 
-    if (systemMode == LAUNCH || systemMode == HOTFIRE){
+    if (systemMode == LAUNCH || systemMode == HOTFIRE || systemMode == COLDFLOW_WITH_IGNITER){
       // check igniter and breakwire continuity
       // if no continuity, abort
       // if continuity, start launch daemon
