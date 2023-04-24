@@ -153,7 +153,7 @@ uint32_t sendConfig(){
   Comms::packetAddFloat(&config, lox_autoVentPressure);
   Comms::packetAddFloat(&config, fuel_autoVentPressure);
   Comms::emitPacketToGS(&config);
-  return 1000;
+  return 1000*1000;
 }
 
 Task taskTable[] = {
