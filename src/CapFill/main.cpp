@@ -49,7 +49,7 @@ void setup()
   //samhitag3 testing slower baud rate
   // Serial.println("start");
   Serial1.begin(115200);
-  // Serial1.setPins(17, 18);
+  Serial1.setPins(17, 18);
   // samhitag3 commented out
 
   Wire.begin(8, 9, 100000);
