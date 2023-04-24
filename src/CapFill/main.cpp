@@ -249,11 +249,10 @@ void loop()
     capPacket.len = 0;
     // samhitag3 changed packet variable from capValue to corrected
     Comms::packetAddFloat(&capPacket, corrected);
-    Comms::packetAddFloat(&capPacket, avgCorrected);
+    Comms::packetAddFloat(&capPacket, avgCap);
     Comms::packetAddFloat(&capPacket, tempValue);
     // samhitag3 added packet variable refValue
     Comms::packetAddFloat(&capPacket, refValue);
-    Comms::packetAddFloat(&capPacket, capValue);
     // Comms::packetAddFloat(&capPacket, 0.0);
     
     uint32_t timestamp = millis();
