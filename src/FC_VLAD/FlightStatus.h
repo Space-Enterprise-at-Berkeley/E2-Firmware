@@ -10,6 +10,7 @@
 #include <SparkFun_u-blox_GNSS_Arduino_Library.h>
 #include <MS5xxx.h>
 #include <SparkFun_KX13X.h>
+#include "Radio.h"
 
 namespace FlightStatus
 {

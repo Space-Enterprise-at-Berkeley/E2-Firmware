@@ -1,11 +1,4 @@
-#include <Arduino.h>
-
-#include "Common.h"
-#include "Comms.h"
-
 #include "Radio.h"
-
-#include <Si446x.h>
 
 namespace Radio {
 
@@ -22,7 +15,7 @@ namespace Radio {
 
     char packetBuffer[sizeof(Comms::Packet)];
 
-    Comms::Packet rssiPacket = {.id = 56};
+    Comms::Packet rssiPacket = {.id = 11};
     
     void initRadio() {
 
@@ -31,7 +24,7 @@ namespace Radio {
         Si446x_setupCallback(SI446X_CBS_SENT, 1); 
 
         radioMode = TX;
-        DEBUG("Starting in flight mode");
+        Serial.println("Starting in flight mode");
     }
 
     void transmitRadioBuffer(bool swapFlag){
@@ -46,9 +39,9 @@ namespace Radio {
         transmitting = true;
         //digitalWrite(RADIO_LED, LOW);
         transmitStart = millis();
-        DEBUG("Transmitting Radio Packet\n");
+        Serial.println("Transmitting Radio Packet");
         if(!success){
-            DEBUG("Error Transmitting Radio Packet");
+            Serial.println("Error Transmitting Radio Packet");
         }
         radioBufferSize = 0;
     }
@@ -66,14 +59,12 @@ namespace Radio {
 
     bool processWaitingRadioPacket() {
         if(recvRadio.ready == 1){
-            DEBUG("Received radio packet of size ");
-            DEBUG(recvRadio.length);
-            DEBUG("\n");
+            Serial.print("Received radio packet of size ");
+            Serial.println(recvRadio.length);
 
             int16_t lastRssi = recvRadio.rssi;
-            DEBUG("RSSI:" );
-            DEBUG(lastRssi);
-            DEBUG("\n");
+            Serial.print("RSSI:" );
+            Serial.println(lastRssi);
 
             memcpy(radioBuffer, (uint8_t *)recvRadio.buffer, recvRadio.length);
 
@@ -95,12 +86,12 @@ namespace Radio {
 
                 Comms::Packet *packet = (Comms::Packet *) &packetBuffer;
                 
-                Comms::emitPacket(packet, false);
+                Comms::emitPacketToGS(packet);
             }
             float rssi = (float) recvRadio.rssi;
             rssiPacket.len = 0;
             Comms::packetAddFloat(&rssiPacket, rssi);
-            Comms::emitPacket(&rssiPacket, true);
+            Comms::emitPacketToGS(&rssiPacket);
 
             recvRadio.ready = 0;
         }

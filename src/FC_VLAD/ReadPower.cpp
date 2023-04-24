@@ -40,6 +40,7 @@ namespace Power
 
         // emit the packet
         Comms::emitPacketToGS(&p);
+        Radio::forwardPacket(&p);
 
         return sendRate; // 1 second
     }

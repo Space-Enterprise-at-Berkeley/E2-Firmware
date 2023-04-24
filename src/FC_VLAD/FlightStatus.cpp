@@ -451,6 +451,7 @@ class KalmanFilter{
 
       // emit the packet
       Comms::emitPacketToGS(&imuPacket);
+      Radio::forwardPacket(&imuPacket);
 
       gpsPacket.len = 0;
       Comms::packetAddFloat(&gpsPacket, gps_altitude);
@@ -460,6 +461,7 @@ class KalmanFilter{
 
       // emit the packets
       Comms::emitPacketToGS(&gpsPacket);
+      Radio::forwardPacket(&gpsPacket);
 
       baroPacket.len = 0;
       Comms::packetAddFloat(&baroPacket, baro_altitude);
@@ -468,6 +470,7 @@ class KalmanFilter{
 
       // emit the packets
       Comms::emitPacketToGS(&baroPacket);
+      Radio::forwardPacket(&baroPacket);
 
       filteredPacket.len = 0;
       Comms::packetAddFloat(&filteredPacket, alt);
@@ -476,6 +479,7 @@ class KalmanFilter{
 
       // emit the packets
       Comms::emitPacketToGS(&filteredPacket);
+      Radio::forwardPacket(&filteredPacket);
     // }
 
     if (vel > 3 & accl > 15 & launched == 0) {
@@ -504,7 +508,8 @@ class KalmanFilter{
     Comms::packetAddUint8(&eventsPacket, apogee);
     Comms::packetAddUint8(&eventsPacket, would_deploy_drogue);
     Comms::packetAddUint8(&eventsPacket, would_deploy_main);
-
+    Comms::emitPacketToGS(&eventsPacket);
+    Radio::forwardPacket(&eventsPacket);
     return updateRate;
   }
 

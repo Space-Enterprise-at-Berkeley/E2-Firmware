@@ -9,6 +9,7 @@
 #include "ReadPower.h"
 #include "BlackBox.h"
 #include "ChannelMonitor.h"
+#include "Radio.h"
 
 // 0: IDLE, 1: FLIGHT, 2: REPLAY
 enum BoardMode {
@@ -73,6 +74,37 @@ void heartbeat(Comms::Packet p, uint8_t ip){
 //Command Runcams
 //Replay blackbox data
 
+int arr[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09};
+int ctr = 0;
+void SI446X_CB_SENT(void)
+{
+    Radio::transmitting = false;
+}
+
+void SI446X_CB_RXCOMPLETE(uint8_t length, int16_t rssi)
+{   
+    if(length > MAX_RADIO_TRX_SIZE) length = MAX_RADIO_TRX_SIZE;
+
+    Radio::recvRadio.ready = 1;
+    Radio::recvRadio.rssi = rssi;
+    Radio::recvRadio.length = length;
+
+    Si446x_read((uint8_t*)Radio::recvRadio.buffer, length);
+    Si446x_RX(0);
+}
+
+void SI446X_CB_RXINVALID(int16_t rssi)
+{
+	Si446x_RX(0);
+
+	// Printing to serial inside an interrupt is bad!
+	// If the serial buffer fills up the program will lock up!
+	// Don't do this in your program, this only works here because we're not printing too much data
+	Serial.print(F("Packet CRC failed (RSSI: "));
+	Serial.print(rssi);
+	Serial.println(F(")"));
+}
+
 Task taskTable[] = {
   // {Power::task_readSendPower, 0, true},
   {FlightStatus::updateFlight, 0, true},
@@ -89,8 +121,9 @@ void setup() {
   initWire();
   Power::init();
   FlightStatus::init();
-  // BlackBox::init();
+  BlackBox::init();
   ChannelMonitor::init(40, 39, 38, 15, 14);
+  Radio::initRadio();
   Comms::registerCallback(HEARTBEAT, heartbeat);
 
   while(1) {
@@ -108,9 +141,9 @@ void setup() {
       }
     }
     Comms::processWaitingPackets();
+    Si446x_SERVICE();
   }
 }
 
 void loop() {
-
 } // unused
