@@ -1,6 +1,8 @@
 #pragma once
 #include <Arduino.h>
 #include <WiFiComms.h>
+#include <MCP23008.h>
+#include "Radio.h"
 
 namespace ChannelMonitor {
 

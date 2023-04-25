@@ -48,13 +48,14 @@ namespace Radio {
     void transmitRadioBuffer(){ transmitRadioBuffer(false);}
 
     void forwardPacket(Comms::Packet *packet){
-        Serial.println("forwarding packet");
-        int packetLen = packet->len + 8;
-        if(radioBufferSize + packetLen > MAX_RADIO_TRX_SIZE - 1){
-            transmitRadioBuffer();
-        }
-        memcpy(radioBuffer + radioBufferSize, (uint8_t *) packet, packetLen);
-        radioBufferSize += packetLen;
+        // Serial.println("forwarding packet");
+        // int packetLen = packet->len + 8;
+        // if(radioBufferSize + packetLen > MAX_RADIO_TRX_SIZE - 1){
+        //     transmitRadioBuffer();
+        // }
+        // memcpy(radioBuffer + radioBufferSize, (uint8_t *) packet, packetLen);
+        // radioBufferSize += packetLen;
+        BlackBox::writePacket(packet);
     }
 
     bool processWaitingRadioPacket() {
@@ -87,6 +88,7 @@ namespace Radio {
                 Comms::Packet *packet = (Comms::Packet *) &packetBuffer;
                 
                 Comms::emitPacketToGS(packet);
+                BlackBox::writePacket(packet);
             }
             float rssi = (float) recvRadio.rssi;
             rssiPacket.len = 0;

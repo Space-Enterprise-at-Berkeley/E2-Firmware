@@ -10,6 +10,8 @@ uint8_t sel0, sel1, sel2, currpin, contpin;
 // update period for the current/continuity task
 uint32_t cmUpdatePeriod;
 
+MCP23008 MCP0(0x27);
+
 // publically accessible via getters, last updated values held here
 float currents[8] = {};
 float continuities[8] = {};
@@ -37,6 +39,15 @@ void init(uint8_t s0, uint8_t s1, uint8_t s2, uint8_t curr, uint8_t cont){
     pinMode(sel2, OUTPUT);
     pinMode(currpin, INPUT);
     pinMode(contpin, INPUT);
+
+    MCP0.begin();
+    MCP0.pinMode8(0x00);  // 0 = output , 1 = input
+    MCP0.write8(LOW);
+
+    // turn on live video channels and keep them on
+    // live video channels are pin 6 and 7
+    MCP0.digitalWrite(6, 1);
+    MCP0.digitalWrite(7, 1);
 }
 
 // converts ADC current counts to current in amps
@@ -49,11 +60,14 @@ float adcToCurrent(uint16_t counts) {
 
 // reads currents and continuity, reports them via packets and by setting the above arrays
 // also updates relevant LEDs based on thresholds
+
 uint32_t readChannels() {
     Comms::Packet contPacket = {.id = 6};
     Comms::Packet currPacket = {.id = 7};
 
     // iterate through MUX channels
+    // for breakwires is just last on each so channel 7
+    // for live video power is 1 and 2 on each
     for (int i = 0; i < 8; i ++){
         digitalWrite(sel0, i & 0x01);
         digitalWrite(sel1, (i >> 1) & 0x01);
@@ -75,6 +89,9 @@ uint32_t readChannels() {
     }  
     Comms::emitPacketToGS(&currPacket);
     Comms::emitPacketToGS(&contPacket);
+    Radio::forwardPacket(&currPacket);
+    Radio::forwardPacket(&contPacket);
+    Serial.println("Packets forwarded for current, continuity");
     return cmUpdatePeriod;
 }
 

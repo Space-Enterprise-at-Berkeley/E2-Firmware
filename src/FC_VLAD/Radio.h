@@ -3,6 +3,7 @@
 #include <Arduino.h>
 #include <Si446x.h>
 #include <WiFiComms.h>
+#include "BlackBox.h"
 
 namespace Radio {   
     enum mode {TX, RX, IDLE};

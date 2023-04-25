@@ -10,6 +10,7 @@
 #include "BlackBox.h"
 #include "ChannelMonitor.h"
 #include "Radio.h"
+#include "ReplayFlight.h"
 
 // 0: IDLE, 1: FLIGHT, 2: REPLAY
 enum BoardMode {
@@ -17,7 +18,7 @@ enum BoardMode {
     FLIGHT = 1,
     REPLAY = 2,
 };
-BoardMode mode = IDLE;
+BoardMode mode = FLIGHT; //IDLE;
 
 // Flight/Launch mode enable
 uint8_t setVehicleMode(Comms::Packet statePacket, uint8_t ip){      
@@ -29,6 +30,7 @@ uint8_t setVehicleMode(Comms::Packet statePacket, uint8_t ip){
         //Barometer::zeroAltitude();
         //Apogee::start(); 
         // start bb recording  
+        BlackBox::startEraseAndRecord();
     } 
     return mode;
 }
@@ -37,7 +39,7 @@ uint32_t sendState(){
     Comms::Packet state = {.id = 1};
     Comms::packetAddUint8(&state, mode);
     Comms::emitPacketToGS(&state);
-    return 1000;
+    return 1000*1000;
 }
 
 uint8_t heartCounter = 0;
@@ -110,6 +112,7 @@ Task taskTable[] = {
   {FlightStatus::updateFlight, 0, true},
   {Power::task_readSendPower, 0, true},
   {ChannelMonitor::readChannels, 0, true},
+  {BlackBox::reportStoragePacket, 0, true},
   {sendState, 0, true},
 };
 
@@ -122,27 +125,35 @@ void setup() {
   Power::init();
   FlightStatus::init();
   BlackBox::init();
+  // BlackBox::startEraseAndRecord();
   ChannelMonitor::init(40, 39, 38, 15, 14);
   Radio::initRadio();
   Comms::registerCallback(HEARTBEAT, heartbeat);
 
-  while(1) {
-    // main loop here to avoid arduino overhead
-    for(uint32_t i = 0; i < TASK_COUNT; i++) { // for each task, execute if next time >= current time
-      uint32_t ticks = micros(); // current time in microseconds
-      if (taskTable[i].nexttime - ticks > UINT32_MAX / 2 && taskTable[i].enabled) {
-        uint32_t delayoftask = taskTable[i].taskCall();
-        if (delayoftask == 0) {
-          taskTable[i].enabled = false;
-        }
-        else {
-          taskTable[i].nexttime = ticks + delayoftask;
+  if (mode != REPLAY) { 
+    while(1) {
+      // main loop here to avoid arduino overhead
+      for(uint32_t i = 0; i < TASK_COUNT; i++) { // for each task, execute if next time >= current time
+        uint32_t ticks = micros(); // current time in microseconds
+        if (taskTable[i].nexttime - ticks > UINT32_MAX / 2 && taskTable[i].enabled) {
+          uint32_t delayoftask = taskTable[i].taskCall();
+          if (delayoftask == 0) {
+            taskTable[i].enabled = false;
+          }
+          else {
+            taskTable[i].nexttime = ticks + delayoftask;
+          }
         }
       }
+      Comms::processWaitingPackets();
+      Si446x_SERVICE();
     }
-    Comms::processWaitingPackets();
-    Si446x_SERVICE();
   }
+  else {
+    ReplayFlight::startReplay();
+    while(1) {}    
+  }
+
 }
 
 void loop() {
