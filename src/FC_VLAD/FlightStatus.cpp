@@ -24,6 +24,7 @@ float latitude = 0;
 outputData kxData;
 
 float baro_pressure_2 = 0;
+float baro_temp_2 = 0;
 
 Adafruit_BMP3XX bmp;
 
@@ -292,12 +293,15 @@ class KalmanFilter{
     return (uint8_t)(neom9n.getSIV());
   }
 
-  float get_baro2_temp() { 
-    return ms5607.GetTemp();
-  }
+  // float get_baro2_temp() { 
+  //   return ms5607.GetTemp();
+  // }
 
-  float get_baro2_pressure() { 
-    return ms5607.GetPres();
+  void read_baro2() { 
+    ms5607.ReadProm();
+    ms5607.Readout();
+    baro_pressure_2 = ms5607.GetPres();
+    baro_temp_2 = ms5607.GetTemp();
   }
 
   void update_accel_2() { 
@@ -399,7 +403,7 @@ class KalmanFilter{
 
     update_accel_2();
 
-    // baro_pressure_2 = get_baro2_pressure();
+    read_baro2();
 
     longitude = get_longitude();
     latitude = get_latitude();
@@ -413,17 +417,17 @@ class KalmanFilter{
 
     //   acceleration = acceleration / 9.81; // convert to g
 
-    //   if (gps_altitude < 50) {
-    //    gps_altitude = baro_altitude;
-    //   }
+      if (gps_altitude < 50) {
+       gps_altitude = baro_altitude;
+      }
 
-    //   if (0.8 < acceleration & 1.2 > acceleration) {
-    //    acceleration = 0;
-    //   }
+      if (0.8 < acceleration/9.81 & 1.2 > acceleration/9.81) {
+       acceleration = 0;
+      }
 
-    //   if (acceleration < 0) {
-    //    acceleration = 0;
-    //   }
+      if (acceleration < 0) {
+       acceleration = 0;
+      }
     
     filter1.update(gps_altitude, baro_altitude, acceleration);
     float alt = filter1.get_altitude();
@@ -465,8 +469,8 @@ class KalmanFilter{
 
       baroPacket.len = 0;
       Comms::packetAddFloat(&baroPacket, baro_altitude);
-      Comms::packetAddFloat(&baroPacket, get_baro2_pressure());
-      Comms::packetAddFloat(&baroPacket, get_baro2_temp());
+      Comms::packetAddFloat(&baroPacket, baro_pressure_2);
+      Comms::packetAddFloat(&baroPacket, baro_temp_2);
 
       // emit the packets
       Comms::emitPacketToGS(&baroPacket);

@@ -20,24 +20,23 @@ namespace BlackBox {
             Serial.print(") mismatched the read value: 0x");
             Serial.println(flash.readDeviceId(), HEX);
         }
-
-        // Comms::registerCallback(200, packetHandler);
     }
 
-    // void packetHandler(Comms::Packet packet) {
-    //     startEraseAndRecord();
-    // }
-
-    void writePacket(Comms::Packet packet) {
+    void writePacket(Comms::Packet *packet) {
+        // Serial.println("got ere");
         if (erasing && flash.busy()) {
+        // if (flash.busy()) {
+            Serial.println("busy");
             return;
         }
-        // Serial.printf("busy: %d, erasing: %d, addr: %d, enable: %d, writing\n", flash.busy(), erasing, addr, enable);
+        Serial.printf("busy: %d, erasing: %d, addr: %d, enable: %d, writing\n", flash.busy(), erasing, addr, enable);
         if (enable && addr < (FLASH_SIZE * 0.99)) {
-            uint16_t len = 8 + packet.len;
-            flash.writeBytes(addr, &packet, len);
+            // Serial.println(addr);
+            uint16_t len = 8 + packet->len;
+            flash.writeBytes(addr, packet, len);
             addr += len;
         }
+        // Serial.println("packet written to black box");
     }
 
     bool getData(uint32_t byteAddress, Comms::Packet* packet) {
@@ -48,8 +47,8 @@ namespace BlackBox {
 
     void startEraseAndRecord() {
         Serial.println("starting chip erase");
-        flash.chipErase();
         erasing = true;
+        flash.chipErase();
         enable = true;
         addr = 0;
     }
@@ -62,5 +61,17 @@ namespace BlackBox {
 
     uint32_t getAddr() {
         return addr;
+    }
+
+    Comms::Packet sizePacket = {.id = 12};
+
+    uint32_t reportStoragePacket() { 
+        sizePacket.len = 0;
+        Comms::packetAddUint32(&sizePacket, (getAddr() / 1000) + (erasing ? 1 : 0));
+        Comms::emitPacketToGS(&sizePacket);
+        Radio::forwardPacket(&sizePacket);
+        // writePacket(&sizePacket);
+        Serial.println("Reported black box packet");
+        return 500*1000;
     }
 }

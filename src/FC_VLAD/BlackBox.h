@@ -3,6 +3,7 @@
 #include <Arduino.h>
 #include <SPIFlash.h>
 #include <WiFiComms.h>
+#include "Radio.h"
 
 namespace BlackBox {
 
@@ -10,11 +11,12 @@ namespace BlackBox {
     extern bool erasing;
 
     void init();
-    void writePacket(Comms::Packet packet);
+    void writePacket(Comms::Packet *packet);
     bool getData(uint32_t byteAddress, Comms::Packet* packet);
     void startEraseAndRecord();
 
     // void packetHandler(Comms::Packet packet);
 
     uint32_t getAddr();
+    uint32_t reportStoragePacket();
 }

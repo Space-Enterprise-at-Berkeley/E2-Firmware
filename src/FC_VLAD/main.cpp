@@ -125,7 +125,7 @@ void setup() {
   Power::init();
   FlightStatus::init();
   BlackBox::init();
-  // BlackBox::startEraseAndRecord();
+  BlackBox::startEraseAndRecord();
   ChannelMonitor::init(40, 39, 38, 15, 14);
   Radio::initRadio();
   Comms::registerCallback(HEARTBEAT, heartbeat);
