@@ -26,7 +26,7 @@ namespace BlackBox {
     }
 
     void writePacket(Comms::Packet *packet) {
-        if (erasing && flash.busy()) {
+        if (flash.busy()) {
             Serial.println("busy");
             return;
         }
@@ -53,8 +53,8 @@ namespace BlackBox {
 
     void startEraseAndRecord() {
         Serial.println("starting chip erase");
-        flash.chipErase();
-        erasing = true;
+        // flash.chipErase();
+        // erasing = true;
         enable = true;
         addr = 0;
     }

@@ -403,7 +403,7 @@ class KalmanFilter{
 
     update_accel_2();
 
-    read_baro2();
+    // read_baro2();
 
     longitude = get_longitude();
     latitude = get_latitude();
