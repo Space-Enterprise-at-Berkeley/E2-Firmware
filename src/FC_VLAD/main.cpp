@@ -30,7 +30,7 @@ uint8_t setVehicleMode(Comms::Packet statePacket, uint8_t ip){
         //Barometer::zeroAltitude();
         //Apogee::start(); 
         // start bb recording  
-        BlackBox::startEraseAndRecord();
+        // BlackBox::startEraseAndRecord();
     } 
     return mode;
 }
