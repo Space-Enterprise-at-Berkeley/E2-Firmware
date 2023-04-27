@@ -81,6 +81,11 @@ uint32_t readChannels() {
         float cont = (rawCont / 4096.0) * 3.3;
         float curr = adcToCurrent(rawCurr);
 
+        if (i == 7) {
+            curr = 24 * ((rawCurr) / 4096.0);
+            cont = 24 * ((rawCont) / 4096.0);
+        }
+
         continuities[i] = cont;
         currents[i] = curr;
 
