@@ -41,7 +41,6 @@ namespace Power
         // emit the packet
         Comms::emitPacketToGS(&p);
         Radio::forwardPacket(&p);
-        // BlackBox::writePacket(&p);
 
         return sendRate; // 1 second
     }

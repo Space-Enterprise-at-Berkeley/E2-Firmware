@@ -10,7 +10,7 @@
 #include "BlackBox.h"
 #include "ChannelMonitor.h"
 #include "Radio.h"
-#include "ReplayFlight.h"
+// #include "ReplayFlight.h"
 
 // 0: IDLE, 1: FLIGHT, 2: REPLAY
 enum BoardMode {
@@ -122,12 +122,12 @@ void setup() {
   // setup stuff here
   Comms::init(); // takes care of Serial.begin()
   initWire();
+  Radio::initRadio();
   Power::init();
   FlightStatus::init();
   BlackBox::init();
   BlackBox::startEraseAndRecord();
   ChannelMonitor::init(40, 39, 38, 15, 14);
-  Radio::initRadio();
   Comms::registerCallback(HEARTBEAT, heartbeat);
 
   if (mode != REPLAY) { 
@@ -150,7 +150,7 @@ void setup() {
     }
   }
   else {
-    ReplayFlight::startReplay();
+    // ReplayFlight::startReplay();
     while(1) {}    
   }
 

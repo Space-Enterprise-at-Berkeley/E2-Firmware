@@ -78,7 +78,7 @@ uint32_t readChannels() {
         uint16_t rawCurr = analogRead(currpin);
 
         // convert counts to voltages / currents
-        float cont = (rawCont / 4096.0) * 3.3;
+        float cont = (rawCont) / 4096.0; // 2899.8 corresponds to 12V apparently 
         float curr = adcToCurrent(rawCurr);
 
         continuities[i] = cont;

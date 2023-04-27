@@ -421,13 +421,13 @@ class KalmanFilter{
        gps_altitude = baro_altitude;
       }
 
-      if (0.8 < acceleration/9.81 & 1.2 > acceleration/9.81) {
-       acceleration = 0;
-      }
+      // if (0.8 < acceleration/9.81 & 1.2 > acceleration/9.81) {
+      //  acceleration = 0;
+      // }
 
-      if (acceleration < 0) {
-       acceleration = 0;
-      }
+      // if (acceleration < 0) {
+      //  acceleration = 0;
+      // }
     
     filter1.update(gps_altitude, baro_altitude, acceleration);
     float alt = filter1.get_altitude();

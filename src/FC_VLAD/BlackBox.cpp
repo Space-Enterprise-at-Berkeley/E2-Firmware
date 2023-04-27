@@ -53,7 +53,7 @@ namespace BlackBox {
 
     void startEraseAndRecord() {
         Serial.println("starting chip erase");
-        // flash.chipErase();
+        flash.chipErase();
         // erasing = true;
         enable = true;
         addr = 0;
