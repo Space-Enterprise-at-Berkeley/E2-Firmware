@@ -30,7 +30,7 @@ namespace BlackBox {
             Serial.println("busy");
             return;
         }
-        Serial.printf("busy: %d, erasing: %d, addr: %d, enable: %d, writing\n", flash.busy(), erasing, addr, enable);
+        // Serial.printf("busy: %d, erasing: %d, addr: %d, enable: %d, writing\n", flash.busy(), erasing, addr, enable);
         if (enable && addr < (FLASH_SIZE * 0.99)) {
             uint16_t len = 8 + packet->len;
             flash.writeBytes(addr, packet, len);

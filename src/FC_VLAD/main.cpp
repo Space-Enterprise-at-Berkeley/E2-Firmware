@@ -113,7 +113,7 @@ Task taskTable[] = {
   {Power::task_readSendPower, 0, true},
   {ChannelMonitor::readChannels, 0, true},
   {BlackBox::reportStoragePacket, 0, true},
-  {sendState, 0, true},
+  // {sendState, 0, true},
 };
 
 #define TASK_COUNT (sizeof(taskTable) / sizeof (struct Task))
@@ -128,6 +128,7 @@ void setup() {
   BlackBox::init();
   BlackBox::startEraseAndRecord();
   ChannelMonitor::init(40, 39, 38, 15, 14);
+  // Radio::initRadio();
   Comms::registerCallback(HEARTBEAT, heartbeat);
 
   if (mode != REPLAY) { 
