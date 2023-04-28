@@ -20,7 +20,7 @@ namespace BlackBox {
             Serial.print(") mismatched the read value: 0x");
             Serial.println(flash.readDeviceId(), HEX);
         }
-        enable = true;
+        // enable = true;
 
         // Comms::registerCallback(200, packetHandler);
     }
@@ -35,7 +35,7 @@ namespace BlackBox {
             uint16_t len = 8 + packet->len;
             flash.writeBytes(addr, packet, len);
             addr += len;
-            // Serial.println("written");
+            Serial.println("written");
         }
     }
 
@@ -53,7 +53,7 @@ namespace BlackBox {
 
     void startEraseAndRecord() {
         Serial.println("starting chip erase");
-        // flash.chipErase();
+        flash.chipErase();
         // erasing = true;
         enable = true;
         addr = 0;
@@ -75,7 +75,7 @@ namespace BlackBox {
         sizePacket.len = 0;
         Comms::packetAddUint32(&sizePacket, (getAddr() / 1000) + (erasing ? 1 : 0));
         Comms::emitPacketToGS(&sizePacket);
-        // Radio::forwardPacket(&sizePacket);
+        Radio::forwardPacket(&sizePacket);
         // writePacket(&sizePacket);
         Serial.println("Reported black box packet");
         return 500*1000;

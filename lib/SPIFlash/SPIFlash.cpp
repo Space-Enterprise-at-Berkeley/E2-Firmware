@@ -101,7 +101,8 @@ boolean SPIFlash::initialize()
 #endif
   pinMode(_slaveSelectPin, OUTPUT);
   // SCK, MISO, MOSI, SS
-  SPI.begin(8, 7, 6, _slaveSelectPin);
+  //SPI.begin(8, 7, 6, _slaveSelectPin);
+  SPI.begin(17, 16, 18, _slaveSelectPin);
   _settings = SPISettings(4000000, MSBFIRST, SPI_MODE0);
 #ifdef SPI_HAS_TRANSACTION
   _settings = SPISettings(4000000, MSBFIRST, SPI_MODE0);
