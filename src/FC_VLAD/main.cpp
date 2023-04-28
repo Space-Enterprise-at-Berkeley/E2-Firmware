@@ -102,9 +102,10 @@ void SI446X_CB_RXINVALID(int16_t rssi)
 	// Printing to serial inside an interrupt is bad!
 	// If the serial buffer fills up the program will lock up!
 	// Don't do this in your program, this only works here because we're not printing too much data
-	Serial.print(F("Packet CRC failed (RSSI: "));
-	Serial.print(rssi);
-	Serial.println(F(")"));
+  
+	// Serial.print(F("Packet CRC failed (RSSI: "));
+	// Serial.print(rssi);
+	// Serial.println(F(")"));
 }
 
 Task taskTable[] = {

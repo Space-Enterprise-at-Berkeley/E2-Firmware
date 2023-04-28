@@ -48,9 +48,7 @@ namespace Radio {
     void transmitRadioBuffer(){ transmitRadioBuffer(false);}
 
     void forwardPacket(Comms::Packet *packet){
-
-        BlackBox::writePacket(packet);
-        
+        // BlackBox::writePacket(packet);
         Serial.println("forwarding packet");
         int packetLen = packet->len + 8;
         if(radioBufferSize + packetLen > MAX_RADIO_TRX_SIZE - 1){
@@ -58,8 +56,8 @@ namespace Radio {
         }
         memcpy(radioBuffer + radioBufferSize, (uint8_t *) packet, packetLen);
         radioBufferSize += packetLen;
-
-        // BlackBox::writePacket(packet);
+        
+        BlackBox::writePacket(packet);
     }
 
     bool processWaitingRadioPacket() {

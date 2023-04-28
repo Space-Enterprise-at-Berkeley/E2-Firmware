@@ -3,7 +3,7 @@
 #include <Arduino.h>
 #include <SPIFlash.h>
 #include <WiFiComms.h>
-// #include "Radio.h"
+#include "Radio.h"
 
 namespace BlackBox {
 
