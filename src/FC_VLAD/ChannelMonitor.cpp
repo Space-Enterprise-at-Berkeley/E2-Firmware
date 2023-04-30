@@ -40,14 +40,14 @@ void init(uint8_t s0, uint8_t s1, uint8_t s2, uint8_t curr, uint8_t cont){
     pinMode(currpin, INPUT);
     pinMode(contpin, INPUT);
 
-    MCP0.begin();
-    MCP0.pinMode8(0x00);  // 0 = output , 1 = input
-    MCP0.write8(LOW);
+    // MCP0.begin();
+    // MCP0.pinMode8(0x00);  // 0 = output , 1 = input
+    // MCP0.write8(LOW);
 
     // turn on live video channels and keep them on
     // live video channels are pin 6 and 7
-    MCP0.digitalWrite(6, 1);
-    MCP0.digitalWrite(7, 1);
+    // MCP0.digitalWrite(6, 1);
+    // MCP0.digitalWrite(7, 1);
 }
 
 // converts ADC current counts to current in amps

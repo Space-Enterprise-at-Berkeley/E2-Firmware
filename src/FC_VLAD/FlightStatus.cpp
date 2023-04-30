@@ -11,6 +11,8 @@ float baro_altitude = 0;
 float gps_altitude = 0;
 float acceleration = 0;
 
+float baro_temp = 0;
+
 float accel_x = 0;
 float accel_z = 0;
 
@@ -401,6 +403,8 @@ class KalmanFilter{
     acceleration = get_acceleration_y();
     gps_altitude = get_gps_altitude();
 
+    baro_temp = get_barometer_temperature();
+
     update_accel_2();
 
     // read_baro2();
@@ -469,6 +473,7 @@ class KalmanFilter{
 
       baroPacket.len = 0;
       Comms::packetAddFloat(&baroPacket, baro_altitude);
+      Comms::packetAddFloat(&baroPacket, baro_temp);
       Comms::packetAddFloat(&baroPacket, baro_pressure_2);
       Comms::packetAddFloat(&baroPacket, baro_temp_2);
 
