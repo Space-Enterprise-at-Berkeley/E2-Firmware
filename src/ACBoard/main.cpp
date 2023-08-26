@@ -147,6 +147,7 @@ Comms::Packet config = {.id = AC_CONFIG, .len = 0};
 float lox_autoVentPressure;
 float fuel_autoVentPressure;
 uint32_t sendConfig(){
+  config.len = 0;
   if (ID == AC1){
     return 0; // don't need for ac1 right now
   }
