@@ -359,24 +359,36 @@ void setAutoVent(Comms::Packet packet, uint8_t ip){
   EEPROM.end();
 }
 
+bool lox_autoVentOpenState = false; // closed
+bool fuel_autoVentOpenState = false; // closed
 void ac2AutoVent(Comms::Packet packet, uint8_t ip){
   float p1 = packetGetFloat(&packet, 0);
   float p2 = packetGetFloat(&packet, 4);
   if (ip == LOX_EREG){
     if (p1 > lox_autoVentPressure || p2 > lox_autoVentPressure){
-      AC::actuate(LOX_GEMS, AC::ON, 0);
+      if (AC::getActuatorState(LOX_GEMS) == AC::OFF){
+        lox_autoVentOpenState = true;
+        AC::actuate(LOX_GEMS, AC::ON, 0);
+      }
     } else {
-      //close lox gems if open
-      if (AC::getActuatorState(LOX_GEMS) == AC::ON){
+      //close lox gems if open, and if autovent opened them. 
+      // (if dashboard opened it, autoventstate is false and it won't close)
+      if (AC::getActuatorState(LOX_GEMS) == AC::ON && lox_autoVentOpenState){
+        lox_autoVentOpenState = false;
         AC::actuate(LOX_GEMS, AC::OFF, 0);
       }
     }
   } else if (ip == FUEL_EREG){
     if (p1 > fuel_autoVentPressure || p2 > fuel_autoVentPressure){
-      AC::actuate(FUEL_GEMS, AC::ON, 0);
+      if (AC::getActuatorState(FUEL_GEMS) == AC::OFF){
+        fuel_autoVentOpenState = true;
+        AC::actuate(FUEL_GEMS, AC::ON, 0);
+      }
     } else {
-      //close fuel gems if open
-      if (AC::getActuatorState(FUEL_GEMS) == AC::ON){
+      //close lox gems if open, and if autovent opened them. 
+      // (if dashboard opened it, autoventstate is false and it won't close)
+      if (AC::getActuatorState(FUEL_GEMS) == AC::ON && fuel_autoVentOpenState){
+        fuel_autoVentOpenState = false;
         AC::actuate(FUEL_GEMS, AC::OFF, 0);
       }
     }
@@ -399,7 +411,7 @@ void setup() {
   Comms::registerCallback(HEARTBEAT, heartbeat);
 
   if (ID == AC2) {
-    Comms::initExtraSocket(42042, ALL);
+    //Comms::initExtraSocket(42042, ALL);
     Comms::registerCallback(EREG_PRESSURE, ac2AutoVent);
     Comms::registerCallback(AC_CHANGE_CONFIG, setAutoVent);
 
