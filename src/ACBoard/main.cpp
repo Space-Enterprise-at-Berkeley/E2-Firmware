@@ -362,22 +362,29 @@ void setAutoVent(Comms::Packet packet, uint8_t ip){
 void ac2AutoVent(Comms::Packet packet, uint8_t ip){
   float p1 = packetGetFloat(&packet, 0);
   float p2 = packetGetFloat(&packet, 4);
+  Serial.print("Got pressures packet with ");
+  Serial.print(p1);
+  Serial.println(p2);
   if (ip == LOX_EREG){
     if (p1 > lox_autoVentPressure || p2 > lox_autoVentPressure){
-      AC::actuate(LOX_GEMS, AC::ON, 0);
+      if (AC::getActuatorState(LOX_GEMS) == AC::OFF){
+        AC::openLoxGems();
+      }
     } else {
-      //close lox gems if open
-      if (AC::getActuatorState(LOX_GEMS) == AC::ON){
-        AC::actuate(LOX_GEMS, AC::OFF, 0);
+      //close lox gems if open, and if dashboard is not holding it open
+      if (!AC::loxGemsOpen && AC::getActuatorState(LOX_GEMS) == AC::ON){
+        AC::closeLoxGems();
       }
     }
   } else if (ip == FUEL_EREG){
     if (p1 > fuel_autoVentPressure || p2 > fuel_autoVentPressure){
-      AC::actuate(FUEL_GEMS, AC::ON, 0);
+      if (AC::getActuatorState(FUEL_GEMS) == AC::OFF){
+        AC::openFuelGems();
+      }
     } else {
       //close fuel gems if open
-      if (AC::getActuatorState(FUEL_GEMS) == AC::ON){
-        AC::actuate(FUEL_GEMS, AC::OFF, 0);
+      if (!AC::fuelGemsOpen && AC::getActuatorState(FUEL_GEMS) == AC::ON){
+        AC::closeFuelGems();
       }
     }
   }
@@ -399,7 +406,7 @@ void setup() {
   Comms::registerCallback(HEARTBEAT, heartbeat);
 
   if (ID == AC2) {
-    Comms::initExtraSocket(42042, ALL);
+    //Comms::initExtraSocket(42042, ALL);
     Comms::registerCallback(EREG_PRESSURE, ac2AutoVent);
     Comms::registerCallback(AC_CHANGE_CONFIG, setAutoVent);
 

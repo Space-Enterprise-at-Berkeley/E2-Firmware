@@ -34,12 +34,19 @@ enum ActuatorCommand {
   OFF = 5,
 };
 
+  extern bool loxGemsOpen;
+  extern bool fuelGemsOpen;
+
   void init();
   float sample(uint8_t index);
   uint32_t task_actuatorStates();
   uint32_t task_printActuatorStates();
   uint32_t actuationDaemon();
   void actuate(uint8_t channel, uint8_t cmd, uint32_t time);
+  void openLoxGems();
+  void closeLoxGems();
+  void openFuelGems();
+  void closeFuelGems();
   void delayedActuate(uint8_t channel, uint8_t cmd, uint32_t time, uint32_t delay);
   uint8_t getActuatorState(uint8_t channel);
 }

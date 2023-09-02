@@ -37,7 +37,12 @@ uint32_t delayedActuationsDelay[16];
 uint8_t delayedActuationCount = 0;
 
 
+
 namespace AC {
+
+
+  bool loxGemsOpen = false;
+  bool fuelGemsOpen = false;
 
 // configure actuator driving pins here, in1, in2 from channels 1 to 8
   uint8_t actuatorPins[16] = 
@@ -71,6 +76,10 @@ namespace AC {
     //do not actuate breakwire
     if (ID == AC1 && channel == 1) {
       return;
+    } else if (ID == AC2 && channel == 6) {
+      loxGemsOpen = (cmd == ON);
+    } else if (ID == AC2 && channel == 7) {
+      fuelGemsOpen = (cmd == ON);
     }
     // set states and timers of actuator
     actuators[channel].state = cmd;
@@ -89,6 +98,52 @@ namespace AC {
     }
     return;
   }
+
+  void openLoxGems() {
+    uint8_t channel = 6;
+    uint8_t cmd = ON;
+
+    actuators[channel].state = cmd;
+    actuators[channel].timeLeft = 0;
+    actuators[channel].stamp = millis();
+
+    actuators[channel].forwards();
+    return;
+  }
+  void openFuelGems() {
+    uint8_t channel = 7;
+    uint8_t cmd = ON;
+
+    actuators[channel].state = cmd;
+    actuators[channel].timeLeft = 0;
+    actuators[channel].stamp = millis();
+
+    actuators[channel].forwards();
+    return;
+  }
+  void closeLoxGems() {
+    uint8_t channel = 6;
+    uint8_t cmd = OFF;
+
+    actuators[channel].state = cmd;
+    actuators[channel].timeLeft = 0;
+    actuators[channel].stamp = millis();
+
+    actuators[channel].stop();
+    return;
+  }
+  void closeFuelGems() {
+    uint8_t channel = 7;
+    uint8_t cmd = OFF;
+
+    actuators[channel].state = cmd;
+    actuators[channel].timeLeft = 0;
+    actuators[channel].stamp = millis();
+
+    actuators[channel].stop();
+    return;
+  }
+  
 
   void delayedActuate(uint8_t channel, uint8_t cmd, uint32_t time, uint32_t delay) {
     // add to list of delayed actuations
