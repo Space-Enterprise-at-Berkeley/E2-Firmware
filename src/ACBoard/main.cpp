@@ -373,7 +373,7 @@ void ac2AutoVent(Comms::Packet packet, uint8_t ip){
     } else {
       //close lox gems if open, and if autovent opened them. 
       // (if dashboard opened it, autoventstate is false and it won't close)
-      if (AC::getActuatorState(LOX_GEMS) == AC::ON && lox_autoVentOpenState){
+      if (lox_autoVentOpenState && AC::getActuatorState(LOX_GEMS) == AC::ON){
         lox_autoVentOpenState = false;
         AC::actuate(LOX_GEMS, AC::OFF, 0);
       }
