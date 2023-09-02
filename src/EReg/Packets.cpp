@@ -76,8 +76,12 @@ namespace Packets {
             packet.id = PT_TO_AC;
             packet.len = 0;
             Comms::packetAddFloat(&packet, filteredDownstreamPressure1);
-            Comms::packetAddFloat(&packet, filteredDownstreamPressure2);
-            Comms::emitPacketToExtra(&packet);
+            //not using downstreampressur2
+            //::packetAddFloat(&packet, filteredDownstreamPressure2);
+            Comms::packetAddFloat(&packet, 0);
+            //using send to all right now instead of extra socket
+            //Comms::emitPacketToExtra(&packet);
+            Comms:emitPacketToAll(&packet);
         }
 
         if (millis() - lastTelemetry > 2000) {
