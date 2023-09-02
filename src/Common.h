@@ -73,7 +73,7 @@ enum PacketID {
   AC_CHANGE_CONFIG = 105,
 
   //GEMS autovent
-  EREG_PRESSURE = 171,
+  EREG_PRESSURE = 11,
   
 };
 
