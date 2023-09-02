@@ -19,7 +19,7 @@ namespace Packets {
 
 
 
-    int ac2_port = 42042;
+    int ac2_port = 42099;
     uint32_t lastTelemetry = 0;
     uint32_t lastPT_to_AC = 0;
     uint32_t ac2_freq = 500; //ms
