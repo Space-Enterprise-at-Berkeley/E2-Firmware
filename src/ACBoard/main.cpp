@@ -58,18 +58,23 @@ void heartbeat(Comms::Packet p, uint8_t ip){
 Mode systemMode = HOTFIRE;
 uint8_t launchStep = 0;
 uint32_t flowLength;
+bool breakwire_broke;
+uint8_t broke_check_counter;
+
 
 uint32_t launchDaemon(){
   if (ID == AC1){
     switch(launchStep){
       case 0:
       {
+        breakwire_broke = false;
+        broke_check_counter = 0;
         // Light igniter and wait for 2.0 sec
         if (systemMode == HOTFIRE || systemMode == LAUNCH || systemMode == COLDFLOW_WITH_IGNITER){
           Serial.println("launch step 0, igniter on");
           AC::actuate(IGNITER, AC::ON, 0);
           launchStep++;
-          return 2000 * 1000;
+          return 100 * 1000; // 50 ms
         } else {
           Serial.println("launch step 0, not hotfire, skip");
           launchStep++;
@@ -79,14 +84,33 @@ uint32_t launchDaemon(){
       }
       case 1:
       {
+        //check breakwire over 2 sec period
+        if (broke_check_counter > 20){
+          launchStep++;
+          return 10;
+        }
+
+        broke_check_counter++;
+
+        if (!ChannelMonitor::isChannelContinuous(BREAKWIRE)){
+            Serial.println("breakwire broke");
+            breakwire_broke = true;
+            launchStep++;
+            return (21 - broke_check_counter) * 100 * 1000;
+        }
+
+        return 100*1000;
+
+      }
+      case 2:
+      {
         if (systemMode == HOTFIRE || systemMode == LAUNCH || systemMode == COLDFLOW_WITH_IGNITER){
           //igniter off
           Serial.println("launch step 1, igniter off");
           AC::actuate(IGNITER, AC::OFF, 0);
 
           //Throw abort if breakwire still has continuity
-          ChannelMonitor::readChannels();
-          if (ChannelMonitor::isChannelContinuous(BREAKWIRE)){
+          if (!breakwire_broke){
             Serial.println("breakwire still has continuity, aborting");
             Comms::sendAbort(systemMode, BREAKWIRE_NO_BURNT);
             launchStep = 0;
@@ -110,7 +134,7 @@ uint32_t launchDaemon(){
         launchStep++;
         return flowLength * 1000;
       }
-      case 2:
+      case 3:
       {
         //end flow
 
