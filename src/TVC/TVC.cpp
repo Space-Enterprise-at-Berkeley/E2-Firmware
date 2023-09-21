@@ -8,16 +8,16 @@ namespace TVC {
     uint32_t tvcUpdatePeriod = 20 * 1000;
     int x_motor_ticksp = 0;
     int y_motor_ticksp = 0;
-    float x_p = 0.6;
-    float x_i = 0.01;
+    float x_p = 0.3;
+    float x_i = 0;
     float x_d = 0;
-    float y_p = 0.6;
-    float y_i = 0.01;
+    float y_p = 0.3;
+    float y_i = 0;
     float y_d = 0;
     int MID_SPD = 307;
     //(4096 * (1500 / 200000)))
-    int MAX_SPD = 25;
-    int MIN_SPD = -25;
+    int MAX_SPD = 20;
+    int MIN_SPD = -20;
     int INNER_BUFFER_SIZE = 2;
     
     int speed_x = 0;
@@ -674,20 +674,31 @@ namespace TVC {
         setYSpeed(packetGetUint8(&defSpeeds, 4));
     }
 
+    void getTVCPosition(double radius, double angle, int* xticks, int* yticks) {
+        *xticks = (int)(radius * cos(angle));
+        *yticks = (int)(radius * sin(angle));
+
+    }
+    float angle = 0;
+    float circlePeriod = 5;
+    float radius = 200;
+
     uint32_t moveTVC() {
 
         if (tvcState) { // moving with PID is state 1
             // Serial.println("PID time");
-
             if (circleEnabled) { 
-                
-                x_motor_ticksp = 2*circleTicks[idx]/3 - 500;
-                y_motor_ticksp = 2*circleTicks[idy]/3 - 500;
-
-                idx += 2;
-                idy += 2;
-                if(idx >= sizeof(circleTicks)/4) idx = 0;
-                if(idy >= sizeof(circleTicks)/4) idy = 0;
+                // x_motor_ticksp = 2*circleTicks[idx]/3 - 500;
+                // y_motor_ticksp = 2*circleTicks[idy]/3 - 500;
+                // idx += 2;
+                // idy += 2;
+                // if(idx >= sizeof(circleTicks)/4) idx = 0;
+                // if(idy >= sizeof(circleTicks)/4) idy = 0;
+                angle += (tvcUpdatePeriod * 2 * PI) / (circlePeriod * 1000 * 1000);
+                if (angle >= 2 * PI) angle -= 2 * PI;
+                Serial.printf("angle: %f\n", angle);
+                getTVCPosition(radius, angle, &x_motor_ticksp, &y_motor_ticksp);
+                Serial.printf("x: %d, y: %d\n", x_motor_ticksp, y_motor_ticksp);
             }
 
             speed_x = x_Controller.update(x_motor_ticksp - HAL::getEncoderCount_0());
@@ -697,26 +708,24 @@ namespace TVC {
             // Serial.println("X encoder count: " + String(HAL::getEncoderCount_0()));
             // Serial.println("Y encoder count: " + String(HAL::getEncoderCount_1()));
         } 
+        Comms::Packet tmp = {.id=42};
+        Comms::packetAddUint32(&tmp, HAL::getEncoderCount_0());
+        Comms::packetAddUint32(&tmp, HAL::getEncoderCount_1());
+        Comms::emitPacketToGS(&tmp);
 
-            Comms::Packet tmp = {.id=42};
-            Comms::packetAddUint32(&tmp, HAL::getEncoderCount_0());
-            Comms::packetAddUint32(&tmp, HAL::getEncoderCount_1());
-            Comms::emitPacketToGS(&tmp);
+        Comms::Packet stp = {.id=43};
+        Comms::packetAddUint32(&stp, x_motor_ticksp);
+        Comms::packetAddUint32(&stp, y_motor_ticksp);
+        Comms::emitPacketToGS(&stp);
 
-            Comms::Packet stp = {.id=43};
-            Comms::packetAddUint32(&stp, x_motor_ticksp);
-            Comms::packetAddUint32(&stp, y_motor_ticksp);
-            Comms::emitPacketToGS(&stp);
-
-            if ((millis() % 1000)  >= 0) {
-                Serial.printf("encX @ %d, encY @ %d\n", HAL::getEncoderCount_0(), HAL::getEncoderCount_1());
-                Serial.printf("speedX @ %d, speedY @ %d\n", speed_x + MID_SPD, speed_y + MID_SPD);
-            }
-
-            ledcWrite(0, speed_x + MID_SPD);
-            ledcWrite(1, speed_y + MID_SPD);
-            
-            return tvcUpdatePeriod;
+        // if ((millis() % 1000)  >= 0) {
+        //     Serial.printf("encX @ %d, encY @ %d\n", HAL::getEncoderCount_0(), HAL::getEncoderCount_1());
+        //     Serial.printf("speedX @ %d, speedY @ %d\n", speed_x + MID_SPD, speed_y + MID_SPD);
+        // }
+        ledcWrite(0, speed_x + MID_SPD);
+        ledcWrite(1, speed_y + MID_SPD);
+        
+        return tvcUpdatePeriod;
     }
 
     void setMode(int mode) { 
@@ -755,13 +764,13 @@ namespace TVC {
         switch(zeroState) { 
             case 0:
                 setMode(0);
-                setXSpeed(-3);
-                setYSpeed(-3);
+                setXSpeed(-4);
+                setYSpeed(-4);
                 ledcWrite(0, MID_SPD + speed_x);
                 ledcWrite(1, MID_SPD + speed_y);
                 zeroState = 1;
                 Serial.println("in zeroing");
-                return 10*1000*1000;
+                return 5*1000*1000;
             case 1:
                 HAL::setEncoderCount_0(650);
                 HAL::setEncoderCount_1(650);
@@ -770,6 +779,7 @@ namespace TVC {
                 y_motor_ticksp = 0;
                 setMode(1);
                 Serial.println("done zeroing");
+                zeroState = 0;
                 return 0; //disables
         }
         return 0;

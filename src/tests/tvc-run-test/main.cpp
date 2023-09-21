@@ -21,17 +21,20 @@ void setup() {
     ledcSetup(1, 50, 12);
     ledcAttachPin(y_pwm, 1);
     ledcWrite(1, 307);
+    pinMode(48, OUTPUT);
 }
 
 
 void loop() {
 
     Serial.printf("high\n");
+    digitalWrite(48, HIGH);
     ledcWrite(1, 307 + 5);
     delay(5000);
     ledcWrite(1, 307);
     delay(1000);
     Serial.printf("low\n");
+    digitalWrite(48, LOW);
     ledcWrite(1, 307 - 5);
     delay(5000);
     ledcWrite(1, 307);

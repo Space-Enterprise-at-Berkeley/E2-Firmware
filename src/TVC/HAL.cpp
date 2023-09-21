@@ -117,10 +117,17 @@ namespace HAL {
 
         do {
             curEncState_0 = digitalRead(encA_0) | (digitalRead(encB_0) << 1) | (digitalRead(encC_0) << 2);
+
+            if (millis() % 1000 == 0 && revEncMap[curEncState_0] == 100) {
+                Serial.printf("waiting for valid encoders on 0\n");
+            }
         } while (revEncMap[curEncState_0] == 100);
 
         do {
             curEncState_1 = digitalRead(encA_1) | (digitalRead(encB_1) << 1) | (digitalRead(encC_1) << 2);
+            if (millis() % 1000 == 0 && revEncMap[curEncState_1] == 100) {
+                Serial.printf("waiting for valid encoders on 1\n");
+            }
         } while (revEncMap[curEncState_1] == 100);
 
     }

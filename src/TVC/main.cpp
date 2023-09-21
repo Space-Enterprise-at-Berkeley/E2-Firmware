@@ -38,10 +38,12 @@ void setup() {
   Serial.begin(115200);
   Serial.printf("hii!!\n");
   Comms::init();
+  Serial.printf("setup comms!\n");
   HAL::init();
   HAL::setupEncoders();
   HAL::resetEncoders();
   TVC::init();
+  Serial.printf("setup other stuff!\n");
   Comms::registerCallback(1, TVC::definePosition);
   Comms::registerCallback(2, TVC::enableCircle);
   Comms::registerCallback(3, zeroTVC);
@@ -60,12 +62,12 @@ void setup() {
         uint32_t delayoftask = taskTable[i].taskCall();
         if (delayoftask == 0) {
           taskTable[i].enabled = false;
-        }
-        else {
+        } else {
           taskTable[i].nexttime = ticks + delayoftask;
         }
       }
     }
+    // delayMicroseconds(10);
     Comms::processWaitingPackets();
   }
 }
