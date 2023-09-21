@@ -5,8 +5,12 @@ namespace HAL {
     volatile int encoderTicks_0 = 0;
     volatile int encoderTicks_1 = 0;
 
-    int32_t numReads_0 = 0;
-    int32_t numReads_1 = 0;
+    uint8_t curEncState_0 = 0;
+    uint8_t curEncState_1 = 0;
+
+
+    uint8_t revEncMap[] = {100, 5, 3, 4, 1, 0, 2, 100};
+
 
 
     int init() {
@@ -58,154 +62,40 @@ namespace HAL {
         return encoderTicks_1;
     }
 
+    void handleEncoderChange(int encA, int encB, int encC, uint8_t* curEncState, int* encoderTicks) {
+        bool a, b, c;
+        a = digitalRead(encA);
+        b = digitalRead(encB);
+        c = digitalRead(encC);
 
-    void risingA_0() {
-        if (digitalRead(encC_0)) {
-            encoderTicks_0 += 1;
-        } else {
-            encoderTicks_0 -= 1;
+        uint8_t newState = a | (b << 1) | (c << 2);
+
+        if (newState == 0 || newState == 7) {
+            return;
         }
-        
-    }
 
-    void risingB_0() {
-        if (digitalRead(encA_0)) {
-            encoderTicks_0 += 1;
-        } else {
-            encoderTicks_0 -= 1;
+        int prevIndex  = revEncMap[*curEncState];
+        int newIndex = revEncMap[newState];
+        int delta = newIndex - prevIndex;
+
+        if (delta == 1 || delta == -1 || delta == 5 || delta == -5) {
+            if (delta == 1 || delta == -5) {
+                *encoderTicks -= 1;
+            } else {
+                *encoderTicks += 1;
+            }
+
+            *curEncState = newState;
         } 
     }
 
-    void risingC_0() {
-        if (digitalRead(encB_0)) {
-            encoderTicks_0 += 1;
-        } else {
-            encoderTicks_0 -= 1;
-        } 
+    void handleEncoderChange_0() {
+        handleEncoderChange(encA_0, encB_0, encC_0, &curEncState_0, (int*)&encoderTicks_0);
+    }
+    void handleEncoderChange_1() {
+        handleEncoderChange(encA_1, encB_1, encC_1, &curEncState_1, (int*)&encoderTicks_1);
     }
 
-    void risingA_1() {
-        if (digitalRead(encC_1)) {
-            encoderTicks_1 += 1;
-        } else {
-            encoderTicks_1 -= 1;
-        }
-        
-    }
-
-    void risingB_1() {
-        if (digitalRead(encA_1)) {
-            encoderTicks_1 += 1;
-        } else {
-            encoderTicks_1 -= 1;
-        } 
-    }
-
-    void risingC_1() {
-        if (digitalRead(encB_1)) {
-            encoderTicks_1 += 1;
-        } else {
-            encoderTicks_1 -= 1;
-        } 
-    }
-
-
-    void fallingA_0() {
-        if (digitalRead(encB_0)) {
-            encoderTicks_0 += 1;
-        } else {
-            encoderTicks_0 -= 1;
-        }  
-    }
-
-    void fallingB_0() {
-        if (digitalRead(encC_0)) {
-            encoderTicks_0 += 1;
-        } else {
-            encoderTicks_0 -= 1;
-        }  
-    }
-
-    void fallingC_0() {
-        if (digitalRead(encA_0)) {
-            encoderTicks_0 += 1;
-        } else {
-            encoderTicks_0 -= 1;
-        }  
-    }
-
-    void fallingA_1() {
-        if (digitalRead(encB_1)) {
-            encoderTicks_1 += 1;
-        } else {
-            encoderTicks_1 -= 1;
-        }  
-    }
-
-    void fallingB_1() {
-        if (digitalRead(encC_1)) {
-            encoderTicks_1 += 1;
-        } else {
-            encoderTicks_1 -= 1;
-        }  
-    }
-
-    void fallingC_1() {
-        if (digitalRead(encA_1)) {
-            encoderTicks_1 += 1;
-        } else {
-            encoderTicks_1 -= 1;
-        }  
-    }
-
-
-    void changeA_0() {
-        if (digitalRead(encA_0)) {
-            risingA_0();
-        } else {
-            fallingA_0();
-        }
-    }
-    
-    void changeB_0() {
-        if (digitalRead(encB_0)) {
-            risingB_0();
-        } else {
-            fallingB_0();
-        }
-    }
-
-    void changeC_0() {
-        if (digitalRead(encC_0)) {
-            risingC_0();
-        } else {
-            fallingC_0();
-        }
-    }
-
-    void changeA_1() {
-        if (digitalRead(encA_1)) {
-            risingA_1();
-        } else {
-            fallingA_1();
-        }
-    }
-    
-    void changeB_1() {
-        if (digitalRead(encB_1)) {
-            risingB_1();
-        } else {
-            fallingB_1();
-        }
-    }
-
-    void changeC_1() {
-        if (digitalRead(encC_1)) {
-            risingC_1();
-        } else {
-            fallingC_1();
-        }
-    }
 
 
     void setupEncoders() {
@@ -217,14 +107,22 @@ namespace HAL {
         pinMode(encB_1, INPUT);
         pinMode(encC_1, INPUT);
 
-        attachInterrupt(encA_0, changeA_0, CHANGE);
-        attachInterrupt(encB_0, changeB_0, CHANGE);
-        attachInterrupt(encC_0, changeC_0, CHANGE);
+        attachInterrupt(encA_0, handleEncoderChange_0, CHANGE);
+        attachInterrupt(encB_0, handleEncoderChange_0, CHANGE);
+        attachInterrupt(encC_0, handleEncoderChange_0, CHANGE);
 
-        attachInterrupt(encA_1, changeA_1, CHANGE);
-        attachInterrupt(encB_1, changeB_1, CHANGE);
-        attachInterrupt(encC_1, changeC_1, CHANGE);
-        // Serial.printf("done setting up encoder. ticks: %d, prevEncoderState: %hhx\n", encoderTicks_0, prevEncoderState);
+        attachInterrupt(encA_1, handleEncoderChange_1, CHANGE);
+        attachInterrupt(encB_1, handleEncoderChange_1, CHANGE);
+        attachInterrupt(encC_1, handleEncoderChange_1, CHANGE);
+
+        do {
+            curEncState_0 = digitalRead(encA_0) | (digitalRead(encB_0) << 1) | (digitalRead(encC_0) << 2);
+        } while (revEncMap[curEncState_0] == 100);
+
+        do {
+            curEncState_1 = digitalRead(encA_1) | (digitalRead(encB_1) << 1) | (digitalRead(encC_1) << 2);
+        } while (revEncMap[curEncState_1] == 100);
+
     }
 
     void resetEncoders() { 

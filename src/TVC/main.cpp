@@ -27,6 +27,7 @@ Task taskTable[] = {
 #define TASK_COUNT (sizeof(taskTable) / sizeof (struct Task))
 
 void zeroTVC(Comms::Packet packet, uint8_t ip) { 
+  Serial.printf("zeroing...\n");
   if (taskTable[0].enabled) return; 
   taskTable[0].enabled = true;
   taskTable[0].nexttime = micros();
@@ -34,6 +35,8 @@ void zeroTVC(Comms::Packet packet, uint8_t ip) {
 
 void setup() {
   // setup stuff here
+  Serial.begin(115200);
+  Serial.printf("hii!!\n");
   Comms::init();
   HAL::init();
   HAL::setupEncoders();
@@ -44,8 +47,10 @@ void setup() {
   Comms::registerCallback(3, zeroTVC);
   Comms::registerCallback(4, TVC::stopTVC);
   Comms::registerCallback(5, TVC::setTVCMode);
-  //Comms::registerCallback(101, joystickCommand);
+  // Comms::registerCallback(101, joystickCommand);
   // Comms::registerCallback(2, TVC::printEncoders);
+
+  Serial.printf("Setup complete\n");
 
   while(1) {
     // main loop here to avoid arduino overhead

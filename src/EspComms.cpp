@@ -22,7 +22,7 @@ namespace Comms {
 
   void init(int cs, int spiMisoPin, int spiMosiPin, int spiSclkPin, int ETH_intN)
   {
-    Serial.begin(921600);
+    Serial.begin(115200);
     Ethernet.init(cs);
     Ethernet.begin((uint8_t *)mac, ip, spiMisoPin, spiMosiPin, spiSclkPin, ETH_intN);
 
@@ -55,7 +55,8 @@ namespace Comms {
 
     Packet version = {.id = FW_STATUS, .len = 7};
 
-    char commit[] = FW_COMMIT;
+    // char commit[] = FW_COMMIT;
+    char commit[] = "fixthislaterpls";
     memcpy(&(version.data), &commit, 7);
     emitPacket(&version);
   }
