@@ -44,11 +44,12 @@ void setup() {
   HAL::resetEncoders();
   TVC::init();
   Serial.printf("setup other stuff!\n");
-  Comms::registerCallback(1, TVC::definePosition);
   Comms::registerCallback(2, TVC::enableCircle);
   Comms::registerCallback(3, zeroTVC);
   Comms::registerCallback(4, TVC::stopTVC);
-  Comms::registerCallback(5, TVC::setTVCMode);
+  Comms::registerCallback(5, TVC::setRadius);
+  Comms::registerCallback(6, TVC::setAngle);
+  // Comms::registerCallback(5, TVC::setTVCMode);
   // Comms::registerCallback(101, joystickCommand);
   // Comms::registerCallback(2, TVC::printEncoders);
 
