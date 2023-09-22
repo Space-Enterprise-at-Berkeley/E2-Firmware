@@ -5,8 +5,8 @@ namespace HAL {
     volatile int encoderTicks_0 = 0;
     volatile int encoderTicks_1 = 0;
 
-    uint8_t curEncState_0 = 0;
-    uint8_t curEncState_1 = 0;
+    volatile uint8_t curEncState_0 = 0;
+    volatile uint8_t curEncState_1 = 0;
 
 
     uint8_t revEncMap[] = {100, 5, 3, 4, 1, 0, 2, 100};
@@ -90,10 +90,10 @@ namespace HAL {
     }
 
     void handleEncoderChange_0() {
-        handleEncoderChange(encA_0, encB_0, encC_0, &curEncState_0, (int*)&encoderTicks_0);
+        handleEncoderChange(encA_0, encB_0, encC_0, (uint8_t*)&curEncState_0, (int*)&encoderTicks_0);
     }
     void handleEncoderChange_1() {
-        handleEncoderChange(encA_1, encB_1, encC_1, &curEncState_1, (int*)&encoderTicks_1);
+        handleEncoderChange(encA_1, encB_1, encC_1, (uint8_t*)&curEncState_1, (int*)&encoderTicks_1);
     }
 
 
