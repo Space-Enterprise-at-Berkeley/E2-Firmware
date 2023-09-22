@@ -5,19 +5,19 @@
 namespace TVC {
 
     // define update period
-    uint32_t tvcUpdatePeriod = 20 * 1000;
+    uint32_t tvcUpdatePeriod = 5 * 1000;
     int x_motor_ticksp = 0;
     int y_motor_ticksp = 0;
-    float x_p = 0.4;
+    float x_p = 0.4; //change to 1.6 prob
     float x_i = 0;
     float x_d = 0;
-    float y_p = 0.4;
+    float y_p = 0.4; //change to 1.6 prob
     float y_i = 0;
     float y_d = 0;
-    int MID_SPD = 307;
+    int MID_SPD = 1229;
     //(4096 * (1500 / 200000)))
-    int MAX_SPD = 20;
-    int MIN_SPD = -20;
+    int MAX_SPD = 80;
+    int MIN_SPD = -80;
     int INNER_BUFFER_SIZE = 2;
     
     int speed_x = 0;
@@ -160,10 +160,10 @@ namespace TVC {
         switch(zeroState) { 
             case 0:
                 setMode(0);
-                setXSpeed(-4);
-                setYSpeed(-4);
+                setXSpeed(-15);
+                setYSpeed(-15);
                 ledcWrite(0, MID_SPD + speed_x);
-                ledcWrite(1, MID_SPD + speed_y);
+                ledcWrite(1, MID_SPD + speed_y);    
                 zeroState = 1;
                 Serial.println("in zeroing");
                 return 5*1000*1000;
