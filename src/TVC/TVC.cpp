@@ -60,14 +60,17 @@ namespace TVC {
     }
 
     void setRadius(Comms::Packet packet, uint8_t ip) {
-        setMode(1);
         radius = (float)(packetGetFloat(&packet, 0));
-        Serial.printf("setting radius to %f\n", radius);
+        if (radius < 550 && radius > 0) {
+            Serial.printf("setting radius to %f\n", radius);
+        }
+        setMode(1);
     }
 
     void setAngle(Comms::Packet packet, uint8_t ip) {
         setMode(1);
         angle = (float)(packetGetFloat(&packet, 0));
+        Serial.printf("setting angle to %f\n", angle);
     }
 
 
