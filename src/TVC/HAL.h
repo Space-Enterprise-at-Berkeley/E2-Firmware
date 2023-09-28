@@ -5,6 +5,7 @@
 #include "SPI.h"
 #include "Common.h"
 #include "EspComms.h"
+#include "TVC.h"
 
 namespace HAL {
 

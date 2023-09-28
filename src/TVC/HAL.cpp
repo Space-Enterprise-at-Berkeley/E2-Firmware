@@ -71,6 +71,7 @@ namespace HAL {
         uint8_t newState = a | (b << 1) | (c << 2);
 
         if (newState == 0 || newState == 7) {
+            TVC::setMode(0); //state error
             return;
         }
 
@@ -86,7 +87,9 @@ namespace HAL {
             }
 
             *curEncState = newState;
-        } 
+        } else {
+            TVC::setMode(0);
+        }
     }
 
     void handleEncoderChange_0() {

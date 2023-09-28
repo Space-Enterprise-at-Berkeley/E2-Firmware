@@ -63,11 +63,12 @@ namespace TVC {
     }
 
     void setRadius(Comms::Packet packet, uint8_t ip) {
-        radius = (float)(packetGetFloat(&packet, 0));
-        if (radius < 550 && radius > 0) {
-            Serial.printf("setting radius to %f\n", radius);
+        float r = (float)(packetGetFloat(&packet, 0));
+        if (r < 550 && r > 0) {
+            Serial.printf("setting radius to %f\n", r);
+            radius = r;
+            setMode(1);
         }
-        setMode(1);
     }
 
     void setAngle(Comms::Packet packet, uint8_t ip) {
@@ -112,6 +113,9 @@ namespace TVC {
 
             // Serial.println("X encoder count: " + String(HAL::getEncoderCount_0()));
             // Serial.println("Y encoder count: " + String(HAL::getEncoderCount_1()));
+        } else {
+            speed_x = 0;
+            speed_y = 0;
         } 
         Comms::Packet tmp = {.id=42};
         Comms::packetAddUint32(&tmp, HAL::getEncoderCount_0());
