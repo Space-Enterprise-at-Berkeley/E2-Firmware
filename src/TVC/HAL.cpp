@@ -15,7 +15,6 @@ namespace HAL {
 
     int init() {
 
-        setupEncoders();
 
         pinMode(x_pwm, OUTPUT); 
         pinMode(y_pwm, OUTPUT);
@@ -28,6 +27,7 @@ namespace HAL {
         ledcAttachPin(y_pwm, 1);
         ledcWrite(1, 1229);
         
+        setupEncoders();
         setEncoderCount_0(0);
         setEncoderCount_1(0);
 

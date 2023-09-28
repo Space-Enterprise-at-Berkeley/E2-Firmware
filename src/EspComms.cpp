@@ -35,8 +35,8 @@ namespace Comms {
     Udp.beginPacket(0, IPAddress(10, 0, 0, 255), 42099);
 
     //listen on port 42098 as well
-    Udp.begin(42098, 0);
-    Udp.beginPacket(0, IPAddress(10, 0, 0, 255), 42098);
+    // Udp.begin(42098, 0);
+    // Udp.beginPacket(0, IPAddress(10, 0, 0, 255), 42098);
     
     // if (multicast) {
     //   Udp.beginMulticast(multiGround, port);

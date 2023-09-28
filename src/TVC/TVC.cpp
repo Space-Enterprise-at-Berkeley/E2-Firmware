@@ -8,10 +8,10 @@ namespace TVC {
     uint32_t tvcUpdatePeriod = 5 * 1000;
     int x_motor_ticksp = 0;
     int y_motor_ticksp = 0;
-    float x_p = 0.4; //change to 1.6 prob
+    float x_p = 1.6; //change to 1.6 prob
     float x_i = 0;
     float x_d = 0;
-    float y_p = 0.4; //change to 1.6 prob
+    float y_p = 1.6; //change to 1.6 prob
     float y_i = 0;
     float y_d = 0;
     int MID_SPD = 1229;
@@ -36,8 +36,11 @@ namespace TVC {
     float angle = 0;
     float radius = 0;
 
-    float circlePeriod = 10;
+    float circlePeriod = 3;
     float circleRadius = 200;
+    int circleCrossover = 0; //used to keep track of when the X axis goes back to zero for the first circle loop. Prevents jolt at beginning to top of x axis.
+
+    int flowState = 0;
 
 
     // define class variables    
@@ -88,6 +91,7 @@ namespace TVC {
 
 
 
+
     uint32_t moveTVC() {
 
         if (tvcState) { // moving with PID is state 1
@@ -97,6 +101,12 @@ namespace TVC {
             }
 
             getTVCPosition(radius, angle, &x_motor_ticksp, &y_motor_ticksp);
+            if (x_motor_ticksp < 0) {
+                circleCrossover = 1;
+            }
+            if (!circleCrossover) {
+                x_motor_ticksp = 0;
+            }
             speed_x = x_Controller.update(x_motor_ticksp - HAL::getEncoderCount_0());
             speed_y = y_Controller.update(y_motor_ticksp - HAL::getEncoderCount_1());
 
@@ -134,13 +144,53 @@ namespace TVC {
         tvcState = (int)(packetGetUint8(&packet, 0));
     }
 
-    void enableCircle(Comms::Packet packet, uint8_t ip) { 
+
+    void enableCircleNoArgs() {
         setMode(1);
         circleEnabled = 1;// (int)(packetGetUint8(&packet, 0));
         radius = circleRadius;
         angle = 0;
         Serial.println("Circle enabled");
     }
+
+    void stopCircling() {
+        // angle = 0;
+        circleEnabled = 0;
+        circleCrossover = 0;
+    }
+    
+
+    uint32_t flowSequence() {
+
+        switch (flowState) {
+            case 0: 
+            {
+                //waiting 1 second
+                flowState++;
+                return 1000 * 1000;
+            }
+            case 1:
+            {
+                flowState++;
+                enableCircleNoArgs();
+                return 20 * 1000 * 1000;
+            }
+            case 2:
+            {
+                stopCircling();
+                flowState = 0;
+                return 0;
+            }
+        }
+
+    }
+
+
+    void enableCircle(Comms::Packet packet, uint8_t ip) { 
+        enableCircleNoArgs();
+    }
+
+
 
     void setXSpeed(int spdx) { 
         speed_x = spdx;

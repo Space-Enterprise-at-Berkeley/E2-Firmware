@@ -17,6 +17,9 @@ namespace TVC {
     void setYSpeed(int spdy);
     void stopTVC(Comms::Packet statePacket, uint8_t ip);
     uint32_t zero();
+    void beginFlow(Comms::Packet statePacket, uint8_t ip);
+    uint32_t flowSequence();
+    void stopCircling();
 
     void setRadius(Comms::Packet statePacket, uint8_t ip);
     void setAngle(Comms::Packet statePacket, uint8_t ip);

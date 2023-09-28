@@ -22,6 +22,7 @@ void joystickCommand(Comms::Packet joystickCommand, uint8_t ip) {
 Task taskTable[] = {
   {TVC::zero, 0, false}, //disabled by default
   {TVC::moveTVC, 0, true},
+  {TVC::flowSequence, 0, false},
 };
 
 #define TASK_COUNT (sizeof(taskTable) / sizeof (struct Task))
@@ -33,22 +34,29 @@ void zeroTVC(Comms::Packet packet, uint8_t ip) {
   taskTable[0].nexttime = micros();
 }
 
+void startLaunch(Comms::Packet packet, uint8_t ip) {
+  Serial.printf("hihii starting launch\n");
+  taskTable[2].enabled = true;
+  taskTable[2].nexttime = micros();
+}
+
 void setup() {
   // setup stuff here
+  HAL::init();
   Serial.begin(115200);
   Serial.printf("hii!!\n");
   Comms::init();
   Serial.printf("setup comms!\n");
-  HAL::init();
   HAL::setupEncoders();
   HAL::resetEncoders();
   TVC::init();
-  Serial.printf("setup other stuff!\n");
+  Serial.printf("setup other stuff!\n");  
   Comms::registerCallback(102, TVC::enableCircle);
   Comms::registerCallback(103, zeroTVC);
   Comms::registerCallback(104, TVC::stopTVC);
   Comms::registerCallback(105, TVC::setRadius);
   Comms::registerCallback(106, TVC::setAngle);
+  Comms::registerCallback(150, startLaunch);
   // Comms::registerCallback(5, TVC::setTVCMode);
   // Comms::registerCallback(101, joystickCommand);
   // Comms::registerCallback(2, TVC::printEncoders);
