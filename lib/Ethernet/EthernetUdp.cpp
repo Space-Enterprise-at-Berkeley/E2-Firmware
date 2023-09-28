@@ -128,7 +128,7 @@ size_t EthernetUDP::write(int s, const uint8_t *buffer, size_t size)
 	return bytes_written;
 }
 
-int EthernetUDP::parsePacket()
+int EthernetUDP::parsePacket(int s)
 {
 	// discard any remaining bytes in the last packet
 	while (_remaining) {
@@ -138,12 +138,12 @@ int EthernetUDP::parsePacket()
 		read((uint8_t *)NULL, _remaining);
 	}
 
-	if (Ethernet.socketRecvAvailable(0) > 0) {
+	if (Ethernet.socketRecvAvailable(s) > 0) {
 		//HACK - hand-parse the UDP packet using TCP recv method
 		uint8_t tmpBuf[8];
 		int ret=0;
 		//read 8 header bytes and get IP and port from it
-		ret = Ethernet.socketRecv(0, tmpBuf, 8);
+		ret = Ethernet.socketRecv(s, tmpBuf, 8);
 		if (ret > 0) {
 			_remoteIP = tmpBuf;
 			_remotePort = tmpBuf[4];
@@ -158,6 +158,11 @@ int EthernetUDP::parsePacket()
 	}
 	// There aren't any packets available
 	return 0;
+}
+
+int EthernetUDP::parsePacket()
+{
+	return parsePacket(0);
 }
 
 int EthernetUDP::read()
@@ -176,15 +181,20 @@ int EthernetUDP::read()
 
 int EthernetUDP::read(unsigned char *buffer, size_t len)
 {
+	return read(buffer, len, 0);
+}
+
+int EthernetUDP::read(unsigned char *buffer, size_t len, int s)
+{
 	if (_remaining > 0) {
 		int got;
 		if (_remaining <= len) {
 			// data should fit in the buffer
-			got = Ethernet.socketRecv(0, buffer, _remaining);
+			got = Ethernet.socketRecv(s, buffer, _remaining);
 		} else {
 			// too much data for the buffer,
 			// grab as much as will fit
-			got = Ethernet.socketRecv(0, buffer, len);
+			got = Ethernet.socketRecv(s, buffer, len);
 		}
 		if (got > 0) {
 			_remaining -= got;

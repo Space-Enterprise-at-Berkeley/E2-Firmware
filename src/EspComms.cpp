@@ -31,8 +31,11 @@ namespace Comms {
       Udp.begin(ports[i], i+1);
       Udp.beginPacket(i+1, groundStations[i], ports[i]);
     }
+
     Udp.begin(42099, 0);
     Udp.beginPacket(0, IPAddress(10, 0, 0, 255), 42099);
+
+    // Udp.begin(42072, groundStationCount+1);
 
     //listen on port 42098 as well
     // Udp.begin(42098, 0);
@@ -107,12 +110,12 @@ namespace Comms {
   void processWaitingPackets()
   {
     if (Ethernet.detectRead()) {
-      if (Udp.parsePacket()) {
-        // if(Udp.remotePort() != port) return;
-        Udp.read(packetBuffer, sizeof(Comms::Packet));
-        Packet *packet = (Packet*) &packetBuffer;
-        evokeCallbackFunction(packet, Udp.remoteIP()[3]);
-        
+      for (int i = 0; i < 8; i++) {
+        if (Udp.parsePacket(i)) {
+          Udp.read(packetBuffer, sizeof(Comms::Packet), i);
+          Packet *packet = (Packet*) &packetBuffer;
+          evokeCallbackFunction(packet, Udp.remoteIP()[3]);
+        } 
       }
     }
 

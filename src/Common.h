@@ -37,6 +37,7 @@ enum BoardID
   EREG1 = 61,
   EREG2 = 62,
   EREG3 = 63,
+  LED_BOARD = 70,
   GROUND1 = 169,
   GROUND2 = 170,
   GROUND3 = 171,

@@ -8,11 +8,11 @@ namespace TVC {
     uint32_t tvcUpdatePeriod = 5 * 1000;
     int x_motor_ticksp = 0;
     int y_motor_ticksp = 0;
-    float x_p = 1.6; //change to 1.6 prob
-    float x_i = 0;
+    float x_p = 3; //change to 1.6 prob
+    float x_i = 1e-6;
     float x_d = 0;
-    float y_p = 1.6; //change to 1.6 prob
-    float y_i = 0;
+    float y_p = 3; //change to 1.6 prob
+    float y_i = 1e-6;
     float y_d = 0;
     int MID_SPD = 1229;
     //(4096 * (1500 / 200000)))
@@ -37,7 +37,7 @@ namespace TVC {
     float radius = 0;
 
     float circlePeriod = 3;
-    float circleRadius = 200;
+    float circleRadius = 300;
     int circleCrossover = 0; //used to keep track of when the X axis goes back to zero for the first circle loop. Prevents jolt at beginning to top of x axis.
 
     int flowState = 0;

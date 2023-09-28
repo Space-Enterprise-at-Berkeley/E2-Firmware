@@ -5,20 +5,7 @@
 #include "HAL.h"
 
 
-uint32_t task_example() { 
 
-  Serial.println("TEST");  
-  return 1000 * 1000;
-}
-
-/* bool joystickActive = false;
-void joystickCommand(Comms::Packet joystickCommand, uint8_t ip) {
-  // If the joystick is active, then we should be updating position targets from it
-  if (joystickActive){
-    TVC::definePosition(joystickCommand, ip);
-  }
-}
- */
 Task taskTable[] = {
   {TVC::zero, 0, false}, //disabled by default
   {TVC::moveTVC, 0, true},
@@ -42,8 +29,8 @@ void startLaunch(Comms::Packet packet, uint8_t ip) {
 
 void setup() {
   // setup stuff here
-  HAL::init();
   Serial.begin(115200);
+  HAL::init();
   Serial.printf("hii!!\n");
   Comms::init();
   Serial.printf("setup comms!\n");
