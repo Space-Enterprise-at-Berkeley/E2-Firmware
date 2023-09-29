@@ -153,7 +153,7 @@ namespace TVC {
         setMode(1);
         circleEnabled = 1;// (int)(packetGetUint8(&packet, 0));
         radius = circleRadius;
-        angle = 0;
+        // angle = 0;
         Serial.println("Circle enabled");
     }
 
@@ -211,33 +211,39 @@ namespace TVC {
         speed_y = 0;
     }
 
+    // uint32_t zero() { //zeroing by jamming against hardstop. For now just going to hold it to a zero position and reset encoders, which is what the new zero routine does
+    //     static int zeroState = 0;
+    //     circleEnabled = 0;
+    //     switch(zeroState) { 
+    //         case 0:
+    //             setMode(0);
+    //             setXSpeed(-15);
+    //             setYSpeed(-15);
+    //             ledcWrite(0, MID_SPD + speed_x);
+    //             ledcWrite(1, MID_SPD + speed_y);    
+    //             zeroState = 1;
+    //             Serial.println("in zeroing");
+    //             return 5*1000*1000;
+    //         case 1:
+    //             HAL::setEncoderCount_0(650);
+    //             HAL::setEncoderCount_1(650);
+
+    //             // x_motor_ticksp = 0;
+    //             // y_motor_ticksp = 0;
+    //             radius = 0;
+    //             angle = 0;
+
+    //             setMode(1);
+    //             Serial.println("done zeroing");
+    //             zeroState = 0;
+    //             return 0; //disables
+    //     }
+    //     return 0;
+    // }
+
     uint32_t zero() {
-        static int zeroState = 0;
-        circleEnabled = 0;
-        switch(zeroState) { 
-            case 0:
-                setMode(0);
-                setXSpeed(-15);
-                setYSpeed(-15);
-                ledcWrite(0, MID_SPD + speed_x);
-                ledcWrite(1, MID_SPD + speed_y);    
-                zeroState = 1;
-                Serial.println("in zeroing");
-                return 5*1000*1000;
-            case 1:
-                HAL::setEncoderCount_0(650);
-                HAL::setEncoderCount_1(650);
-
-                // x_motor_ticksp = 0;
-                // y_motor_ticksp = 0;
-                radius = 0;
-                angle = 0;
-
-                setMode(1);
-                Serial.println("done zeroing");
-                zeroState = 0;
-                return 0; //disables
-        }
+        HAL::setEncoderCount_0(0);
+        HAL::setEncoderCount_1(0);
         return 0;
     }
     

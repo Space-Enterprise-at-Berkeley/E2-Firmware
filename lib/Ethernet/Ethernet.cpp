@@ -91,6 +91,7 @@ void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress g
 	begin(mac, ip, dns, gateway, subnet, -1, -1, -1, -1);
 }
 
+int ETH_intN_g;
 void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress gateway, IPAddress subnet, int spiMisoPin, int spiMosiPin, int spiSclkPin, int ETH_intN)
 {
 	if (W5500.init(spiMisoPin, spiMosiPin, spiSclkPin) == 0) return;
@@ -105,15 +106,21 @@ void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress g
 	// Set Interupprt
 	if (ETH_intN == -1) {
 		ETH_intN = 9;
+		ETH_intN_g = 9;
+	} else {
+		ETH_intN_g = ETH_intN;
 	}
 	pinMode(ETH_intN, INPUT);
-	attachInterrupt(ETH_intN, setRecvFlag, FALLING);
+	// attachInterrupt(ETH_intN, setRecvFlag, FALLING);
 	SPI.endTransaction();
 }
 
 bool EthernetClass::detectRead() {
-	if (INTnFlag) {
-		W5500.writeSnIR(0, 0xff);
+
+	W5500.execCmdSn(0, Sock_RECV); //fix for dumb tvc issue
+
+	if (!digitalRead(ETH_intN_g)) {
+		W5500.writeSnIR(0, 0x04);
 		INTnFlag = false;
 		return true;
 	} else {

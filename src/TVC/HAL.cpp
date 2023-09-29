@@ -71,7 +71,7 @@ namespace HAL {
         uint8_t newState = a | (b << 1) | (c << 2);
 
         if (newState == 0 || newState == 7) {
-            TVC::setMode(0); //state error
+            // TVC::setMode(0); //state error
             return;
         }
 
@@ -88,7 +88,7 @@ namespace HAL {
 
             *curEncState = newState;
         } else {
-            TVC::setMode(0);
+            // TVC::setMode(0);
         }
     }
 
@@ -118,6 +118,7 @@ namespace HAL {
         attachInterrupt(encB_1, handleEncoderChange_1, CHANGE);
         attachInterrupt(encC_1, handleEncoderChange_1, CHANGE);
 
+        #ifndef DISABLE_ENCODER_CHECK
         do {
             curEncState_0 = digitalRead(encA_0) | (digitalRead(encB_0) << 1) | (digitalRead(encC_0) << 2);
 
@@ -132,6 +133,7 @@ namespace HAL {
                 Serial.printf("waiting for valid encoders on 1\n");
             }
         } while (revEncMap[curEncState_1] == 100);
+        #endif
 
     }
 

@@ -225,7 +225,6 @@ uint16_t W5500Class::read(uint16_t addr, uint8_t *buf, uint16_t len)
 	resetSS();
 	return len;
 }
-
 void W5500Class::execCmdSn(SOCKET s, SockCMD _cmd)
 {
 	// Send command to socket

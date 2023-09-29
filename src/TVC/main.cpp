@@ -7,7 +7,7 @@
 
 
 Task taskTable[] = {
-  {TVC::zero, 0, false}, //disabled by default
+  {TVC::zero, 0, false}, 
   {TVC::moveTVC, 0, true},
   {TVC::flowSequence, 0, false},
 };
@@ -19,6 +19,13 @@ void zeroTVC(Comms::Packet packet, uint8_t ip) {
   if (taskTable[0].enabled) return; 
   taskTable[0].enabled = true;
   taskTable[0].nexttime = micros();
+}
+
+uint32_t ctr = 0;
+
+void packetcounter(Comms::Packet packet, uint8_t ip) {
+  ctr ++;
+  Serial.printf("ctr: %d\n", ctr);
 }
 
 void startLaunch(Comms::Packet packet, uint8_t ip) {
@@ -43,6 +50,7 @@ void setup() {
   Comms::registerCallback(104, TVC::stopTVC);
   Comms::registerCallback(105, TVC::setRadius);
   Comms::registerCallback(106, TVC::setAngle);
+  Comms::registerCallback(200, packetcounter);
   Comms::registerCallback(150, startLaunch);
   // Comms::registerCallback(5, TVC::setTVCMode);
   // Comms::registerCallback(101, joystickCommand);
