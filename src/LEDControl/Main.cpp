@@ -100,31 +100,49 @@ uint8_t lox_bottomLED = 0;
 uint8_t lox_topLED = 55;
 uint8_t fuel_bottomLED = 75;
 uint8_t fuel_topLED = 130;
+uint8_t t = 0;
 uint8_t s = 0;
+uint8_t base_brightness = 150;
+uint8_t brightness;
 uint32_t combinedMode(){
   //Serial.println("Combined cycle");
   for (uint16_t i = 0; i < NUM_LEDS; i++){
+    if ( t - i < 11 && t - i > -11){
+      brightness = 255 - (t-i)*(t-i), base_brightness;
+    } else {
+      brightness = base_brightness;
+    }
+
+
     if (i >= lox_bottomLED && i <= lox_topLED){
       if ((lox_capval-lox_lowerLimit)/(float)(lox_upperLimit-lox_lowerLimit) > (i-lox_bottomLED)/(float)(lox_topLED - lox_bottomLED)){
-        leds[i] = lox_color;
+        //leds[i] = lox_color;
+        leds[i] = CHSV(209, 255, brightness);
       } else {
-        leds[i] = CRGB(255, 255, 255);
+        leds[i] = CHSV(0, 0, brightness);
       }
     }
     else if (i >= fuel_bottomLED && i <= fuel_topLED){
       if ((fuel_capval - fuel_lowerLimit)/(float)(fuel_upperLimit-fuel_lowerLimit) > (i-fuel_bottomLED)/(float)(fuel_topLED - fuel_bottomLED)){
-        leds[i] = fuel_color;
+        //leds[i] = fuel_color;
+        leds[i] = CHSV(36, 255, brightness);
       } else {
-        leds[i] = CRGB(255, 255, 255);
+        leds[i] = CHSV(0, 0, brightness);
       }
     }
     else{
-      leds[i] = CHSV(s+i, 255, 255);
+      leds[i] = CHSV(s+i, 255, brightness);
     }
   }
-  s++;
+  t++;
+  if (t == NUM_LEDS + 80){
+    t = 0;
+  }
+  if (t%10== 0){
+    s++;
+  }
   FastLED.show();
-  return 40 * 1000;
+  return 1 * 1000;
 }
 
 void updateLoxCapVal(Comms::Packet pckt, uint8_t ip){
@@ -179,6 +197,16 @@ void changeCapBounds(Comms::Packet pckt, uint8_t ip){
 
 }
 
+void ledStartup(){
+  for (int i = 0; i < NUM_LEDS; i+=5){
+    for (int j = 0; j < 5; j++){
+      leds[i+j] = CRGB(255,0,0);
+    }
+    FastLED.show();
+    delay(500);
+  }
+}
+
 void setup() {
   // setup stuff here
   Serial.begin(115200);
@@ -191,6 +219,8 @@ void setup() {
   Comms::registerCallback(22, updateFuelCapVal);
   Comms::registerCallback(100, changeMode);
   Comms::registerCallback(101, changeCapBounds);
+
+  ledStartup();
 
   // while(1){
   //   digitalWrite(DATA_PIN, HIGH);
