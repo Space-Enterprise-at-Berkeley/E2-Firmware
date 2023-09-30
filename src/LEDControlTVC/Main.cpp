@@ -5,20 +5,11 @@
 #include <Common.h>
 #include "FastLED.h"
 #include <Arduino.h>
+#include <math.h>
 
 const uint16_t NUM_LEDS = 500;
 const uint8_t DATA_PIN = 15;
 
-const uint8_t TANK_LENGTH = 58;
-const uint8_t TANK_SEPERATION = 15;
-const uint8_t TANK_END = TANK_LENGTH + TANK_SEPERATION + TANK_LENGTH;
-
-CRGB lox_color(0, 50, 98);
-CRGB fuel_color(100, 60, 0);
-
-
-float lox_capval;
-float fuel_capval;
 CRGB leds[NUM_LEDS];
 
 
@@ -50,111 +41,34 @@ uint32_t rainbowMode(){
   return 40 * 1000;
 }
 
-float lox_lowerLimit = 150;
-float lox_upperLimit = 200;
-float fuel_lowerLimit = 150;
-float fuel_upperLimit = 200;
-bool rIncreasing = true;
-uint32_t fillMode(){
-  for (uint16_t i = 0; i < TANK_LENGTH; i++){
-    if (i < TANK_LENGTH * (lox_capval - lox_lowerLimit) / (lox_upperLimit - lox_lowerLimit)){
-      //hover around shades of blue
-      //leds[i] = CHSV(180 + r*100/(float)255, 255, 255);
-      leds[i] = lox_color;
+int tvcX = 0;
+int tvcY = 0;
+uint16_t circleLEDcount = 50;
+uint16_t circleStartLED = 5;
+uint32_t tvcMode() {
+  float radius = min(sqrt(tvcX*tvcX + tvcY*tvcY) / 495, 1.0);
+  float angle = atan2(tvcY,tvcX);
+
+  if (radius < 0.05) {
+    for (uint16_t i = circleStartLED; i < circleStartLED+circleLEDcount; i++){
+      leds[i] = CHSV(0, 255, 255);
     }
-    else {
-      //leds[i] = CRGB(255,0,0);
-      leds[i] = CRGB(0,0,0);
-    }
-  }
-  for (uint16_t i = TANK_LENGTH + TANK_SEPERATION; i < TANK_END; i++){
-    if (i < TANK_LENGTH * (fuel_capval - fuel_lowerLimit) / (fuel_upperLimit - fuel_lowerLimit) + TANK_LENGTH + TANK_SEPERATION){
-      //hover around shades of green
-      //leds[i] = CHSV(60 + r*100/(float)255, 255, 255);
-      leds[i] = fuel_color;
-      
-    }
-    else {
-      //leds[i] = CRGB(255,0,0);
-      leds[i] = CRGB(0,0,0);
-      
-    }
-  }
-  if (rIncreasing){
-    r++;
-    if (r == 255){
-      rIncreasing = false;
-    }
-  }
-  else {
-    r--;
-    if (r == 0){
-      rIncreasing = true;
+  } else {
+    int ledPos = (int) (angle/(2*3.141) * circleLEDcount) + circleStartLED;
+    int ledRange = (int)(radius/2 * circleLEDcount);
+    for (uint16_t i = 0; i < ledRange; i++) {
+      leds[ledPos + i] = CHSV(0, 255,  255 - (255*i)/ledRange);
+      leds[ledPos - i] = CHSV(0, 255,  255 - (255*i)/ledRange);
     }
   }
   FastLED.show();
-  return 40 * 1000;
+  return 40*1000;
+
 }
-
-uint8_t lox_bottomLED = 0;
-uint8_t lox_topLED = 55;
-uint8_t fuel_bottomLED = 75;
-uint8_t fuel_topLED = 130;
-uint8_t s = 0;
-uint32_t combinedMode(){
-  //Serial.println("Combined cycle");
-  for (uint16_t i = 0; i < NUM_LEDS; i++){
-    if (i >= lox_bottomLED && i <= lox_topLED){
-      if ((lox_capval-lox_lowerLimit)/(float)(lox_upperLimit-lox_lowerLimit) > (i-lox_bottomLED)/(float)(lox_topLED - lox_bottomLED)){
-        leds[i] = lox_color;
-      } else {
-        leds[i] = CRGB(255, 255, 255);
-      }
-    }
-    else if (i >= fuel_bottomLED && i <= fuel_topLED){
-      if ((fuel_capval - fuel_lowerLimit)/(float)(fuel_upperLimit-fuel_lowerLimit) > (i-fuel_bottomLED)/(float)(fuel_topLED - fuel_bottomLED)){
-        leds[i] = fuel_color;
-      } else {
-        leds[i] = CRGB(255, 255, 255);
-      }
-    }
-    else{
-      leds[i] = CHSV(s+i, 255, 255);
-    }
-  }
-  s++;
-  FastLED.show();
-  return 40 * 1000;
-}
-
-void updateLoxCapVal(Comms::Packet pckt, uint8_t ip){
-   
-     lox_capval = Comms::packetGetFloat(&pckt, 0);
-     Serial.println(lox_capval);
-   }
-
-  void updateFuelCapVal(Comms::Packet pckt, uint8_t ip){
-  
-    fuel_capval = Comms::packetGetFloat(&pckt, 0);
-    Serial.println(fuel_capval);
-  }
-
-
-// void updateCapVal(Comms::Packet pckt, uint8_t ip){
-//   if (ip == 72){
-//     lox_capval = Comms::packetGetFloat(&pckt, 0);
-//     Serial.println(lox_capval);
-//   }
-//   else if (ip == 42){
-//     fuel_capval = Comms::packetGetFloat(&pckt, 0);
-//     Serial.println(fuel_capval);
-//   }
-// }
 
 Task taskTable[] = {
   {rainbowMode, 0, true},
-  {fillMode, 0, false},
-  {combinedMode, 0, false},
+  {tvcMode, 0, false},
   {LEDTest, 0, false},
   {helloWorld, 0, true}
 };
@@ -169,14 +83,12 @@ void changeMode(Comms::Packet pckt, uint8_t ip){
   taskTable[mode].enabled = true;
 }
 
-void changeCapBounds(Comms::Packet pckt, uint8_t ip){
-   lox_lowerLimit = Comms::packetGetFloat(&pckt, 0);
- lox_upperLimit = Comms::packetGetFloat(&pckt, 4);
- fuel_lowerLimit = Comms::packetGetFloat(&pckt, 8);
- fuel_upperLimit = Comms::packetGetFloat(&pckt, 12);
- Serial.println("Set bounds for lox to " + String(lox_lowerLimit) + " and " + String(lox_upperLimit));
- Serial.println("Set bounds for fuel to " + String(fuel_lowerLimit) + " and " + String(fuel_upperLimit));
-
+void updateTVCval(Comms::Packet pckt, uint8_t ip){
+  uint32_t a = Comms::packetGetFloat(&pckt, 0);
+  tvcX = *(int*) &a;
+  a = Comms::packetGetFloat(&pckt, 4);
+  tvcY = *(int*) &a;
+  Serial.printf("got updatetvcval x: %d y: %d\n", tvcX, tvcY);
 }
 
 void setup() {
@@ -187,10 +99,8 @@ void setup() {
   FastLED.setBrightness(255);
   pinMode(DATA_PIN, OUTPUT);
 
-  Comms::registerCallback(21, updateLoxCapVal);
-  Comms::registerCallback(22, updateFuelCapVal);
   Comms::registerCallback(100, changeMode);
-  Comms::registerCallback(101, changeCapBounds);
+  Comms::registerCallback(42, updateTVCval);
 
   // while(1){
   //   digitalWrite(DATA_PIN, HIGH);
