@@ -64,7 +64,7 @@ namespace TVC {
 
     void setRadius(Comms::Packet packet, uint8_t ip) {
         float r = (float)(packetGetFloat(&packet, 0));
-        if (r < 550 && r > 0) {
+        if (r < 550 && r >= 0) {
             Serial.printf("setting radius to %f\n", r);
             radius = r;
             setMode(1);
@@ -127,15 +127,19 @@ namespace TVC {
         Comms::packetAddUint32(&stp, y_motor_ticksp);
         Comms::packetAddFloat(&stp, radius);
         Comms::packetAddFloat(&stp, angle);
-        Comms::emitPacketToGS(&stp);
+        Comms::emitPacketToAll(&stp); //CHANGE THIS
 
         // if ((millis() % 1000)  >= 0) {
         //     Serial.printf("encX @ %d, encY @ %d\n", HAL::getEncoderCount_0(), HAL::getEncoderCount_1());
         //     Serial.printf("speedX @ %d, speedY @ %d\n", speed_x + MID_SPD, speed_y + MID_SPD);
         // }
+        #ifdef DISABLE_ENCODER_CHECK
+        ledcWrite(0, MID_SPD);
+        ledcWrite(1, MID_SPD);
+        #else
         ledcWrite(0, speed_x + MID_SPD);
         ledcWrite(1, speed_y + MID_SPD);
-        
+        #endif
         return tvcUpdatePeriod;
     }
 
