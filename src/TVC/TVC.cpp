@@ -120,14 +120,15 @@ namespace TVC {
         Comms::Packet tmp = {.id=42};
         Comms::packetAddUint32(&tmp, HAL::getEncoderCount_0());
         Comms::packetAddUint32(&tmp, HAL::getEncoderCount_1());
-        Comms::emitPacketToGS(&tmp);
+        Comms::emitPacketToAll(&tmp);
 
         Comms::Packet stp = {.id=43};
         Comms::packetAddUint32(&stp, x_motor_ticksp);
         Comms::packetAddUint32(&stp, y_motor_ticksp);
         Comms::packetAddFloat(&stp, radius);
         Comms::packetAddFloat(&stp, angle);
-        Comms::emitPacketToAll(&stp); //CHANGE THIS
+        Comms::emitPacketToGS(&stp); 
+
 
         // if ((millis() % 1000)  >= 0) {
         //     Serial.printf("encX @ %d, encY @ %d\n", HAL::getEncoderCount_0(), HAL::getEncoderCount_1());
