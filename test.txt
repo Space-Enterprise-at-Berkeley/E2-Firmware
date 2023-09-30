@@ -1,0 +1,52 @@
+diff --git a/src/EReg/Ducers.cpp b/src/EReg/Ducers.cpp
+index 1416ac9..d174b95 100644
+--- a/src/EReg/Ducers.cpp
++++ b/src/EReg/Ducers.cpp
+@@ -8,18 +8,18 @@ namespace Ducers {
+     float _upstreamPT2;
+     float _downstreamPT2;
+ 
+-    void setDownstreamPT1(float downstreamPT1) {_downstreamPT1 = downstreamPT1;}
++    void setDownstreamPT1(float downstreamPT1) {_downstreamPT1 = downstreamPT1;} 
+     void setDownstreamPT2(float downstreamPT2) {_downstreamPT2 = downstreamPT2;}
+     void setUpstreamPT1(float upstreamPT1) {_upstreamPT1 = upstreamPT1;}
+     void setUpstreamPT2(float upstreamPT2) {_upstreamPT2 = upstreamPT2;}
+ 
+ 
+     float interpolate1000(double rawValue) {
+-        return (rawValue - 0.5) * 250;
++        return ((rawValue - 0.5) * 250) + 12.5;
+     }
+ 
+     float interpolate5000(double rawValue) {
+-        return (rawValue * 1000 * 1.0042); //1.0042 from the voltage divider - 5647ohm and 5600ohm
++        return (rawValue * 1000 * 1.0042) + 5; //1.0042 from the voltage divider - 5647ohm and 5600ohm
+     }
+ 
+     float readPressurantPT1() {
+diff --git a/src/EReg/Packets.cpp b/src/EReg/Packets.cpp
+index cbaeda2..76062c8 100644
+--- a/src/EReg/Packets.cpp
++++ b/src/EReg/Packets.cpp
+@@ -126,6 +126,8 @@ namespace Packets {
+     void broadcastAbort() { //TODO
+         Comms::Packet packet = {.id = ABORT_ID};
+         packet.len = 0;
++        Comms::packetAddUint8(&packet, 2);
++        Comms::packetAddUint8(&packet, 0);
+         Comms::emitPacketToAll(&packet);
+ 
+         // //send abort to ACs
+diff --git a/src/EReg/Packets.h b/src/EReg/Packets.h
+index f803727..f5cfdc5 100644
+--- a/src/EReg/Packets.h
++++ b/src/EReg/Packets.h
+@@ -12,7 +12,7 @@ namespace Packets {
+     const uint8_t LIMIT_SWITCHES = 6;
+     const uint8_t PHASE_CURRENTS = 7;
+     const uint8_t TEMPS = 8;
+-    const uint8_t ABORT_ID = 9;
++    const uint8_t ABORT_ID = 133;
+     const uint8_t OVERCURRENT_ID = 10;
+ 
+     void sendTelemetry(

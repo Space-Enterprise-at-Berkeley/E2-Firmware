@@ -12,7 +12,7 @@ namespace Comms {
   // Define groundstation ips
   const uint8_t groundStationCount = 3;
   IPAddress groundStations[groundStationCount] = {IPAddress(10, 0, 0, GROUND1), IPAddress(10, 0, 0, GROUND2), IPAddress(10, 0, 0, GROUND3)};
-  int ports[groundStationCount] = {42069, 42070, 42071};
+  int ports[groundStationCount] = {42069, 42070, 420};
   // IPAddress groundStations[groundStationCount] = {IPAddress(10, 0, 0, GROUND1)};
   // int ports[groundStationCount] = {42069};
 
@@ -29,7 +29,7 @@ namespace Comms {
       Udp.begin(ports[i], i+1);
       Udp.beginPacket(i+1, groundStations[i], ports[i]);
     }
-    Udp.begin(42099, 0);
+    Udp.begin(42072, 0);
     Udp.beginPacket(0, IPAddress(10, 0, 0, 255), 42099);
     
     // if (multicast) {

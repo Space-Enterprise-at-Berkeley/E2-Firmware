@@ -112,6 +112,8 @@ void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress g
 }
 
 bool EthernetClass::detectRead() {
+
+	W5500.execCmdSn(0, Sock_RECV); //fix for dumb tvc issue
 	if (!digitalRead(9)) {
 		W5500.writeSnIR(0, 0xff);
 		INTnFlag = false;
