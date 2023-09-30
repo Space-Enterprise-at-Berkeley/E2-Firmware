@@ -20,7 +20,7 @@ namespace Config {
 
     // Flow Parameters
     const float pressureSetpoint = 500;
-    const unsigned long rampStart = 0.9 * pressureSetpoint; // psi
+    const unsigned long rampStart = 0.7 * pressureSetpoint; // psi
     const unsigned long loxLead = 0; //time in microseconds
 
     // Diagnostic configs
