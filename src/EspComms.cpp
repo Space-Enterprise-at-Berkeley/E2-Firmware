@@ -10,9 +10,9 @@ namespace Comms {
 
   byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, ID};
   // Define groundstation ips
-  const uint8_t groundStationCount = 3;
-  IPAddress groundStations[groundStationCount] = {IPAddress(10, 0, 0, GROUND1), IPAddress(10, 0, 0, GROUND2), IPAddress(10, 0, 0, GROUND3)};
-  int ports[groundStationCount] = {42069, 42070, 42071};
+  const uint8_t groundStationCount = 4;
+  IPAddress groundStations[groundStationCount] = {IPAddress(10, 0, 0, GROUND1), IPAddress(10, 0, 0, GROUND2), IPAddress(10, 0, 0, GROUND3), IPAddress(10, 0, 0, 70)};
+  int ports[groundStationCount] = {42069, 42070, 42071, 42072};
   // IPAddress groundStations[groundStationCount] = {IPAddress(10, 0, 0, GROUND1)};
   // int ports[groundStationCount] = {42069};
 

@@ -37,7 +37,7 @@ namespace TVC {
     float radius = 0;
 
     float circlePeriod = 3;
-    float circleRadius = 300;
+    float circleRadius = 350;
     int circleCrossover = 0; //used to keep track of when the X axis goes back to zero for the first circle loop. Prevents jolt at beginning to top of x axis.
 
     int flowState = 0;
@@ -120,7 +120,7 @@ namespace TVC {
         Comms::Packet tmp = {.id=42};
         Comms::packetAddUint32(&tmp, HAL::getEncoderCount_0());
         Comms::packetAddUint32(&tmp, HAL::getEncoderCount_1());
-        Comms::emitPacketToAll(&tmp);
+        Comms::emitPacketToGS(&tmp);
 
         Comms::Packet stp = {.id=43};
         Comms::packetAddUint32(&stp, x_motor_ticksp);
@@ -182,7 +182,7 @@ namespace TVC {
             {
                 flowState++;
                 enableCircleNoArgs();
-                return 20 * 1000 * 1000;
+                return 25 * 1000 * 1000;
             }
             case 2:
             {
