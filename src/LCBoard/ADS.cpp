@@ -12,7 +12,7 @@ namespace ADS {
     float offset[sizeof(ADCsize)];
     float multiplier[sizeof(ADCsize)];
     bool persistentCalibration = true; // saves offset to flash
-    uint32_t sampleRate = 5000; //200Hz
+    uint32_t sampleRate = 12500; //80Hz
 
     float adc_to_lbs = 0.00025; // 3992 adc units = 1 lb
     //float adc_to_lbs = 0.00025316455; //3950 adc units = 1 lb
@@ -194,7 +194,7 @@ namespace ADS {
         Comms::packetAddFloat(&ADCPacket, sum);
         Comms::emitPacketToGS(&ADCPacket); //commented out for tesing. shoud comment back in for comms
 
-        return sampleRate; //200Hz
+        return sampleRate; //80Hz
 
     }
 
