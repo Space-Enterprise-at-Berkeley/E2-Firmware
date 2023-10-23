@@ -215,16 +215,16 @@ void loop()
 
 
     // samhitag3 test print statements
-    // Serial.print("temp: ");
-    // Serial.print(tempValue);
-    // Serial.print("\t");
-    // Serial.print(sensor0);
-    // Serial.print("\t");
-    // Serial.print(sensor1);
-    // Serial.print("\t");
+    Serial.print("temp: ");
+    Serial.print(tempValue);
+    Serial.print("\t sensor0: ");
+    Serial.print(sensor0);
+    Serial.print("\t sensor1: ");
+    Serial.print(sensor1);
+    Serial.print("\t capValue: ");
     Serial.println(capValue);
-    // Serial.print("\t");
-    // Serial.print(refValue);
+    Serial.print("\t refValue: ");
+    Serial.println(refValue);
     // Serial.println("\t");
     // Serial.print(avgCap);
     // Serial.print("\t");
@@ -233,7 +233,7 @@ void loop()
     // Serial.print(corrected);
     // Serial.print("\t");
     // Serial.println(avgCorrected);
-    // // Serial.print(corrected);
+    // Serial.print(corrected);
     // Serial.print("  numSamp: ");
     // Serial.print(numSamples);
     // Serial.print("  avg: ");
