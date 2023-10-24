@@ -276,4 +276,6 @@ void loop()
     digitalWrite(STATUS_LED, LOW);
     indicatorLastTime = timeNow;
   }
+
+  delay(200);
 }
