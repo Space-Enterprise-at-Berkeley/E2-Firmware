@@ -45,7 +45,7 @@ void loop() {
   unsigned long currentMillis = millis();
     if (currentMillis - previousMillis >= interval) {
       previousMillis = currentMillis;
-      Serial.println("HELLOOOO WORLD");
+      Serial.println("eregging");
     }
     int timeNow = currentMillis = millis();
     if(timeNow - indicatorLastTime >= indicatorPeriod) {

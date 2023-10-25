@@ -20,9 +20,6 @@ void setup() {
 
     Comms::initComms();
 
-    DEBUG("STARTING UP\n");
-    DEBUG_FLUSH();
-
     // pinMode(TRANSMIT_PIN, OUTPUT);
     pinMode(RECEIVE_PIN, OUTPUT);
 

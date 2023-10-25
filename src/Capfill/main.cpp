@@ -12,8 +12,8 @@
 
 #define STATUS_LED 34
 #define TEMP_PIN 1
-#define EN_485 20 // switch between transmit and receive
-#define TE_485 19 // terminate enable
+// #define EN_485 20 // switch between transmit and receive
+// #define TE_485 19 // terminate enable
 
 FDC2214 _capSens;
 TMP236 _tempSens = TMP236(TEMP_PIN);
@@ -181,15 +181,15 @@ void loop()
     // }
     // float refAvg = runningAverage(total, numSamples);
 
-    if(capValue < 0.0) {
-      // error reading from sensor
-      indicatorDuty = 200;
-    } else {
-      indicatorDuty = 500;
-    }
-    DEBUG(capValue);
-    DEBUG('\n');
-    DEBUG_FLUSH();
+    // if(capValue < 0.0) {
+    //   // error reading from sensor
+    //   indicatorDuty = 200;
+    // } else {
+    //   indicatorDuty = 500;
+    // }
+    // DEBUG(capValue);
+    // DEBUG('\n');
+    // DEBUG_FLUSH();
 
     capBuffer.push(capValue);
     refBuffer.push(refValue);
@@ -215,16 +215,16 @@ void loop()
 
 
     // samhitag3 test print statements
-    Serial.print("temp: ");
-    Serial.print(tempValue);
-    Serial.print("\t sensor0: ");
-    Serial.print(sensor0);
-    Serial.print("\t sensor1: ");
-    Serial.print(sensor1);
-    Serial.print("\t capValue: ");
-    Serial.println(capValue);
-    Serial.print("\t refValue: ");
-    Serial.println(refValue);
+    // Serial.print("temp: ");
+    // Serial.print(tempValue);
+    // Serial.print("\t sensor0: ");
+    // Serial.print(sensor0);
+    // Serial.print("\t sensor1: ");
+    // Serial.print(sensor1);
+    // Serial.print("\t capValue: ");
+    // Serial.print(capValue);
+    // Serial.print("\t refValue: ");
+    // Serial.println(refValue);
     // Serial.println("\t");
     // Serial.print(avgCap);
     // Serial.print("\t");
@@ -268,14 +268,14 @@ void loop()
     capPacket.checksum[1] = checksum >> 8;
   }
 
-  int timeNow = currentMillis = millis();
-  if(timeNow - indicatorLastTime >= indicatorDuty) {
-    digitalWrite(STATUS_LED, HIGH);
-  }
-  if(timeNow - indicatorLastTime >= indicatorPeriod) {
-    digitalWrite(STATUS_LED, LOW);
-    indicatorLastTime = timeNow;
-  }
+  // int timeNow = currentMillis = millis();
+  // if(timeNow - indicatorLastTime >= indicatorDuty) {
+  //   digitalWrite(STATUS_LED, HIGH);
+  // }
+  // if(timeNow - indicatorLastTime >= indicatorPeriod) {
+  //   digitalWrite(STATUS_LED, LOW);
+  //   indicatorLastTime = timeNow;
+  // }
 
   delay(200);
 }
