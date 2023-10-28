@@ -49,107 +49,9 @@ uint8_t broke_check_counter;
 
 
 uint32_t launchDaemon(){
-  if (ID == AC1){
-    switch(launchStep){
-      case 0:
-      {
-        breakwire_broke = false;
-        broke_check_counter = 0;
-        // Light igniter and wait for 2.0 sec
-        if (systemMode == HOTFIRE || systemMode == LAUNCH || systemMode == COLDFLOW_WITH_IGNITER){
-          Serial.println("launch step 0, igniter on");
-          AC::actuate(IGNITER, AC::ON, 0);
-          launchStep++;
-          return 100 * 1000; // 50 ms
-        } else {
-          Serial.println("launch step 0, not hotfire, skip");
-          launchStep++;
-          return 10;
-        }
-        
-      }
-      case 1:
-      {
-        //check breakwire over 2 sec period
-        if (broke_check_counter > 20){
-          launchStep++;
-          return 10;
-        }
-
-        broke_check_counter++;
-
-        if (!ChannelMonitor::isChannelContinuous(BREAKWIRE)){
-            Serial.println("breakwire broke");
-            breakwire_broke = true;
-            launchStep++;
-            return (21 - broke_check_counter) * 100 * 1000;
-        }
-
-        return 100*1000;
-
-      }
-      case 2:
-      {
-        if (systemMode == HOTFIRE || systemMode == LAUNCH || systemMode == COLDFLOW_WITH_IGNITER){
-          //igniter off
-          Serial.println("launch step 1, igniter off");
-          AC::actuate(IGNITER, AC::OFF, 0);
-
-          //Throw abort if breakwire still has continuity
-          if (!breakwire_broke){
-            Serial.println("breakwire still has continuity, aborting");
-            Comms::sendAbort(systemMode, BREAKWIRE_NO_BURNT);
-            launchStep = 0;
-            return 0;
-          }
-        }
-
-        //send packet for eregs
-        Comms::Packet launch = {.id = STARTFLOW, .len = 0};
-        Comms::packetAddUint8(&launch, systemMode);
-        Comms::packetAddUint32(&launch, flowLength);
-        Comms::emitPacketToAll(&launch);
-
-        //arm and open main valves
-        AC::actuate(ARM, AC::ON, 0);
-        AC::delayedActuate(LOX_MAIN_VALVE, AC::ON, 0, 100);
-        AC::delayedActuate(FUEL_MAIN_VALVE, AC::ON, 0, 250);
-        AC::delayedActuate(ARM, AC::OFF, 0, 2000);
-        AC::delayedActuate(ARM_VENT, AC::ON, 0, 2050);
-        AC::delayedActuate(ARM_VENT, AC::OFF, 0, 2500);
-        launchStep++;
-        return flowLength * 1000;
-      }
-      case 3:
-      {
-        //end flow
-
-        //end packet for eregs
-        Comms::Packet endFlow = {.id = ENDFLOW, .len = 0};
-        Comms::emitPacketToAll(&endFlow);
-
-        //arm and close main valves
-        AC::actuate(LOX_MAIN_VALVE, AC::OFF, 0);
-        AC::actuate(FUEL_MAIN_VALVE, AC::OFF, 0);
-        AC::delayedActuate(ARM, AC::ON, 0, 100);
-        AC::delayedActuate(ARM, AC::OFF, 0, 2000);
-        AC::delayedActuate(ARM_VENT, AC::ON, 0, 2050);
-        AC::delayedActuate(ARM_VENT, AC::OFF, 0, 2500);
-        AC::actuate(HP_N2_FILL,AC::EXTEND_FULLY, 0);
-
-
-        //open lox and fuel gems via abort only to AC2
-        delay(100); // temporary to give time to eth chip to send the packet
-        // Comms::Packet openGems = {.id = ABORT, .len = 0};
-        // Comms::packetAddUint8(&openGems, systemMode);
-        // Comms::packetAddUint8(&openGems, LC_UNDERTHRUST);
-        // Comms::emitPacket(&openGems, AC2);
-
-        launchStep = 0;
-        return 0;  
-      }
-    }
-  }
+  // everything the flight computer should do on launch 
+  // send commands to e-regs to start flow sequence
+  // "launch detect"?
   return 0;
 }
 
@@ -158,9 +60,6 @@ float lox_autoVentPressure;
 float fuel_autoVentPressure;
 uint32_t sendConfig(){
   config.len = 0;
-  if (ID == AC1){
-    return 0; // don't need for ac1 right now
-  }
   Comms::packetAddFloat(&config, lox_autoVentPressure);
   Comms::packetAddFloat(&config, fuel_autoVentPressure);
   Comms::emitPacketToGS(&config);
