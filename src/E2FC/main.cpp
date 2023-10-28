@@ -4,6 +4,7 @@
 #include "ReadPower.h"
 
 #include "AC.h"
+#include "Ducers.h"
 #include "ChannelMonitor.h"
 #include <MCP23008.h>
 #include <Wire.h>
@@ -186,6 +187,7 @@ Task taskTable[] = {
   {AC::actuationDaemon, 0, true},
   {AC::task_actuatorStates, 0, true},
   {ChannelMonitor::readChannels, 0, true},
+  {Ducers::task_ptSample, 0, true},
   {Power::task_readSendPower, 0, true},
   {sendConfig, 0, true},
   // {AC::task_printActuatorStates, 0, true},

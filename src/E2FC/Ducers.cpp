@@ -107,8 +107,8 @@ namespace Ducers {
     void init() {
         // Comms::registerCallback(140, handleFastReadPacket);
         spi2 = new SPIClass(HSPI);
-        spi2->begin(41, 42, 40, 39);
-        adc1.init(spi2, 39, 38);
+        spi2->begin(45, 42, 41, 40);
+        adc1.init(spi2, 40, 46);
 
         adc1.setAllInputsSeparate();
         adc1.enableOTFMode();
