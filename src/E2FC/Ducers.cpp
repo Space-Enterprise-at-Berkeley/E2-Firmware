@@ -18,6 +18,15 @@ namespace Ducers {
     uint8_t rtd0Channel = 1;
     uint8_t rtd1Channel = 5;
 
+
+    // float pressurantPTValue = 0.0;
+    // float loxTankPTValue = 0.0;
+    // float fuelTankPTValue = 0.0;
+    // float loxInjectorPTValue = 0.0;
+    // float fuelInjectorPTValue = 0.0;
+    // float loxDomePTValue = 0.0;
+    // float fuelDomePTValue = 0.0;
+
     void handleFastReadPacket(Comms::Packet tmp, uint8_t ip) {
         if(tmp.data[0]) {
             ptUpdatePeriod = 1 * 1000;
