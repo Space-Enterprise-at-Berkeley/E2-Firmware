@@ -5,6 +5,8 @@
 
 #include "AC.h"
 #include "Ducers.h"
+#include "BlackBox.h"
+#include "Radio.h"
 #include "ChannelMonitor.h"
 #include <MCP23008.h>
 #include <Wire.h>
@@ -12,24 +14,7 @@
 
 //Actuators
 enum Actuators {
-  //AC1
-  IGNITER = 7,
-  BREAKWIRE = 1,
-
-  ARM_VENT = 2, 
-  ARM = 3,
-  LOX_MAIN_VALVE = 4,
-  FUEL_MAIN_VALVE = 5,
-  HP_N2_FILL = 6, //red
-
-  //AC2
-  LP_N2_FILL = 0, 
-  N2_VENT = 1,
   N2_FLOW = 2,
-  N2_RQD = 3,
-
-  LOX_VENT_RBV = 4,
-  FUEL_VENT_RBV = 5,
   LOX_GEMS = 6,
   FUEL_GEMS = 7,
 };
