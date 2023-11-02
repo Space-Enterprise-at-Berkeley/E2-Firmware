@@ -34,6 +34,11 @@ void startLaunch(Comms::Packet packet, uint8_t ip) {
   taskTable[2].nexttime = micros();
 }
 
+void stopTVCAll(Comms::Packet packet, uint8_t ip) {
+  taskTable[2].enabled = false;
+  TVC::stopTVC(packet, ip);
+}
+
 void setup() {
   // setup stuff here
   Serial.begin(115200);
@@ -45,9 +50,10 @@ void setup() {
   HAL::resetEncoders();
   TVC::init();
   Serial.printf("setup other stuff!\n");  
-  Comms::registerCallback(102, TVC::enableCircle);
+  // Comms::registerCallback(102, TVC::enableCircle);
+  Comms::registerCallback(102, startLaunch);
   Comms::registerCallback(103, zeroTVC);
-  Comms::registerCallback(104, TVC::stopTVC);
+  Comms::registerCallback(104, stopTVCAll);
   Comms::registerCallback(105, TVC::setRadius);
   Comms::registerCallback(106, TVC::setAngle);
   Comms::registerCallback(200, packetcounter);

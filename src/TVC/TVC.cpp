@@ -1,23 +1,26 @@
 #include "TVC.h"
 #include "EEPROM.h"
 #include "HAL.h"
+#define max(A, B) A > B ? A : B
 
 namespace TVC {
+
+    bool freqSweepEnabled = true;
 
     // define update period
     uint32_t tvcUpdatePeriod = 5 * 1000;
     int x_motor_ticksp = 0;
     int y_motor_ticksp = 0;
-    float x_p = 3; //change to 1.6 prob
-    float x_i = 1e-6;
+    float x_p = 2; //change to 1.6 prob
+    float x_i = 0.5e-6;
     float x_d = 0;
-    float y_p = 3; //change to 1.6 prob
-    float y_i = 1e-6;
+    float y_p = 2; //change to 1.6 prob
+    float y_i = 0.5e-6;
     float y_d = 0;
     int MID_SPD = 1229;
     //(4096 * (1500 / 200000)))
-    int MAX_SPD = 80;
-    int MIN_SPD = -80;
+    int MAX_SPD = 160; //out of 409 max pwr
+    int MIN_SPD = -160;
     int INNER_BUFFER_SIZE = 2;
     
     int speed_x = 0;
@@ -36,11 +39,17 @@ namespace TVC {
     float angle = 0;
     float radius = 0;
 
-    float circlePeriod = 3;
-    float circleRadius = 350;
+    float circlePeriod = 1;
+    float circleRadius = 250;
     int circleCrossover = 0; //used to keep track of when the X axis goes back to zero for the first circle loop. Prevents jolt at beginning to top of x axis.
 
     int flowState = 0;
+
+    float freqSweepCirclePeriod = circlePeriod;
+    uint32_t freqSweepTimeDelta = 50 * 1000;
+    float totalTime = 14;
+    float stopCirclePeriod = 0.4; 
+    float freqSweepDelta = ((circlePeriod - stopCirclePeriod) / (totalTime / freqSweepTimeDelta)) * (1e-6);
 
 
     // define class variables    
@@ -97,7 +106,14 @@ namespace TVC {
 
         if (tvcState) { // moving with PID is state 1
             if (circleEnabled) { 
-                angle += (tvcUpdatePeriod * 2 * PI) / (circlePeriod * 1000 * 1000);
+                float f;
+                if (freqSweepEnabled) {
+                    f = freqSweepCirclePeriod;
+                } else {
+                    f = circlePeriod;
+                }
+                printf("setting f to %f\n", f);
+                angle -= (tvcUpdatePeriod * 2 * PI) / (f * 1000 * 1000);
                 if (angle >= 2 * PI) angle -= 2 * PI;
             }
 
@@ -168,6 +184,7 @@ namespace TVC {
         circleCrossover = 0;
     }
     
+    uint32_t flowStartTime = 0;
 
     uint32_t flowSequence() {
 
@@ -175,20 +192,48 @@ namespace TVC {
             case 0: 
             {
                 //waiting 1 second
+                stopCircling();
                 flowState++;
-                return 1000 * 1000;
+                flowStartTime = micros();
+                if (freqSweepEnabled) {
+                    freqSweepCirclePeriod = circlePeriod;
+                }
+                return 1500 * 1000;
+                break;
             }
             case 1:
             {
-                flowState++;
-                enableCircleNoArgs();
-                return 25 * 1000 * 1000;
+                if (freqSweepCirclePeriod == circlePeriod) {
+                    // Serial.printf("enabling circle, period is %f\n", freqSweepCirclePeriod);
+                    enableCircleNoArgs();
+                }
+                if (freqSweepEnabled) {
+                    if (freqSweepCirclePeriod < stopCirclePeriod) {
+                        flowState++;
+                        freqSweepCirclePeriod = circlePeriod;
+                        Serial.printf("here now\n");
+                        return max(10 * 1000, 25 * 1000 * 1000 - (micros() - flowStartTime));
+                    } else {
+                        freqSweepCirclePeriod -= freqSweepDelta;
+                        return freqSweepTimeDelta;
+                    }
+                } else {
+                // if (freqSweepEnabled) {
+                //     // Serial.printf("decring fscp\n");
+                    
+                //     // Serial.printf("setting cp is now to %f\n", freqSweepCirclePeriod);
+                // } else {
+                    return 30 * 1000 * 1000;
+                }
+                break;
             }
             case 2:
             {
+
                 stopCircling();
                 flowState = 0;
                 return 0;
+                break;
             }
         }
 
@@ -198,6 +243,7 @@ namespace TVC {
     void enableCircle(Comms::Packet packet, uint8_t ip) { 
         enableCircleNoArgs();
     }
+
 
 
 
@@ -211,7 +257,9 @@ namespace TVC {
 
     void stopTVC(Comms::Packet packet, uint8_t ip) { 
         setMode(0);
+        flowState = 0;
         circleEnabled = 0;
+
         speed_x = 0;
         speed_y = 0;
     }
