@@ -13,7 +13,5 @@ namespace HAL {
     const uint8_t RS485_RECEIVE = 36;
     const uint8_t RS485_TRANSMIT = 37;
 
-    const uint8_t gpsCSPin = 38;
-
     void initHAL();
 }
