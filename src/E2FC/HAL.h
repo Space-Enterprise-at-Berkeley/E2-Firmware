@@ -15,8 +15,8 @@
 #include <Wire.h>
 namespace HAL { 
     // Serial
-    #define RS485_SERIAL1 Serial1;
-    #define RS485_SERIAL0 Serial0;
+    #define RS485_SERIAL1 Serial1
+    #define RS485_SERIAL0 Serial0
 
     // Breakouts
     extern ADS8167 ads8167; // ADC, SPI
