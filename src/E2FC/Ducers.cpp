@@ -1,15 +1,12 @@
 #include "Ducers.h"
-#include "EEPROM.h"
 
 //TODO - zeroing for PTs
 
 namespace Ducers {
-    ADS8167 adc1;
     SPIClass *spi2; 
-    
 
     uint32_t ptUpdatePeriod = 50 * 1000;
-    Comms::Packet ptPacket = {.id = 2};
+    Comms::Packet ptPacket = {.id = 19};
     float data[8];
     float offset[8];
     float multiplier[8];
@@ -108,10 +105,10 @@ namespace Ducers {
         // Comms::registerCallback(140, handleFastReadPacket);
         spi2 = new SPIClass(HSPI);
         spi2->begin(45, 42, 41, 40);
-        adc1.init(spi2, 40, 46);
+        HAL::ads8167.init(spi2, 40, 46);
 
-        adc1.setAllInputsSeparate();
-        adc1.enableOTFMode();
+        HAL::ads8167.setAllInputsSeparate();
+        HAL::ads8167.enableOTFMode();
 
         Comms::registerCallback(ZERO_CMD, onZeroCommand);
         Comms::registerCallback(CAL_CMD, onCalCommand);
@@ -147,8 +144,8 @@ namespace Ducers {
 
 
     float samplePT(uint8_t channel) {
-        adc1.setChannel(channel);
-        data[channel] = multiplier[channel] * (interpolate1000(adc1.readChannelOTF(channel)) + offset[channel]);
+        HAL::ads8167.setChannel(channel);
+        data[channel] = multiplier[channel] * (interpolate1000(HAL::ads8167.readChannelOTF(channel)) + offset[channel]);
         return data[channel];
     }
 
@@ -159,25 +156,25 @@ namespace Ducers {
     uint32_t task_ptSample() {
         // read from all 8 PTs in sequence
             
-        // adc1.setChannel(0); // switch mux back to channel 0
-        // data[0] = multiplier[0] * (interpolate1000(adc1.readChannelOTF(1)) + offset[0]);
-        // data[1] = multiplier[1] * (interpolate1000(adc1.readChannelOTF(2)) + offset[1]);
-        // data[2] = multiplier[2] * (interpolate1000(adc1.readChannelOTF(3)) + offset[2]);
-        // data[3] = multiplier[3] * (interpolate1000(adc1.readChannelOTF(4)) + offset[3]);
-        // data[4] = multiplier[4] * (interpolate1000(adc1.readChannelOTF(5)) + offset[4]);
-        // data[5] = multiplier[5] * (interpolate1000(adc1.readChannelOTF(6)) + offset[5]);
-        // data[6] = multiplier[6] * (interpolate1000(adc1.readChannelOTF(7)) + offset[6]);
-        // data[7] = multiplier[7] * (interpolate1000(adc1.readChannelOTF(0)) + offset[7]);
+        // HAL::ads8167.setChannel(0); // switch mux back to channel 0
+        // data[0] = multiplier[0] * (interpolate1000(HAL::ads8167.readChannelOTF(1)) + offset[0]);
+        // data[1] = multiplier[1] * (interpolate1000(HAL::ads8167.readChannelOTF(2)) + offset[1]);
+        // data[2] = multiplier[2] * (interpolate1000(HAL::ads8167.readChannelOTF(3)) + offset[2]);
+        // data[3] = multiplier[3] * (interpolate1000(HAL::ads8167.readChannelOTF(4)) + offset[3]);
+        // data[4] = multiplier[4] * (interpolate1000(HAL::ads8167.readChannelOTF(5)) + offset[4]);
+        // data[5] = multiplier[5] * (interpolate1000(HAL::ads8167.readChannelOTF(6)) + offset[5]);
+        // data[6] = multiplier[6] * (interpolate1000(HAL::ads8167.readChannelOTF(7)) + offset[6]);
+        // data[7] = multiplier[7] * (interpolate1000(HAL::ads8167.readChannelOTF(0)) + offset[7]);
         if (channelCounter == 0){
              Comms::emitPacketToGS(&ptPacket);
              ptPacket.len = 0;
         }
 
         if (channelCounter == rtd0Channel || channelCounter == rtd1Channel){
-            data[channelCounter] = adc1.readData(channelCounter)*5000/(float)65536; //* -2.65385 + 2420;
+            data[channelCounter] = HAL::ads8167.readData(channelCounter)*5000/(float)65536; //* -2.65385 + 2420;
             Comms::packetAddFloat(&ptPacket, data[channelCounter]);
         } else {
-            data[channelCounter] = multiplier[channelCounter] * (interpolate1000(adc1.readData(channelCounter)) + offset[channelCounter]);
+            data[channelCounter] = multiplier[channelCounter] * (interpolate1000(HAL::ads8167.readData(channelCounter)) + offset[channelCounter]);
             Comms::packetAddFloat(&ptPacket, data[channelCounter]);
         }
 

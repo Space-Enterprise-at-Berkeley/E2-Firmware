@@ -8,13 +8,21 @@
 #include "BlackBox.h"
 #include "Radio.h"
 #include "ChannelMonitor.h"
-#include <MCP23008.h>
-#include <Wire.h>
-#include <EEPROM.h>
+#include "HAL.h"
 
 //Actuators
 enum Actuators {
+  IGNITER = 7,
+  BREAKWIRE = 1,
+
   N2_FLOW = 2,
+  HP_N2_FILL = 6,
+  LP_N2_FILL = 0,
+
+  ARM = 3,
+  ARM_VENT = 2,
+  FUEL_MAIN_VALVE = 5,
+  LOX_MAIN_VALVE = 4,
   LOX_GEMS = 6,
   FUEL_GEMS = 7,
 };

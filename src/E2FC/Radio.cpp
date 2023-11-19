@@ -1,9 +1,9 @@
-#include <Radio.h>
+#include "Radio.h"
 
 namespace Radio {
 
     mode radioMode;
-    int txInterval = TX_INT;
+    int txInterval = 1000;
 
     uint8_t radioBuffer[MAX_RADIO_TRX_SIZE];
     uint8_t radioBufferSize = 0;
@@ -15,7 +15,7 @@ namespace Radio {
 
     char packetBuffer[sizeof(Comms::Packet)];
 
-    Comms::Packet rssiPacket = {.id = 56};
+    Comms::Packet rssiPacket = {.id = 11};
     
     void initRadio() {
 
@@ -23,14 +23,8 @@ namespace Radio {
         Si446x_setTxPower(127);
         Si446x_setupCallback(SI446X_CBS_SENT, 1); 
 
-        #ifdef FLIGHT
         radioMode = TX;
-        DEBUG("Starting in flight mode");
-        #else
-        Si446x_RX(0);
-        radioMode  = RX;
-        DEBUG("Starting in ground mode");
-        #endif
+        Serial.println("Starting in flight mode");
     }
 
     void transmitRadioBuffer(bool swapFlag){
@@ -45,34 +39,35 @@ namespace Radio {
         transmitting = true;
         //digitalWrite(RADIO_LED, LOW);
         transmitStart = millis();
-        DEBUG("Transmitting Radio Packet\n");
+        Serial.println("Transmitting Radio Packet");
         if(!success){
-            DEBUG("Error Transmitting Radio Packet");
+            Serial.println("Error Transmitting Radio Packet");
         }
         radioBufferSize = 0;
     }
     void transmitRadioBuffer(){ transmitRadioBuffer(false);}
 
     void forwardPacket(Comms::Packet *packet){
-        // Serial.println("forwarding packet");
+        // BlackBox::writePacket(packet);
+        Serial.println("forwarding packet");
         int packetLen = packet->len + 8;
         if(radioBufferSize + packetLen > MAX_RADIO_TRX_SIZE - 1){
             transmitRadioBuffer();
         }
         memcpy(radioBuffer + radioBufferSize, (uint8_t *) packet, packetLen);
         radioBufferSize += packetLen;
+        
+        BlackBox::writePacket(packet);
     }
 
     bool processWaitingRadioPacket() {
         if(recvRadio.ready == 1){
-            DEBUG("Received radio packet of size ");
-            DEBUG(recvRadio.length);
-            DEBUG("\n");
+            Serial.print("Received radio packet of size ");
+            Serial.println(recvRadio.length);
 
             int16_t lastRssi = recvRadio.rssi;
-            DEBUG("RSSI:" );
-            DEBUG(lastRssi);
-            DEBUG("\n");
+            Serial.print("RSSI:" );
+            Serial.println(lastRssi);
 
             memcpy(radioBuffer, (uint8_t *)recvRadio.buffer, recvRadio.length);
 
@@ -94,12 +89,13 @@ namespace Radio {
 
                 Comms::Packet *packet = (Comms::Packet *) &packetBuffer;
                 
-                Comms::emitPacket(packet, false);
+                Comms::emitPacketToGS(packet);
+                BlackBox::writePacket(packet);
             }
             float rssi = (float) recvRadio.rssi;
             rssiPacket.len = 0;
             Comms::packetAddFloat(&rssiPacket, rssi);
-            Comms::emitPacket(&rssiPacket, true);
+            Comms::emitPacketToGS(&rssiPacket);
 
             recvRadio.ready = 0;
         }

@@ -7,4 +7,5 @@
 
 namespace EReg {
     void initEReg();
+    uint32_t sampleEReg();
 }

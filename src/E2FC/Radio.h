@@ -1,10 +1,10 @@
 #pragma once
 
 #include <Arduino.h>
-#include <EspComms.h>
 #include <Si446x.h>
-#include <Common.h>
-
+#include <EspComms.h>
+#include "BlackBox.h"
+#include "HAL.h"
 
 namespace Radio {   
     enum mode {TX, RX, IDLE};
@@ -20,7 +20,6 @@ namespace Radio {
     } recvRadio_t;
 
     extern volatile recvRadio_t recvRadio;
-
 
     extern int txInterval;
     extern volatile bool transmitting;

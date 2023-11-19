@@ -2,7 +2,8 @@
 
 #include <Common.h>
 #include <EspComms.h>
-#include <ADS8167.h>
+#include "HAL.h"
+#include "EEPROM.h"
 
 #include <Arduino.h>
 

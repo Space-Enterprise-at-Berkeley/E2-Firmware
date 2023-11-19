@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Arduino.h>
-#include <INA233.h>
+#include "HAL.h"
 #include <EspComms.h>
 
 //reads power stats from INA233 and sends to ground station
