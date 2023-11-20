@@ -11,6 +11,7 @@ namespace HAL {
     INA233 ina233(INA233_ADDRESS_41, Wire); // Power, I2C
 
     void initHAL() {
-        
+        RS485_SERIAL.begin(115200);
+        RADIO_SERIAL.begin(250000); // check baud rate
     }
 }

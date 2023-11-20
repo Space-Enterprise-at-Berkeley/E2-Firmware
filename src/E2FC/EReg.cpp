@@ -14,15 +14,14 @@ namespace EReg {
     const long interval = 25;
 
     void initEReg() {
-        RS485_SERIAL1.begin(115200);
-        RS485_SERIAL1.setPins(HAL::RS485_RECEIVE1, HAL::RS485_TRANSMIT1);
+        RS485_SERIAL.setPins(HAL::RS485_RECEIVE1, HAL::RS485_TRANSMIT1);
     }
 
     uint32_t sampleEReg() {
         cnt = 0;
-        while (RS485_SERIAL1.available()) {
-            rs485ReceiveBuffer[cnt] = RS485_SERIAL1.read();
-            RS485_SERIAL1.write(rs485TransmitBuffer, cnt);
+        while (RS485_SERIAL.available()) {
+            rs485ReceiveBuffer[cnt] = RS485_SERIAL.read();
+            RS485_SERIAL.write(rs485TransmitBuffer, cnt);
             if(rs485ReceiveBuffer[cnt] == '\n') {
                 Comms::Packet *packet = (Comms::Packet *)&rs485TransmitBuffer;
                 if(Comms::verifyPacket(packet)) {
@@ -30,8 +29,9 @@ namespace EReg {
                     DEBUG(packet->id);
                     DEBUG('\n');
                     Comms::emitPacket(packet);
-                    Comms::emitPacket(packet);
-                    Comms::emitPacket(packet, &RADIO_SERIAL, "\r\n\n", 3); // change length
+                    if (packet->id == LOX_EREG) {
+                        Comms::emitPacket(packet, LOX_EREG);
+                    }
                     break;
                 }
             }
