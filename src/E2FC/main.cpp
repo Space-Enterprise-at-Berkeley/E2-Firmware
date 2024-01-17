@@ -8,21 +8,27 @@
 #include "BlackBox.h"
 #include "Radio.h"
 #include "ChannelMonitor.h"
-#include "HAL.h"
+#include <MCP23008.h>
+#include <Wire.h>
+#include <EEPROM.h>
 
 //Actuators
 enum Actuators {
+  //AC1
   IGNITER = 7,
   BREAKWIRE = 1,
-
-  N2_FLOW = 2,
-  HP_N2_FILL = 6,
-  LP_N2_FILL = 0,
-
+  MAIN_VENT = 2,
   ARM = 3,
-  ARM_VENT = 2,
-  FUEL_MAIN_VALVE = 5,
   LOX_MAIN_VALVE = 4,
+  FUEL_MAIN_VALVE = 5,
+  HP_N2_FILL = 6, //red
+
+  //AC2
+  LP_N2_FILL = 0, 
+  N2_VENT = 3,
+  N2_FLOW = 2,
+  LOX_VENT_RBV = 4,
+  FUEL_VENT_RBV = 5,
   LOX_GEMS = 6,
   FUEL_GEMS = 7,
 };
@@ -128,49 +134,49 @@ void onAbort(Comms::Packet packet, uint8_t ip) {
     case TANK_OVERPRESSURE:
       if(ID == AC1){
         //leave main valves in current state
-        AC::actuate(HP_N2_FILL,AC::EXTEND_FULLY, 0);
+        // AC::actuate(HP_N2_FILL,AC::EXTEND_FULLY, 0);
       } else if (ID == AC2){
         //open lox and fuel gems
         AC::actuate(LOX_GEMS, AC::ON, 0);
         AC::actuate(FUEL_GEMS, AC::ON, 0);
         //open lox and fuel vent rbvs
-        //AC::actuate(LOX_VENT_RBV, AC::RETRACT_FULLY, 0);
-        //AC::actuate(FUEL_VENT_RBV, AC::RETRACT_FULLY, 0);
+        AC::actuate(LOX_VENT_RBV, AC::RETRACT_FULLY, 0);
+        AC::actuate(FUEL_VENT_RBV, AC::RETRACT_FULLY, 0);
         //close n2 flow and fill
         //AC::actuate(N2_FLOW,AC::RETRACT_FULLY, 0);
-        AC::actuate(LP_N2_FILL,AC::EXTEND_FULLY, 0);
+        // AC::actuate(LP_N2_FILL,AC::EXTEND_FULLY, 0);
       }
       break;
     case ENGINE_OVERTEMP:
       if(ID == AC1){
-        //arm and close main valves   
+        //arm and close main valves // check
         AC::actuate(FUEL_MAIN_VALVE, AC::OFF, 0);
         AC::actuate(LOX_MAIN_VALVE, AC::OFF, 0);
         AC::actuate(ARM, AC::ON, 0);
         AC::delayedActuate(ARM, AC::OFF, 0, 2500);
-        AC::delayedActuate(ARM_VENT, AC::ON, 0, 2550);
-        AC::delayedActuate(ARM_VENT, AC::OFF, 0, 3000);
-        AC::actuate(HP_N2_FILL,AC::EXTEND_FULLY, 0);
+        // AC::delayedActuate(ARM_VENT, AC::ON, 0, 2550);
+        // AC::delayedActuate(ARM_VENT, AC::OFF, 0, 3000);
+        // AC::actuate(HP_N2_FILL,AC::EXTEND_FULLY, 0);
       } else if (ID == AC2){
         //open lox and fuel gems
         AC::actuate(LOX_GEMS, AC::ON, 0);
         AC::actuate(FUEL_GEMS, AC::ON, 0);
         //close n2 flow and fill
-        AC::actuate(N2_FLOW,AC::TIMED_RETRACT, 8000);
-        AC::actuate(LP_N2_FILL,AC::EXTEND_FULLY, 0);
+        // AC::actuate(N2_FLOW,AC::TIMED_RETRACT, 8000);
+        // AC::actuate(LP_N2_FILL,AC::EXTEND_FULLY, 0);
 
       }
       break;
     case LC_UNDERTHRUST:
       if(ID == AC1){
-        //arm and close main valves
+        //arm and close main valves // check
         AC::actuate(FUEL_MAIN_VALVE, AC::OFF, 0);
         AC::actuate(LOX_MAIN_VALVE, AC::OFF, 0);
         AC::actuate(ARM, AC::ON, 0);
         AC::delayedActuate(ARM, AC::OFF, 0, 2500);
-        AC::delayedActuate(ARM_VENT, AC::ON, 0, 2550);
-        AC::delayedActuate(ARM_VENT, AC::OFF, 0, 3000);
-        AC::actuate(HP_N2_FILL,AC::EXTEND_FULLY, 0);
+        // AC::delayedActuate(ARM_VENT, AC::ON, 0, 2550);
+        // AC::delayedActuate(ARM_VENT, AC::OFF, 0, 3000);
+        // AC::actuate(HP_N2_FILL,AC::EXTEND_FULLY, 0);
 
       } else if (ID == AC2){
         //open lox and fuel gems
@@ -179,25 +185,64 @@ void onAbort(Comms::Packet packet, uint8_t ip) {
         //AC::actuate(N2_FLOW, AC::RETRACT_FULLY, 0);
 
         //close n2 flow and fill
-        AC::actuate(N2_FLOW,AC::TIMED_RETRACT, 8000);
-        AC::actuate(LP_N2_FILL,AC::EXTEND_FULLY, 0);
+        // AC::actuate(N2_FLOW,AC::TIMED_RETRACT, 8000);
+        // AC::actuate(LP_N2_FILL,AC::EXTEND_FULLY, 0);
       }    
       break;
     case MANUAL_ABORT:
       if(ID == AC1){
-        AC::actuate(HP_N2_FILL,AC::EXTEND_FULLY, 0);
+        //arm and close main valves // check
+        AC::actuate(FUEL_MAIN_VALVE, AC::OFF, 0);
+        AC::actuate(LOX_MAIN_VALVE, AC::OFF, 0);
+        AC::actuate(ARM, AC::ON, 0);
+        AC::delayedActuate(ARM, AC::OFF, 0, 2500);
+        // AC::actuate(HP_N2_FILL,AC::EXTEND_FULLY, 0);
       } else if (ID == AC2){
         //open lox and fuel gems
         AC::actuate(LOX_GEMS, AC::ON, 0);
         AC::actuate(FUEL_GEMS, AC::ON, 0);
-        //close n2 flow and fill
-        AC::actuate(N2_FLOW,AC::TIMED_RETRACT, 8000);
-        AC::actuate(LP_N2_FILL,AC::EXTEND_FULLY, 0);
+        // //close n2 flow and fill
+        // AC::actuate(N2_FLOW,AC::TIMED_RETRACT, 8000);
+        // AC::actuate(LP_N2_FILL,AC::EXTEND_FULLY, 0);
 
       }
       break;
     case IGNITER_NO_CONTINUITY:
+      if(ID == AC1){
+        //arm and close main valves // check
+        AC::actuate(FUEL_MAIN_VALVE, AC::OFF, 0);
+        AC::actuate(LOX_MAIN_VALVE, AC::OFF, 0);
+        AC::actuate(ARM, AC::ON, 0);
+        AC::delayedActuate(ARM, AC::OFF, 0, 2500);
+        // AC::actuate(HP_N2_FILL,AC::EXTEND_FULLY, 0);
+      } else if (ID == AC2){
+        //open lox and fuel gems
+        AC::actuate(LOX_GEMS, AC::ON, 0);
+        AC::actuate(FUEL_GEMS, AC::ON, 0);
+        // //close n2 flow and fill
+        // AC::actuate(N2_FLOW,AC::TIMED_RETRACT, 8000);
+        // AC::actuate(LP_N2_FILL,AC::EXTEND_FULLY, 0);
+
+      }
+      break;
     case BREAKWIRE_NO_CONTINUITY:
+      if(ID == AC1){
+        //arm and close main valves // check
+        AC::actuate(FUEL_MAIN_VALVE, AC::OFF, 0);
+        AC::actuate(LOX_MAIN_VALVE, AC::OFF, 0);
+        AC::actuate(ARM, AC::ON, 0);
+        AC::delayedActuate(ARM, AC::OFF, 0, 2500);
+        // AC::actuate(HP_N2_FILL,AC::EXTEND_FULLY, 0);
+      } else if (ID == AC2){
+        //open lox and fuel gems
+        AC::actuate(LOX_GEMS, AC::ON, 0);
+        AC::actuate(FUEL_GEMS, AC::ON, 0);
+        // //close n2 flow and fill
+        // AC::actuate(N2_FLOW,AC::TIMED_RETRACT, 8000);
+        // AC::actuate(LP_N2_FILL,AC::EXTEND_FULLY, 0);
+
+      }
+      break;
     case BREAKWIRE_NO_BURNT:
       if(ID == AC1){
         //arm and close main valves

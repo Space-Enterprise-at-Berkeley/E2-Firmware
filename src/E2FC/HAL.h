@@ -2,48 +2,62 @@
 
 #include <Common.h>
 
-#include <ADS8167.h> // ADC
-#include <SparkFun_u-blox_GNSS_Arduino_Library.h> // GPS
-#include "Adafruit_BMP3XX.h" // Barometer
-#include <INA233.h> // Power
-#include <Adafruit_LSM6DSO32.h> // Accelerometer
-#include <SparkFun_KX13X.h> // High-G Accelerometer
-#include <MS5xxx.h> // Fancy Barometer
-
 #include <Arduino.h>
 #include <SPI.h>
 #include <Wire.h>
-namespace HAL { 
+#include <MuxChannel.h> // check
+
+#include <INA233.h> // INA233AIDGST VIN Power Monitor
+// W25Q128JVSIQ Black Box // check
+#include <ADS8167.h> // ADS8167IRHBT ADC // check
+#include <Adafruit_BMP3XX.h> // BMP390 Barometer
+#include <MS5xxx.h> // MS560702BA03-50 Fancy Barometer
+#include <SparkFun_u-blox_GNSS_Arduino_Library.h> // NEO-M9N-00B GPS
+#include <Adafruit_LSM6DSO32.h> // LSM6DSO32TR Accelerometer
+#include <SparkFun_KX13X.h> // KX134-1211 High-G Accelerometer
+// CMP-00025-00005-1 Radio // check
+
+#include <Adafruit_Sensor.h> // check
+#include <MAX31865.h> // RTDs? check
+#include <MCP23008.h> // IO expander? check
+
+namespace HAL {
     // Serial
     #define RS485_SERIAL Serial1
-    #define RADIO_SERIAL Serial2 // Serial0 in schematics
+    #define RADIO_SERIAL Serial2 // SERIAL0 in schematic
 
-    // Breakouts
-    extern ADS8167 ads8167; // ADC, SPI
-    extern SFE_UBLOX_GNSS neom9n; // check library GPS, I2C
-    extern Adafruit_LSM6DSO32 lsm6dso32; // Accelerometer, I2C
-    extern SparkFun_KX134 kx134; // High-G Accelerometer, I2C
-    extern Adafruit_BMP3XX bmp390; // Barometer, I2C
-    extern MS5xxx ms5607; // Fancy Barometer, I2C // i think this works lol
-    extern INA233 ina233; // Power, I2C
+    // Sensors
+    extern INA233 ina(INA233_ADDRESS_41, Wire); // check
+    extern ADS8167 adc; // check
+    extern Adafruit_BMP3XX bmp;
+    extern MS5xxx ms5607(&Wire); // check
+    extern SFE_UBLOX_GNSS neom9n;
+    extern Adafruit_LSM6DSO32 dso32;
+    extern SparkFun_KX134 kx134;
 
-    // ESP pin mappings
+    extern SPIClass spi0; // check
+    extern MCP23008 MCP0(0x27); // check
+    extern MCP23008 MCP1(0x20); // check
+
+    // ESP Pin Mappings
+    const uint8_t IO0 = 0;
+
     const uint8_t SDA = 1;
     const uint8_t SCL = 2;
 
-    const uint8_t MUX_OUT0 = 3;
-    const uint8_t MUX_OUT1 = 4;
+    const uint8_t MUX_OUT_0 = 3;
+    const uint8_t MUX_OUT_0 = 4;
     const uint8_t MUX_S2 = 5;
     const uint8_t MUX_S1 = 6;
     const uint8_t MUX_S0 = 7;
 
     const uint8_t VIDEO = 8;
 
-    const uint8_t ETHERNET_INTn = 9;
-    const uint8_t ETHERNET_CS = 10;
-    const uint8_t ETHERNET_MOSI = 11;
-    const uint8_t ETHERNET_CLK = 12;
-    const uint8_t ETHERNET_MISO = 13;
+    const uint8_t ETHSPI_INTn = 9;
+    const uint8_t ETHSPI_CS = 10;
+    const uint8_t ETHSPI_MOSI = 11;
+    const uint8_t ETHSPI_CLK = 12;
+    const uint8_t ETHSPI_MISO = 13;
 
     const uint8_t RADIO_CS = 14;
     const uint8_t RADIO_SDN = 15;
@@ -61,19 +75,21 @@ namespace HAL {
     const uint8_t RBV_IN1 = 34;
     const uint8_t RBV_IN2 = 35;
 
-    const uint8_t RS485_RECEIVE1 = 36; // EReg
-    const uint8_t RS485_TRANSMIT1 = 37; //EReg
-    const uint8_t RS485_RECEIVE0 = 38;
-    const uint8_t RS485_TRANSMIT0 = 39;
+    const uint8_t RX1 = 36; // RS485 EReg
+    const uint8_t TX1 = 37; // RS485 EReg
+
+    const uint8_t RX0 = 38; // Radio
+    const uint8_t TX0 = 39; // Radio
 
     const uint8_t ADC_CS = 40;
+
     const uint8_t MOSI = 41;
     const uint8_t MISO = 42;
     const uint8_t SCK = 45;
+
     const uint8_t ADC_RDY = 46;
 
     const uint8_t GEMS1 = 47;
 
-    // Methods
     void initHAL();
 }
