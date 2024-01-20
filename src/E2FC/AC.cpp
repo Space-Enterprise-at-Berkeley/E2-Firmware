@@ -23,8 +23,6 @@
 // 5 corresponds to actuator state 5
 
 
-
-
 // current threshold for a fully extended actuator (i.e less that 0.1A means an actuator has hit its limit switch)
 float FULLY_EXTENDED_CURRENT = 0.1;
 int FULLY_EXTENDED_MIN_TIME = 100;

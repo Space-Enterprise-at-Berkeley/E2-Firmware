@@ -1,43 +1,32 @@
 #include "EReg.h"
 
-namespace EReg {
-    char buffer[sizeof(Comms::Packet)];
-    char buffer2[sizeof(Comms::Packet)];
-    int cnt = 0;
-
-    void initEReg() {
-        digitalWriteFas
-    }
-
-}
-
 #define TASK_COUNT (sizeof(taskTable) / sizeof(struct Task))
 
 #define TEST_SERIAL Serial3 // TODO: verify this
 #define RECEIVE_PIN 18
 #define TRANSMIT_PIN 19
 
-void setup() {
-    // hardware setup
-    Serial.begin(115200);
-    TEST_SERIAL.begin(115200);
+namespace EReg {
+    char buffer[sizeof(Comms::Packet)];
+    char buffer2[sizeof(Comms::Packet)];
+    int cnt = 0;
 
-    Comms::initComms();
-    pinMode(RECEIVE_PIN, OUTPUT);
-    pinMode(TRANSMIT_PIN, OUTPUT);
+    void initEReg() {
+        Serial.begin(115200);
+        TEST_SERIAL.begin(115200);
 
-    digitalWriteFast(RECEIVE_PIN, LOW);
-    digitalWriteFast(TRANSMIT_PIN, HIGH);
+        Comms::initComms();
+        pinMode(RECEIVE_PIN, OUTPUT);
+        pinMode(TRANSMIT_PIN, OUTPUT);
 
-    for (int i = 0; i < sizeof(Comms::Packet); i++) {
-        buffer2[i] = 84;
+        digitalWriteFast(RECEIVE_PIN, LOW);
+        digitalWriteFast(TRANSMIT_PIN, HIGH);
     }
-    // TRANSMITS T
-}
 
-void loop() {
+    uint32_t sampleEReg() {
+        cnt = 0;
         while(TEST_SERIAL.available() && cnt < 256) {
-            Serial.println("AVAILABLEEEE - teensy side");
+            // Serial.println("AVAILABLE - teensy side");
             buffer[cnt] = TEST_SERIAL.read();
             Serial.print("printing from ereg --> teensy?: ");
             Serial.println(buffer[cnt]);
@@ -47,20 +36,19 @@ void loop() {
             //     Serial.print(" ");
             //     continue;
             // }
-            // if(buffer[cnt] == '\n') {
-            //     Serial.println("got newline");
-            //     Comms::Packet *packet = (Comms::Packet *)&buffer;
-            //     if(Comms::verifyPacket(packet)) {
-            //         cnt = 0;
-            //         Serial.print("EREG: ");
-            //         Serial.print(packet->id);
-            //         Serial.print(" : ");
-            //         Serial.print(Comms::packetGetFloat(packet, 0));
-            //         Serial.print("\n");
-            //         Comms::emitPacket(packet);
-            //         break;
-            //     }
-            // }
+            if(buffer[cnt] == '\n') {
+                // Serial.println("got newline");
+                Comms::Packet *packet = (Comms::Packet *)&buffer;
+                if(Comms::verifyPacket(packet)) {
+                    Serial.print("EREG: ");
+                    Serial.print(packet->id);
+                    Serial.print(" : ");
+                    Serial.print(Comms::packetGetFloat(packet, 0));
+                    Serial.print("\n");
+                    Comms::emitPacket(packet);
+                    break;
+                }
+            }
             cnt++;
         }
         if(cnt == 256) {
@@ -68,4 +56,7 @@ void loop() {
             cnt = 0;
         }
         delay(200);
+        return 40 * 1000;
     }
+
+}

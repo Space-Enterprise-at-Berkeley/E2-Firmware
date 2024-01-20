@@ -12,6 +12,8 @@
 #include <Wire.h>
 #include <EEPROM.h>
 
+// !!still need to modify gems firmware to account for one pinMode
+
 //Actuators
 enum Actuators {
   //AC1
