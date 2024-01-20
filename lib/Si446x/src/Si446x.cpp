@@ -481,7 +481,7 @@ void Si446x_init()
 #if SI446X_IRQ != -1
 	pinMode(SI446X_IRQ, INPUT_PULLUP);
 #endif
-	SPI4463.begin(8, 7, 6);
+	SPI4463.begin(18, 17, 16);
 #else
 	CSN_DDR |= _BV(CSN_BIT);
 	SDN_DDR |= _BV(SDN_BIT);

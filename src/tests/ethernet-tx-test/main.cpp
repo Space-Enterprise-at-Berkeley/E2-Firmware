@@ -14,7 +14,9 @@ void loop()
   static int cnt = 0;
   while(1) {
     Serial.println("sending packet");
-    Comms::Packet tmp = {.id = 45};
+    Comms::Packet tmp = {.id = 2};
+    Comms::packetAddFloat(&tmp, 1.0);
+    Comms::packetAddFloat(&tmp, 1.0);
     Comms::packetAddFloat(&tmp, 1.0);
     Comms::emitPacketToGS(&tmp);
     cnt++;
