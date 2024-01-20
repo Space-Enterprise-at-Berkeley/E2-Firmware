@@ -209,6 +209,7 @@ void loop() {
 }
 */
 
+/*
 #include <Wire.h>
 #include "Adafruit_BMP3XX.h"
 
@@ -267,3 +268,21 @@ void loop()
   delay(20); // Delay should be 1/ODR (Output Data Rate), default is 1/50ODR
 }
 
+*/
+
+#include <MAX22201.h>
+
+MAX22201 m;
+
+void setup() {
+  m.init(47, 8);
+  Serial.begin(921600);
+}
+
+void loop() {
+  Serial.println("going");
+  delay(500);
+  m.backwards();
+  delay(500);
+  m.stop();
+}
