@@ -32,6 +32,7 @@ public:
   //
   // Version 1:
   // User skips passing in an I2C object which then defaults to Wire.
+  /*
   bool begin(uint8_t deviceAddress = KX13X_ADDRESS_HIGH)
   {
     // Setup  I2C object and pass into the superclass
@@ -42,7 +43,7 @@ public:
 
     // Initialize the system - return results
     return this->QwDevKX132::init();
-  }
+  }*/
 
   // Version 2:
   //  User passes in an I2C object and an address (optional).

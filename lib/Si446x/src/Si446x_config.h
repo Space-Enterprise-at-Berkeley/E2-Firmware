@@ -50,9 +50,9 @@
 ///////////////////
 
 // Arduino pin assignments
-#define SI446X_CSN			34
-#define SI446X_SDN			21
-#define SI446X_IRQ			26 // This needs to be an interrupt pin
+#define SI446X_CSN			3
+#define SI446X_SDN			5
+#define SI446X_IRQ			36 // This needs to be an interrupt pin
 
 
 
@@ -132,7 +132,7 @@
 // If this is 0 make sure to call Si446x_SERVICE() as often as possible so that the library can process radio events
 // 0 = Off, run callbacks from Si446x_SERVICE()
 // 1 = On, run callbacks from interrupt
-#define SI446X_INTERRUPTS 1 // DO NOT CHANGE
+#define SI446X_INTERRUPTS 0 // DO NOT CHANGE
 
 
 #endif /* SI443X_CONFIG_H_ */

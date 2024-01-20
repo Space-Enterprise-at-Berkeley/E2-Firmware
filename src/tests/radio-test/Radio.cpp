@@ -1,4 +1,4 @@
-#include <Radio.h>
+#include "Radio.h"
 
 namespace Radio {
 
@@ -94,12 +94,12 @@ namespace Radio {
 
                 Comms::Packet *packet = (Comms::Packet *) &packetBuffer;
                 
-                Comms::emitPacket(packet, false);
+                Comms::emitPacket(packet);
             }
             float rssi = (float) recvRadio.rssi;
             rssiPacket.len = 0;
             Comms::packetAddFloat(&rssiPacket, rssi);
-            Comms::emitPacket(&rssiPacket, true);
+            Comms::emitPacket(&rssiPacket);
 
             recvRadio.ready = 0;
         }

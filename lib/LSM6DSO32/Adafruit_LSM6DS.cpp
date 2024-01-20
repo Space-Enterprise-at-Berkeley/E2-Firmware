@@ -121,11 +121,11 @@ boolean Adafruit_LSM6DS::begin_I2C(uint8_t i2c_address, TwoWire *wire,
   delete i2c_dev; // remove old interface
 
   i2c_dev = new Adafruit_I2CDevice(i2c_address, wire);
-
+  Serial.println("before begin");
   if (!i2c_dev->begin()) {
     return false;
   }
-
+  Serial.println("got past begin");
   return _init(sensor_id);
 }
 
