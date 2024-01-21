@@ -7,16 +7,6 @@
 #include <Arduino.h>
 
 namespace Ducers {
-
-    // extern uint32_t ptUpdatePeriod;
-
-    // extern float pressurantPTValue;
-    // extern float loxTankPTValue;
-    // extern float fuelTankPTValue;
-    // extern float loxInjectorPTValue;
-    // extern float fuelInjectorPTValue;
-    // extern float loxDomePTValue;
-    // extern float fuelDomePTValue;
     
     void init();
     // float interpolate1000(uint16_t rawValue);
