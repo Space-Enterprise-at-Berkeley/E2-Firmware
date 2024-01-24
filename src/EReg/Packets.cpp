@@ -2,6 +2,8 @@
 #include "Config.h"
 #include "EspComms.h"
 #include "StateMachine.h"
+#include <Wire.h>
+#include <Common.h>
 
 namespace Packets {
     /**
@@ -81,6 +83,8 @@ namespace Packets {
             Comms::packetAddFloat(&packet, 0);
             //using send to all right now instead of extra socket
             //Comms::emitPacketToExtra(&packet);
+            Comms::emitPacket(&packet, &Serial7);
+            Serial7.flush();
             Comms:emitPacketToAll(&packet);
         }
 

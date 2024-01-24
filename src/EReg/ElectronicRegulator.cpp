@@ -78,6 +78,7 @@ void setup() {
     
     delay(3000);
     Serial.begin(115200);
+    Serial1.begin(921600);
     Serial.printf("micros: %d\n", micros());
     Serial.printf("hi!!\n");
     // HAL::init();

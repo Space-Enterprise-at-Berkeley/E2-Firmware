@@ -23,8 +23,8 @@
 
 namespace HAL {
     // Serial
-    #define RS485_SERIAL Serial1
-    #define RADIO_SERIAL Serial2 // SERIAL0 in schematic
+    #define RADIO_SERIAL Serial0
+    #define RS422_SERIAL Serial1
 
     // Sensors
     extern INA233 ina(INA233_ADDRESS_41, Wire); // check
@@ -75,8 +75,8 @@ namespace HAL {
     const uint8_t RBV_IN1 = 34;
     const uint8_t RBV_IN2 = 35;
 
-    const uint8_t RX1 = 36; // RS485 EReg
-    const uint8_t TX1 = 37; // RS485 EReg
+    const uint8_t RX1 = 36; // RS422 EReg
+    const uint8_t TX1 = 37; // RS422 EReg
 
     const uint8_t RX0 = 38; // Radio
     const uint8_t TX0 = 39; // Radio
