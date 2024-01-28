@@ -23,9 +23,14 @@ uint8_t fcnt = 0;
 uint32_t sampleOReg() {
     while(OREG_SERIAL.available()) {
         Serial.println("o available");
-        oregbuffer[ocnt] = OREG_SERIAL.read();
+        uint8_t c = OREG_SERIAL.read();
+        oregbuffer[ocnt] = c;
+        Serial.println(ocnt);
+        Serial.println(c);
         if(oregbuffer[ocnt] == '\n') {
             Comms::Packet *packet = (Comms::Packet *)&oregbuffer;
+            Serial.println(packet->id);
+            Serial.println(packet->len);
             if(Comms::verifyPacket(packet)) {
                 DEBUG("Found oreg packet with ID ");
                 DEBUG(packet->id);

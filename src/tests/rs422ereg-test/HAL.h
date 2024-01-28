@@ -30,11 +30,11 @@ namespace HAL {
     const uint8_t sclPin = 2;
 
     // Serial 
-    const uint8_t tx0P = 35;
-    const uint8_t rx0P = 34;
+    const uint8_t tx0P = 39;
+    const uint8_t rx0P = 38;
     
-    const uint8_t tx1P = 33;
-    const uint8_t rx1P = 26;
+    const uint8_t tx1P = 37;
+    const uint8_t rx1P = 36;
 
     const uint8_t tx2P = 21;
     const uint8_t rx2P = 20;
