@@ -32,18 +32,27 @@ char rs422Buffer[sizeof(Comms::Packet)];
 int cnt = 0;
 uint32_t readRS422() {
     while (RS422_SERIAL.available()) {
-        rs422Buffer[cnt] = RS422_SERIAL.read();
-        Serial.print(rs422Buffer[cnt]);
+        int c = RS422_SERIAL.read();
+        rs422Buffer[cnt] = c;
+        //Serial.print(c);
+
 
         if(rs422Buffer[cnt] == '\n') { //packet end delimiter
+            cnt = 0;
             Comms::Packet *packet = (Comms::Packet *)&rs422Buffer;
+            // Serial.println("got packet");
+            // uint16_t a = (packet->checksum[0] << 8) + packet->checksum[1];
+            // Serial.print(Comms::computePacketChecksum(packet));
+            // Serial.print(" ");
+            // Serial.println(a);
             if(Comms::verifyPacket(packet)) {
-                cnt = 0;
+                
                 //invoke callback
-                Serial.println("Received packet of id: " + packet->id);
+                Serial.print("Received packet of id: ");
+                Serial.println(packet->id);
                 //Comms::evokeCallbackFunction(packet, FC);
-                break;
             }
+            break;
         }
         cnt++;
         if (cnt > sizeof(Comms::Packet)) {
@@ -67,15 +76,10 @@ void setup() {
     //change these to your board
   int rxpin = 17;
   int txpin = 18;
-  RS422_SERIAL.begin(9600, SERIAL_8N1, rxpin, txpin);
+  RS422_SERIAL.begin(115200, SERIAL_8N1, rxpin, txpin);
 
   // setup stuff here
   Comms::init(); // takes care of Serial.begin()
-
-//   Comms::registerCallback(200, [](Comms::Packet packet, uint8_t id) {
-//     Serial.println("Got packet!");
-//     Serial.println((char*)packet.data);
-//   });
 
   while(1) {
     // main loop here to avoid arduino overhead
