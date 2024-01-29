@@ -39,7 +39,7 @@
 // BMP388_DEV Definitions
 ////////////////////////////////////////////////////////////////////////////////
 
-#define BMP388_I2C_ADDR		 		0x77				// The BMP388 I2C address
+#define BMP388_I2C_ADDR		 		0x76				// The BMP388 I2C address originally 0x77
 #define BMP388_I2C_ALT_ADDR 	0x76				// The BMP388 I2C alternate address
 #define BMP388_ID 						0x50				// The BMP388 device ID
 #define BMP390_ID							0x60				// The BMP390 device ID

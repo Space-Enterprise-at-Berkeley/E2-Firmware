@@ -1,16 +1,22 @@
 #include "Ducers.h"
+#include "EEPROM.h"
+
+//TODO - zeroing for PTs
 
 namespace Ducers {
-    uint32_t ptUpdatePeriod = 20 * 1000;
-    Comms::Packet ptPacket = {.id = 10};
+    ADS8167 adc1;
+    SPIClass *spi2; 
+    
 
-    float pressurantPTValue = 0.0;
-    float loxTankPTValue = 0.0;
-    float fuelTankPTValue = 0.0;
-    float loxInjectorPTValue = 0.0;
-    float fuelInjectorPTValue = 0.0;
-    float loxDomePTValue = 0.0;
-    float fuelDomePTValue = 0.0;
+    uint32_t ptUpdatePeriod = 50 * 1000;
+    Comms::Packet ptPacket = {.id = 2};
+    float data[8];
+    float offset[8];
+    float multiplier[8];
+    bool persistentCalibration = true;
+    uint8_t channelCounter = 0;
+    uint8_t rtd0Channel = 1;
+    uint8_t rtd1Channel = 5;
 
     void handleFastReadPacket(Comms::Packet tmp, uint8_t ip) {
         if(tmp.data[0]) {
@@ -20,11 +26,8 @@ namespace Ducers {
         }
     }
 
-    void initDucers() {
-        // Comms::registerCallback(140, handleFastReadPacket);
-    }
-
     float interpolate1000(uint16_t rawValue) {
+        // TODO multiply rawValue by 2
         float tmp = (float) (rawValue - 6406);
         return tmp / 51.7;
     }
@@ -34,38 +37,141 @@ namespace Ducers {
         return tmp / 12.97;
     }
 
-    uint32_t ptSample() {
-        // read from all 6 PTs in sequence
-        
-        HAL::adc1.readChannelOTF(1); // switch mux back to channel 1
-        loxTankPTValue = interpolate1000(HAL::adc1.readChannelOTF(2)); // read channel 1, setup channel 2 for next read
-        loxDomePTValue = interpolate1000(HAL::adc1.readChannelOTF(3)); // read channel 2, setup channel 3 for next read
-        fuelTankPTValue = interpolate1000(HAL::adc1.readChannelOTF(4)); // read channel 3, setup channel 4 for next read
-        fuelDomePTValue = interpolate1000(HAL::adc1.readChannelOTF(5)); // read channel 4, setup channel 5 for next read
-        loxInjectorPTValue = (interpolate1000(HAL::adc1.readChannelOTF(6)) - 18.0)/ 1.02; // read channel 5, setup channel 6 for next read
-        fuelInjectorPTValue = interpolate1000(HAL::adc1.readChannelOTF(0)); // read channel 6, reset mux to channel 1
-        pressurantPTValue = interpolate5000(HAL::adc1.readChannelOTF(1));
+    float zeroChannel(uint8_t channel){
+        offset[channel] = -data[channel] + offset[channel];
+        Serial.println("zeroed channel " + String(channel) + " to " + String(offset[channel]));
+        if (persistentCalibration){
+            EEPROM.begin(16*sizeof(float));
+            EEPROM.put(channel*sizeof(float),offset[channel]);
+            EEPROM.end();
+        }
+        return offset[channel];
+    }
 
-        DEBUG("Read all PTs\n");
-        DEBUG_FLUSH();
+    float calChannel(uint8_t channel, float value){
+        multiplier[channel] *= (value) / data[channel];
+        Serial.println("calibrated channel multiplier" + String(channel) + " to " + String(multiplier[channel]));
+        if (persistentCalibration){
+            EEPROM.begin(16*sizeof(float));
+            EEPROM.put((channel+8)*sizeof(float),multiplier[channel]);
+            EEPROM.end();
+        }
+        return multiplier[channel];
+    }
 
-        // emit a packet with data
-        ptPacket.len = 0;
-        Comms::packetAddFloat(&ptPacket, loxTankPTValue);
-        Comms::packetAddFloat(&ptPacket, fuelTankPTValue);
-        Comms::packetAddFloat(&ptPacket, loxInjectorPTValue);
-        Comms::packetAddFloat(&ptPacket, fuelInjectorPTValue);
-        Comms::packetAddFloat(&ptPacket, pressurantPTValue);
-        Comms::packetAddFloat(&ptPacket, loxDomePTValue);
-        Comms::packetAddFloat(&ptPacket, fuelDomePTValue);
+    //sets offset (y-int)
+    void onZeroCommand(Comms::Packet packet, uint8_t ip){
+        uint8_t channel = Comms::packetGetUint8(&packet, 0);
+        zeroChannel(channel);
+    }
 
-        Comms::emitPacket(&ptPacket);
-        Comms::emitPacket(&ptPacket, &RADIO_SERIAL, "\r\n\n", 3);
-        // return the next execution time
-        DEBUG("PT Packet Sent\n");
-        DEBUG_FLUSH();
+    //uses current value and given value to add multiplier (slope) to match two points
+    void onCalCommand(Comms::Packet packet, uint8_t ip){
+        uint8_t channel = Comms::packetGetUint8(&packet, 0);
+        float value = Comms::packetGetFloat(&packet, 1);
 
-        return ptUpdatePeriod;
+        calChannel(channel, value);
+    }
+
+    void sendCal(Comms::Packet packet, uint8_t ip){
+        Comms::Packet response = {.id = SEND_CAL, .len = 0};
+        for (int i = 0; i < 8; i++){
+            Comms::packetAddFloat(&response, offset[i]);
+            Comms::packetAddFloat(&response, multiplier[i]);
+            Serial.println("Channel " + String(i) + ": offset " + String(offset[i]) + ", multiplier " + String(multiplier[i]));
+        }
+        Comms::emitPacketToGS(&response);
+    }
+
+    void resetCal(Comms::Packet packet, uint8_t ip){
+        uint8_t channel = Comms::packetGetUint8(&packet, 0);
+        offset[channel] = 0;
+        multiplier[channel] = 1;
+        if (persistentCalibration){
+            EEPROM.begin(16*sizeof(float));
+            EEPROM.put(channel*sizeof(float),offset[channel]);
+            EEPROM.put((channel+8)*sizeof(float),multiplier[channel]);
+            EEPROM.end();
+        }
+    }
+
+    void init() {
+        // Comms::registerCallback(140, handleFastReadPacket);
+        spi2 = new SPIClass(HSPI);
+        spi2->begin(41, 42, 40, 39);
+        adc1.init(spi2, 39, 38);
+
+        adc1.setAllInputsSeparate();
+        adc1.enableOTFMode();
+
+        Comms::registerCallback(ZERO_CMD, onZeroCommand);
+        Comms::registerCallback(CAL_CMD, onCalCommand);
+        Comms::registerCallback(SEND_CAL, sendCal);
+        Comms::registerCallback(RESET_CAL, resetCal);
+
+        //load offset from flash or set to 0
+        if (persistentCalibration){
+            EEPROM.begin(16*sizeof(float));
+            for (int i = 0; i < 8; i++){
+                EEPROM.get(i*sizeof(float),offset[i]);
+                if (isnan(offset[i])){
+                    offset[i] = 0;
+                }
+            }
+            for (int i = 0; i < 8; i++){
+                EEPROM.get((i+8)*sizeof(float),multiplier[i]);
+                if (isnan(multiplier[i])){
+                    multiplier[i] = 1;
+                }
+            }
+            EEPROM.end();
+        } else {
+            for (int i = 0; i < 8; i++){
+                offset[i] = 0;
+            }
+            for (int i = 0; i < 8; i++){
+                multiplier[i] = 1;
+            }
+        }
+
+    }
+
+
+    float samplePT(uint8_t channel) {
+        adc1.setChannel(channel);
+        data[channel] = multiplier[channel] * (interpolate1000(adc1.readChannelOTF(channel)) + offset[channel]);
+        return data[channel];
+    }
+
+    float noSamplePT(uint8_t channel){
+        return data[channel];
+    }
+
+    uint32_t task_ptSample() {
+        // read from all 8 PTs in sequence
+        if (channelCounter == 0){
+             Comms::emitPacketToGS(&ptPacket);
+             ptPacket.len = 0;
+        }
+
+        if (channelCounter == rtd0Channel || channelCounter == rtd1Channel){
+            data[channelCounter] = adc1.readData(channelCounter)*5000/(float)65536; //* -2.65385 + 2420;
+            Comms::packetAddFloat(&ptPacket, data[channelCounter]);
+        } else {
+            data[channelCounter] = multiplier[channelCounter] * (interpolate1000(adc1.readData(channelCounter)) + offset[channelCounter]);
+            Comms::packetAddFloat(&ptPacket, data[channelCounter]);
+        }
+
+        channelCounter = (channelCounter + 1) % 8;
+
+        return ptUpdatePeriod/8;
+    }
+
+    void print_ptSample(){
+        for (int i = 0; i < 8; i ++){
+            Serial.print("  PT"+String(i)+": " + String(data[i]));
+        }
+        Serial.println();
     }
 
 };

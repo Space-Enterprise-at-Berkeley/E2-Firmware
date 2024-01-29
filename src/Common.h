@@ -70,6 +70,22 @@ enum PacketID {
   AC_CURRENT = 4,
   AC_CONFIG = 5,
   ACTUATE_CMD = 100,
+
+  //FC
+  //PWR_DATA = 1,
+  BOARD_STATE = 2,
+  FLIGHT_STATE = 3,
+  IMU_DATA = 4,
+  BARO_DATA = 5,
+  GPS_DATA = 6,
+  //TO FC
+  FC_ACTUATE = 100,
+  FC_PT_ZERO = 101,
+  FC_PT_CAL = 102,
+  FC_PT_SEND_CAL = 103,
+  FC_PT_RESET_CAL = 104,
+
+
   AC_CHANGE_CONFIG = 105,
 
   //GEMS autovent

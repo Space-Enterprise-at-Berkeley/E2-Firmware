@@ -8,7 +8,7 @@ namespace Comms {
   char packetBuffer[sizeof(Packet)];
   bool multicast = false;
 
-  byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, ID};
+  byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, IPADDR};
   // Define groundstation ips
   const uint8_t groundStationCount = 3;
   IPAddress groundStations[groundStationCount] = {IPAddress(10, 0, 0, GROUND1), IPAddress(10, 0, 0, GROUND2), IPAddress(10, 0, 0, GROUND3)};
@@ -17,7 +17,7 @@ namespace Comms {
   // int ports[groundStationCount] = {42069};
   bool extraSocketOpen = false;
 
-  IPAddress ip(10, 0, 0, ID);
+  IPAddress ip(10, 0, 0, IPADDR);
 
   void init(int cs, int spiMisoPin, int spiMosiPin, int spiSclkPin, int ETH_intN)
   {
@@ -81,7 +81,7 @@ namespace Comms {
     uint16_t checksum = *(uint16_t *)&packet->checksum;
     if (checksum == computePacketChecksum(packet))
     {
-      Serial.print("Packet with ID ");
+      Serial.print("Packet with IPADDR ");
       Serial.print(packet->id);
       Serial.print(" has correct checksum!\n");
       // try to access function, checking for out of range exception
@@ -91,14 +91,14 @@ namespace Comms {
       }
       else
       {
-        Serial.print("ID ");
+        Serial.print("IPADDR ");
         Serial.print(packet->id);
         Serial.print(" does not have a registered callback function.\n");
       }
     }
     else
     {
-      Serial.print("Packet with ID ");
+      Serial.print("Packet with IPADDR ");
       Serial.print(packet->id);
       Serial.print(" does not have correct checksum!\n");
     }
@@ -127,7 +127,7 @@ namespace Comms {
           cnt++;
         }
         Packet *packet = (Packet *)&packetBuffer;
-        // DEBUG("Got unverified packet with ID ");
+        // DEBUG("Got unverified packet with IPADDR ");
         // DEBUG(packet->id);
         // DEBUG('\n');
         evokeCallbackFunction(packet, 255); // 255 signifies a USB packet

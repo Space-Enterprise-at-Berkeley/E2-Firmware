@@ -167,19 +167,20 @@ double KalmanFilter::get_acceleration() {
     return state(2);
 }
 
-
 namespace FlightStatus { 
     
     KalmanFilter filter1(Config::transition, Config::transition_dt, Config::state_noise, Config::obs, Config::obs_noise);
 
-    int launched = 0;
-    int burnout = 0;
-    int apogee = 0;
-    int main_parachute = 0;
+    uint8_t launched = 0;
+    uint8_t burnout = 0;
+    uint8_t apogee = 0;
+    uint8_t main_parachute = 0;
     float prev_altitude = 0;
-    int deploy_vel = 0;
+    uint8_t deploy_vel = 0;
 
-    uint32_t flightDataUpdate = 100 * 1000;
+    uint32_t flightDataUpdate = 50 * 1000;
+
+    Comms::Packet flightStatusPacket = {.id = 20};
 
     uint32_t updateFlight() {
 
@@ -225,6 +226,12 @@ namespace FlightStatus {
 
     	// todo: set up relevant packets 
         // Comms::packetAddFloat(); 
+        flightStatusPacket.len = 0;
+        Comms::packetAddUint8(&flightStatusPacket, launched); 
+        Comms::packetAddUint8(&flightStatusPacket, burnout); 
+        Comms::packetAddUint8(&flightStatusPacket, apogee); 
+        Comms::packetAddUint8(&flightStatusPacket, main_parachute); 
+        Comms::emitPacket(&flightStatusPacket);
 
         return flightDataUpdate;
     }

@@ -18,12 +18,10 @@ namespace Actuators {
         uint32_t period;
         uint8_t state;
 
+        uint8_t pin0;
         uint8_t pin1;
-        uint8_t pin2;
 
         Task *stop;
-
-        MuxChannel *muxChannel;
     };
 
     extern Actuator pressFlowRBV; 
@@ -38,18 +36,6 @@ namespace Actuators {
     uint32_t stopPressFlowRBV();
     void brakePressFlowRBV();
     void pressFlowRBVPacketHandler(Comms::Packet tmp, uint8_t ip);
-
-    // void extendAct1();
-    // void retractAct1();
-    // uint32_t stopAct1();
-    // void brakeAct1();
-    // void act1PacketHandler(Comms::Packet tmp);
-
-    // void extendAct2();
-    // void retractAct2();
-    // uint32_t stopAct2();
-    // void brakeAct2();
-    // void act2PacketHandler(Comms::Packet tmp);
 
     void actPacketHandler(Comms::Packet tmp, void (*extend)(), void (*retract)(), Task *stopTask);
 

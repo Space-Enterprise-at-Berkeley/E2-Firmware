@@ -100,7 +100,10 @@ boolean SPIFlash::initialize()
   _SPSR = SPSR;
 #endif
   pinMode(_slaveSelectPin, OUTPUT);
-  SPI.begin(26, 33, 32);
+  // SCK, MISO, MOSI, SS
+  //SPI.begin(8, 7, 6, _slaveSelectPin);
+  SPI.begin(17, 16, 18, _slaveSelectPin);
+  _settings = SPISettings(4000000, MSBFIRST, SPI_MODE0);
 #ifdef SPI_HAS_TRANSACTION
   _settings = SPISettings(4000000, MSBFIRST, SPI_MODE0);
 #endif
@@ -201,14 +204,14 @@ void SPIFlash::command(uint8_t cmd, boolean isWrite){
 /// check if the chip is busy erasing/writing
 boolean SPIFlash::busy()
 {
-  /*
+  
   select();
   SPI.transfer(SPIFLASH_STATUSREAD);
   uint8_t status = SPI.transfer(0);
   unselect();
   return status & 1;
-  */
-  return readStatus() & 1;
+  
+  // return readStatus() & 1;
 }
 
 /// return the STATUS register

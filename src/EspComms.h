@@ -68,6 +68,7 @@ namespace Comms
    *
    * @param packet The packet in which the data is stored.
    */
+  void finishPacket(Packet *packet);
   void emitPacket(Packet *packet);
 
   /**
