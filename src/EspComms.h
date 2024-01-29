@@ -33,6 +33,7 @@ namespace Comms
    * @param function a pointer to a method that takes in a Packet struct.
    */
   void registerCallback(uint8_t id, commFunction function);
+  void evokeCallbackFunction(Packet *packet, uint8_t ip);
 
   //ever wanted to send a packet not to the GS??? Here.
   void initExtraSocket(int port, uint8_t ip);

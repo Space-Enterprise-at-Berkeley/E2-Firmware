@@ -92,6 +92,7 @@ void setup() {
         }
     }
     Comms::init(HAL::ETH_CS, HAL::ETH_MISO, HAL::ETH_MOSI, HAL::ETH_SCLK, HAL::ETH_INTn);
+    Comms::enableRS422(HAL::rs422_RX, HAL::rs422_TX);
     Ducers::initPTs();
     StateMachine::enterIdleClosedState();
     zero(); 
@@ -113,6 +114,7 @@ void setup() {
 
 void loop() {
     Comms::processWaitingPackets();
+    RS422::processAvailableData();
     Util::checkMotorDriverHealth();
     HAL::monitorPhaseCurrent();
     switch (StateMachine::getCurrentState()) {

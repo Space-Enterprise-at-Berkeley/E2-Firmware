@@ -61,7 +61,8 @@ namespace HAL {
 
     const int eregAbortID = 201;
 
-
+    const int rs422_RX = 17;
+    const int rs422_TX = 18;
 
 
     int init();
