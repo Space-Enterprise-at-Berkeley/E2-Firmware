@@ -16,7 +16,7 @@ void sendToOreg(Comms::Packet packet, int8_t offset) {
   OREG_SERIAL.write(packet.checksum, 2);
   OREG_SERIAL.write(packet.data, packet.len);
   OREG_SERIAL.write('\n');
-} 
+}
 
 void sendToFreg(Comms::Packet packet, int8_t offset) {
   Serial.println("Freg send");

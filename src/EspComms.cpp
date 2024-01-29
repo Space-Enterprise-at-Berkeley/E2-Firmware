@@ -62,7 +62,7 @@ namespace Comms {
 
     char commit[] = FW_COMMIT;
     memcpy(&(version.data), &commit, 7);
-    emitPacket(&version);
+    emitPacketToGS(&version);
   }
 
   void registerCallback(uint8_t id, commFunction function)

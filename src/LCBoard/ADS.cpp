@@ -184,9 +184,14 @@ namespace ADS {
         refreshReadings();
 
         ADCPacket.len = 0;
+        float sum = 0;
         for(int i = 0 ; i < ADCsize; i ++){
             Comms::packetAddFloat(&ADCPacket, lbs[i]); //write data[i] into the packet
+            if (lbs[i] > -1000) { //check to make sure it's a real value
+                sum = sum + lbs[i];
+            }
         }
+        Comms::packetAddFloat(&ADCPacket, sum);
         Comms::emitPacketToGS(&ADCPacket); //commented out for tesing. shoud comment back in for comms
 
         return sampleRate; //80Hz

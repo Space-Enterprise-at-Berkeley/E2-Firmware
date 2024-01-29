@@ -18,7 +18,7 @@ struct Task {
     bool enabled;
 };
 
-#define initWire() Wire.setClock(400000); Wire.setPins(1,2); Wire.begin()
+#define initWire() Wire.setClock(400000); Wire.setPins(1, 2); Wire.begin()
 
 //Define Board ID Enum
 enum BoardID
@@ -89,7 +89,7 @@ enum PacketID {
   AC_CHANGE_CONFIG = 105,
 
   //GEMS autovent
-  EREG_PRESSURE = 11,
+  EREG_PRESSURE = 171,
   
 };
 
@@ -98,7 +98,8 @@ enum Mode {
   LAUNCH = 0,
   HOTFIRE = 1,
   COLDFLOW = 2,
-  GASFLOW = 3,
+  COLDFLOW_WITH_IGNITER = 3,
+  GASFLOW = 4,
 };
 
 //Define Abort Reason Enum

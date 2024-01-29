@@ -18,6 +18,15 @@ namespace Ducers {
     uint8_t rtd0Channel = 1;
     uint8_t rtd1Channel = 5;
 
+
+    // float pressurantPTValue = 0.0;
+    // float loxTankPTValue = 0.0;
+    // float fuelTankPTValue = 0.0;
+    // float loxInjectorPTValue = 0.0;
+    // float fuelInjectorPTValue = 0.0;
+    // float loxDomePTValue = 0.0;
+    // float fuelDomePTValue = 0.0;
+
     void handleFastReadPacket(Comms::Packet tmp, uint8_t ip) {
         if(tmp.data[0]) {
             ptUpdatePeriod = 1 * 1000;
@@ -98,8 +107,8 @@ namespace Ducers {
     void init() {
         // Comms::registerCallback(140, handleFastReadPacket);
         spi2 = new SPIClass(HSPI);
-        spi2->begin(41, 42, 40, 39);
-        adc1.init(spi2, 39, 38);
+        spi2->begin(45, 42, 41, 40);
+        adc1.init(spi2, 40, 46);
 
         adc1.setAllInputsSeparate();
         adc1.enableOTFMode();

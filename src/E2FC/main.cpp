@@ -4,18 +4,22 @@
 #include "ReadPower.h"
 
 #include "AC.h"
+#include "Ducers.h"
+#include "BlackBox.h"
+#include "Radio.h"
 #include "ChannelMonitor.h"
 #include <MCP23008.h>
 #include <Wire.h>
 #include <EEPROM.h>
+
+// !!still need to modify gems firmware to account for one pinMode
 
 //Actuators
 enum Actuators {
   //AC1
   IGNITER = 7,
   BREAKWIRE = 1,
-
-  ARM_VENT = 2, 
+  MAIN_VENT = 2,
   ARM = 3,
   LOX_MAIN_VALVE = 4,
   FUEL_MAIN_VALVE = 5,
@@ -23,10 +27,8 @@ enum Actuators {
 
   //AC2
   LP_N2_FILL = 0, 
-  N2_VENT = 1,
+  N2_VENT = 3,
   N2_FLOW = 2,
-  N2_RQD = 3,
-
   LOX_VENT_RBV = 4,
   FUEL_VENT_RBV = 5,
   LOX_GEMS = 6,
@@ -63,107 +65,9 @@ uint8_t broke_check_counter;
 
 
 uint32_t launchDaemon(){
-  if (ID == AC1){
-    switch(launchStep){
-      case 0:
-      {
-        breakwire_broke = false;
-        broke_check_counter = 0;
-        // Light igniter and wait for 2.0 sec
-        if (systemMode == HOTFIRE || systemMode == LAUNCH || systemMode == COLDFLOW_WITH_IGNITER){
-          Serial.println("launch step 0, igniter on");
-          AC::actuate(IGNITER, AC::ON, 0);
-          launchStep++;
-          return 100 * 1000; // 50 ms
-        } else {
-          Serial.println("launch step 0, not hotfire, skip");
-          launchStep++;
-          return 10;
-        }
-        
-      }
-      case 1:
-      {
-        //check breakwire over 2 sec period
-        if (broke_check_counter > 20){
-          launchStep++;
-          return 10;
-        }
-
-        broke_check_counter++;
-
-        if (!ChannelMonitor::isChannelContinuous(BREAKWIRE)){
-            Serial.println("breakwire broke");
-            breakwire_broke = true;
-            launchStep++;
-            return (21 - broke_check_counter) * 100 * 1000;
-        }
-
-        return 100*1000;
-
-      }
-      case 2:
-      {
-        if (systemMode == HOTFIRE || systemMode == LAUNCH || systemMode == COLDFLOW_WITH_IGNITER){
-          //igniter off
-          Serial.println("launch step 1, igniter off");
-          AC::actuate(IGNITER, AC::OFF, 0);
-
-          //Throw abort if breakwire still has continuity
-          if (!breakwire_broke){
-            Serial.println("breakwire still has continuity, aborting");
-            Comms::sendAbort(systemMode, BREAKWIRE_NO_BURNT);
-            launchStep = 0;
-            return 0;
-          }
-        }
-
-        //send packet for eregs
-        Comms::Packet launch = {.id = STARTFLOW, .len = 0};
-        Comms::packetAddUint8(&launch, systemMode);
-        Comms::packetAddUint32(&launch, flowLength);
-        Comms::emitPacketToAll(&launch);
-
-        //arm and open main valves
-        AC::actuate(ARM, AC::ON, 0);
-        AC::delayedActuate(LOX_MAIN_VALVE, AC::ON, 0, 100);
-        AC::delayedActuate(FUEL_MAIN_VALVE, AC::ON, 0, 250);
-        AC::delayedActuate(ARM, AC::OFF, 0, 2000);
-        AC::delayedActuate(ARM_VENT, AC::ON, 0, 2050);
-        AC::delayedActuate(ARM_VENT, AC::OFF, 0, 2500);
-        launchStep++;
-        return flowLength * 1000;
-      }
-      case 3:
-      {
-        //end flow
-
-        //end packet for eregs
-        Comms::Packet endFlow = {.id = ENDFLOW, .len = 0};
-        Comms::emitPacketToAll(&endFlow);
-
-        //arm and close main valves
-        AC::actuate(LOX_MAIN_VALVE, AC::OFF, 0);
-        AC::actuate(FUEL_MAIN_VALVE, AC::OFF, 0);
-        AC::delayedActuate(ARM, AC::ON, 0, 100);
-        AC::delayedActuate(ARM, AC::OFF, 0, 2000);
-        AC::delayedActuate(ARM_VENT, AC::ON, 0, 2050);
-        AC::delayedActuate(ARM_VENT, AC::OFF, 0, 2500);
-        AC::actuate(HP_N2_FILL,AC::EXTEND_FULLY, 0);
-
-
-        //open lox and fuel gems via abort only to AC2
-        delay(100); // temporary to give time to eth chip to send the packet
-        // Comms::Packet openGems = {.id = ABORT, .len = 0};
-        // Comms::packetAddUint8(&openGems, systemMode);
-        // Comms::packetAddUint8(&openGems, LC_UNDERTHRUST);
-        // Comms::emitPacket(&openGems, AC2);
-
-        launchStep = 0;
-        return 0;  
-      }
-    }
-  }
+  // everything the flight computer should do on launch 
+  // send commands to e-regs to start flow sequence
+  // "launch detect"?
   return 0;
 }
 
@@ -172,9 +76,6 @@ float lox_autoVentPressure;
 float fuel_autoVentPressure;
 uint32_t sendConfig(){
   config.len = 0;
-  if (ID == AC1){
-    return 0; // don't need for ac1 right now
-  }
   Comms::packetAddFloat(&config, lox_autoVentPressure);
   Comms::packetAddFloat(&config, fuel_autoVentPressure);
   Comms::emitPacketToGS(&config);
@@ -186,6 +87,7 @@ Task taskTable[] = {
   {AC::actuationDaemon, 0, true},
   {AC::task_actuatorStates, 0, true},
   {ChannelMonitor::readChannels, 0, true},
+  {Ducers::task_ptSample, 0, true},
   {Power::task_readSendPower, 0, true},
   {sendConfig, 0, true},
   // {AC::task_printActuatorStates, 0, true},
@@ -234,49 +136,49 @@ void onAbort(Comms::Packet packet, uint8_t ip) {
     case TANK_OVERPRESSURE:
       if(ID == AC1){
         //leave main valves in current state
-        AC::actuate(HP_N2_FILL,AC::EXTEND_FULLY, 0);
+        // AC::actuate(HP_N2_FILL,AC::EXTEND_FULLY, 0);
       } else if (ID == AC2){
         //open lox and fuel gems
         AC::actuate(LOX_GEMS, AC::ON, 0);
         AC::actuate(FUEL_GEMS, AC::ON, 0);
         //open lox and fuel vent rbvs
-        //AC::actuate(LOX_VENT_RBV, AC::RETRACT_FULLY, 0);
-        //AC::actuate(FUEL_VENT_RBV, AC::RETRACT_FULLY, 0);
+        AC::actuate(LOX_VENT_RBV, AC::RETRACT_FULLY, 0);
+        AC::actuate(FUEL_VENT_RBV, AC::RETRACT_FULLY, 0);
         //close n2 flow and fill
         //AC::actuate(N2_FLOW,AC::RETRACT_FULLY, 0);
-        AC::actuate(LP_N2_FILL,AC::EXTEND_FULLY, 0);
+        // AC::actuate(LP_N2_FILL,AC::EXTEND_FULLY, 0);
       }
       break;
     case ENGINE_OVERTEMP:
       if(ID == AC1){
-        //arm and close main valves   
+        //arm and close main valves // check
         AC::actuate(FUEL_MAIN_VALVE, AC::OFF, 0);
         AC::actuate(LOX_MAIN_VALVE, AC::OFF, 0);
         AC::actuate(ARM, AC::ON, 0);
         AC::delayedActuate(ARM, AC::OFF, 0, 2500);
-        AC::delayedActuate(ARM_VENT, AC::ON, 0, 2550);
-        AC::delayedActuate(ARM_VENT, AC::OFF, 0, 3000);
-        AC::actuate(HP_N2_FILL,AC::EXTEND_FULLY, 0);
+        // AC::delayedActuate(ARM_VENT, AC::ON, 0, 2550);
+        // AC::delayedActuate(ARM_VENT, AC::OFF, 0, 3000);
+        // AC::actuate(HP_N2_FILL,AC::EXTEND_FULLY, 0);
       } else if (ID == AC2){
         //open lox and fuel gems
         AC::actuate(LOX_GEMS, AC::ON, 0);
         AC::actuate(FUEL_GEMS, AC::ON, 0);
         //close n2 flow and fill
-        AC::actuate(N2_FLOW,AC::TIMED_RETRACT, 8000);
-        AC::actuate(LP_N2_FILL,AC::EXTEND_FULLY, 0);
+        // AC::actuate(N2_FLOW,AC::TIMED_RETRACT, 8000);
+        // AC::actuate(LP_N2_FILL,AC::EXTEND_FULLY, 0);
 
       }
       break;
     case LC_UNDERTHRUST:
       if(ID == AC1){
-        //arm and close main valves
+        //arm and close main valves // check
         AC::actuate(FUEL_MAIN_VALVE, AC::OFF, 0);
         AC::actuate(LOX_MAIN_VALVE, AC::OFF, 0);
         AC::actuate(ARM, AC::ON, 0);
         AC::delayedActuate(ARM, AC::OFF, 0, 2500);
-        AC::delayedActuate(ARM_VENT, AC::ON, 0, 2550);
-        AC::delayedActuate(ARM_VENT, AC::OFF, 0, 3000);
-        AC::actuate(HP_N2_FILL,AC::EXTEND_FULLY, 0);
+        // AC::delayedActuate(ARM_VENT, AC::ON, 0, 2550);
+        // AC::delayedActuate(ARM_VENT, AC::OFF, 0, 3000);
+        // AC::actuate(HP_N2_FILL,AC::EXTEND_FULLY, 0);
 
       } else if (ID == AC2){
         //open lox and fuel gems
@@ -285,25 +187,64 @@ void onAbort(Comms::Packet packet, uint8_t ip) {
         //AC::actuate(N2_FLOW, AC::RETRACT_FULLY, 0);
 
         //close n2 flow and fill
-        AC::actuate(N2_FLOW,AC::TIMED_RETRACT, 8000);
-        AC::actuate(LP_N2_FILL,AC::EXTEND_FULLY, 0);
+        // AC::actuate(N2_FLOW,AC::TIMED_RETRACT, 8000);
+        // AC::actuate(LP_N2_FILL,AC::EXTEND_FULLY, 0);
       }    
       break;
     case MANUAL_ABORT:
       if(ID == AC1){
-        AC::actuate(HP_N2_FILL,AC::EXTEND_FULLY, 0);
+        //arm and close main valves // check
+        AC::actuate(FUEL_MAIN_VALVE, AC::OFF, 0);
+        AC::actuate(LOX_MAIN_VALVE, AC::OFF, 0);
+        AC::actuate(ARM, AC::ON, 0);
+        AC::delayedActuate(ARM, AC::OFF, 0, 2500);
+        // AC::actuate(HP_N2_FILL,AC::EXTEND_FULLY, 0);
       } else if (ID == AC2){
         //open lox and fuel gems
         AC::actuate(LOX_GEMS, AC::ON, 0);
         AC::actuate(FUEL_GEMS, AC::ON, 0);
-        //close n2 flow and fill
-        AC::actuate(N2_FLOW,AC::TIMED_RETRACT, 8000);
-        AC::actuate(LP_N2_FILL,AC::EXTEND_FULLY, 0);
+        // //close n2 flow and fill
+        // AC::actuate(N2_FLOW,AC::TIMED_RETRACT, 8000);
+        // AC::actuate(LP_N2_FILL,AC::EXTEND_FULLY, 0);
 
       }
       break;
     case IGNITER_NO_CONTINUITY:
+      if(ID == AC1){
+        //arm and close main valves // check
+        AC::actuate(FUEL_MAIN_VALVE, AC::OFF, 0);
+        AC::actuate(LOX_MAIN_VALVE, AC::OFF, 0);
+        AC::actuate(ARM, AC::ON, 0);
+        AC::delayedActuate(ARM, AC::OFF, 0, 2500);
+        // AC::actuate(HP_N2_FILL,AC::EXTEND_FULLY, 0);
+      } else if (ID == AC2){
+        //open lox and fuel gems
+        AC::actuate(LOX_GEMS, AC::ON, 0);
+        AC::actuate(FUEL_GEMS, AC::ON, 0);
+        // //close n2 flow and fill
+        // AC::actuate(N2_FLOW,AC::TIMED_RETRACT, 8000);
+        // AC::actuate(LP_N2_FILL,AC::EXTEND_FULLY, 0);
+
+      }
+      break;
     case BREAKWIRE_NO_CONTINUITY:
+      if(ID == AC1){
+        //arm and close main valves // check
+        AC::actuate(FUEL_MAIN_VALVE, AC::OFF, 0);
+        AC::actuate(LOX_MAIN_VALVE, AC::OFF, 0);
+        AC::actuate(ARM, AC::ON, 0);
+        AC::delayedActuate(ARM, AC::OFF, 0, 2500);
+        // AC::actuate(HP_N2_FILL,AC::EXTEND_FULLY, 0);
+      } else if (ID == AC2){
+        //open lox and fuel gems
+        AC::actuate(LOX_GEMS, AC::ON, 0);
+        AC::actuate(FUEL_GEMS, AC::ON, 0);
+        // //close n2 flow and fill
+        // AC::actuate(N2_FLOW,AC::TIMED_RETRACT, 8000);
+        // AC::actuate(LP_N2_FILL,AC::EXTEND_FULLY, 0);
+
+      }
+      break;
     case BREAKWIRE_NO_BURNT:
       if(ID == AC1){
         //arm and close main valves
