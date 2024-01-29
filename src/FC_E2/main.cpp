@@ -291,9 +291,12 @@ void loop()
 #include <EspComms.h>
 #include <Wire.h>
 #include <Arduino.h>
+
 #include "Ducers.h"
 #include "IMU.h"
+#include "Actuators.h"
 #include "ChannelMonitor.h"
+#include "EReg.h"
 
 
 uint32_t print_task() { 
@@ -301,13 +304,16 @@ uint32_t print_task() {
   return 1000 * 1000;
 }
 
-
 Task taskTable[] = {
   // Ducers
   {Ducers::task_ptSample, 0, true},
   {IMU::task_barometers, 0, true},
   {IMU::task_accels, 0, true},
-  {ChannelMonitor::readChannels, 0, true}
+  {ChannelMonitor::readChannels, 0, true},
+  {AC::actuationDaemon, 0, true},
+  {AC::task_actuatorStates, 0, true},
+  //automation config
+  //launch daemon?
 };
 
 #define TASK_COUNT (sizeof(taskTable) / sizeof (struct Task))
@@ -315,6 +321,7 @@ Task taskTable[] = {
 void setup() {
   // setup stuff here
   Comms::init(); // takes care of Serial.begin()
+  EREG_Comms::init();
   initWire();
   Ducers::init();
   IMU::init();
@@ -335,6 +342,7 @@ void setup() {
       }
     }
     Comms::processWaitingPackets();
+    EREG_Comms::processAvailableData();
   }
 }
 

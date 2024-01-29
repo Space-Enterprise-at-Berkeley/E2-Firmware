@@ -102,10 +102,10 @@ namespace Ducers {
         adc1.setAllInputsSeparate();
         adc1.enableOTFMode();
 
-        Comms::registerCallback(ZERO_CMD, onZeroCommand);
-        Comms::registerCallback(CAL_CMD, onCalCommand);
-        Comms::registerCallback(SEND_CAL, sendCal);
-        Comms::registerCallback(RESET_CAL, resetCal);
+        Comms::registerCallback(FC_PT_ZERO, onZeroCommand);
+        Comms::registerCallback(FC_PT_CAL, onCalCommand);
+        Comms::registerCallback(FC_PT_SEND_CAL, sendCal);
+        Comms::registerCallback(FC_PT_RESET_CAL, resetCal);
 
         //load offset from flash or set to 0
         if (persistentCalibration){

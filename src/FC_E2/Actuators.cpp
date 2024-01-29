@@ -101,7 +101,7 @@ namespace AC {
       actuators[i].init(actuatorPins[2*i], actuatorPins[2*i+1]);
     }
     // Register the actuation task callback to packet 100
-    Comms::registerCallback(ACTUATE_CMD, beginActuation);
+    Comms::registerCallback(FC_ACTUATE, beginActuation);
   }
 
   // Daemon task which should be run frequently
