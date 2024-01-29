@@ -2,6 +2,7 @@
 #include "HAL.h"
 #include "Util.h"
 #include "EspComms.h"
+#include "RS422Comms.h"
 #include "Config.h"
 #include "StateMachine.h"
 #include "Packets.h"
@@ -92,7 +93,7 @@ void setup() {
         }
     }
     Comms::init(HAL::ETH_CS, HAL::ETH_MISO, HAL::ETH_MOSI, HAL::ETH_SCLK, HAL::ETH_INTn);
-    Comms::enableRS422(HAL::rs422_RX, HAL::rs422_TX);
+    RS422::init(HAL::rs422_RX, HAL::rs422_TX);
     Ducers::initPTs();
     StateMachine::enterIdleClosedState();
     zero(); 

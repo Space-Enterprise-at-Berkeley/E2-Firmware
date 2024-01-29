@@ -8,6 +8,7 @@
 #include "Common.h"
 #include "Packets.h"
 #include "EspComms.h"
+#include "RS422Comms.h"
 
 namespace HAL {
     

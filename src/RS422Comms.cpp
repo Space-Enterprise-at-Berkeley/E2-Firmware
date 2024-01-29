@@ -15,18 +15,28 @@ namespace RS422
   void processAvailableData() {
     while (RS422_SERIAL.available()) {
         rs422Buffer[cnt] = Serial1.read();
-
-        if(rs422Buffer[cnt] == '\n') {
+        //Serial.print(c);
+        if(rs422Buffer[cnt] == '\n') { //packet end delimiter
+            cnt = 0;
             Comms::Packet *packet = (Comms::Packet *)&rs422Buffer;
+            // Serial.println("got packet");
+            // uint16_t a = (packet->checksum[0] << 8) + packet->checksum[1];
+            // Serial.print(Comms::computePacketChecksum(packet));
+            // Serial.print(" ");
+            // Serial.println(a);
             if(Comms::verifyPacket(packet)) {
-                cnt = 0;
+                
                 //invoke callback
+                Serial.print("Received packet of id: ");
                 Serial.println(packet->id);
                 Comms::evokeCallbackFunction(packet, FC);
-                break;
             }
+            break;
         }
         cnt++;
+        if (cnt > sizeof(Comms::Packet)) {
+            cnt = 0;
+        }
     }
   }
 
@@ -36,14 +46,10 @@ namespace RS422
    * @param packet The packet in which the data is stored.
    */
   void emitPacket(Comms::Packet *packet) {
-    emitPacket(packet, &RS422_SERIAL, "\n", 1);
+    emitPacket(packet, &RS422_SERIAL);
   }
 
-  void emitPacket(Comms::Packet *packet, HardwareSerial *serialBus) {
-    emitPacket(packet, serialBus, "\n", 1);
-  }
-
-  void emitPacket(Comms::Packet *packet, HardwareSerial *serialBus, char *delim, int dlen)
+  void emitPacket(Comms::Packet *packet, HardwareSerial *serialBus)
   {
     Comms::finishPacket(packet);
     // Send over serial
@@ -52,7 +58,7 @@ namespace RS422
     serialBus->write(packet->timestamp, 4);
     serialBus->write(packet->checksum, 2);
     serialBus->write(packet->data, packet->len);
-    serialBus->write(delim, dlen);
+    serialBus->write('\n');
   }
 
   void sendAbort(uint8_t systemMode, uint8_t abortReason) {

@@ -53,6 +53,7 @@ namespace Packets {
         Comms::packetAddFloat(&packet, rawDownstreamPressure1);
         Comms::packetAddFloat(&packet, rawDownstreamPressure2);
         Comms::emitPacket(&packet);
+        RS422::emitPacket(&packet);
 
         //misc data
         packet.id = MISC_TELEMETRY_ID;
@@ -65,6 +66,7 @@ namespace Packets {
         Comms::packetAddFloat(&packet, pressureControlI);
         Comms::packetAddFloat(&packet, pressureControlD);
         Comms::emitPacket(&packet);
+        RS422::emitPacket(&packet);
 
         sendTemperatures();
         sendPhaseCurrents();
@@ -81,7 +83,9 @@ namespace Packets {
             Comms::packetAddFloat(&packet, 0);
             //using send to all right now instead of extra socket
             //Comms::emitPacketToExtra(&packet);
+            //RS422::emitPacket(&packet);
             Comms:emitPacketToAll(&packet);
+            RS422::emitPacket(&packet);
         }
 
         if (millis() - lastTelemetry > 2000) {
@@ -117,6 +121,7 @@ namespace Packets {
         Comms::packetAddFloat(&packet, Config::d_inner);
         Comms::packetAddFloat(&packet, (float) (Config::getFlowDuration() / 1e6));
         Comms::emitPacket(&packet);
+        RS422::emitPacket(&packet);
     }
 
     /**
@@ -132,6 +137,7 @@ namespace Packets {
         Comms::packetAddUint8(&packet, motorDirPass);
         Comms::packetAddUint8(&packet, servoPass);
         Comms::emitPacket(&packet);
+        RS422::emitPacket(&packet);
         #endif
     }
 
@@ -148,6 +154,7 @@ namespace Packets {
         packet.len = 0;
         Comms::packetAddUint8(&packet, errorCode);
         Comms::emitPacket(&packet);
+        RS422::emitPacket(&packet);
         #endif
     }
 
@@ -161,6 +168,7 @@ namespace Packets {
         packet.len = 0;
         Comms::packetAddUint8(&packet, flowState);
         Comms::emitPacket(&packet);
+        RS422::emitPacket(&packet);
     }
 
 
@@ -170,6 +178,7 @@ namespace Packets {
         Comms::packetAddUint8(&packet, HOTFIRE);
         Comms::packetAddUint8(&packet, TANK_OVERPRESSURE);
         Comms::emitPacketToAll(&packet);
+        RS422::emitPacket(&packet);
 
         // //send abort to ACs
         // Comms::Packet actuate = {.id = ACTUATE_IP, .len=0};
@@ -217,6 +226,7 @@ namespace Packets {
         packet.len = 0;
         HAL::packetizePhaseCurrents(&packet);
         Comms::emitPacket(&packet);
+        RS422::emitPacket(&packet);
     }
 
     void sendTemperatures() {
@@ -224,12 +234,14 @@ namespace Packets {
         packet.len = 0;
         HAL::packetizeTemperatures(&packet);
         Comms::emitPacket(&packet);
+        RS422::emitPacket(&packet);
     }
 
     void sendOvercurrentPacket() {
         Comms::Packet packet = {.id = OVERCURRENT_ID};
         packet.len = 0;
         Comms::emitPacket(&packet);
+        RS422::emitPacket(&packet);
     }
 
     void sendLimitSwitches() {
@@ -238,6 +250,7 @@ namespace Packets {
         Comms::packetAddFloat(&packet, HAL::getClosedLimitSwitchState());
         Comms::packetAddFloat(&packet, HAL::getOpenLimitSwitchState());
         Comms::emitPacket(&packet);
+        RS422::emitPacket(&packet);
     }
 
 }

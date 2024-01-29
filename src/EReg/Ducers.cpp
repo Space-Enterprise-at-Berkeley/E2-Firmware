@@ -130,6 +130,7 @@ namespace Ducers {
             Serial.println(" " + String(offset[i]) + " " + String(multiplier[i]));
         }
         Comms::emitPacketToGS(&response);
+        RS422::emitPacket(&response);
         return;
     }
 
