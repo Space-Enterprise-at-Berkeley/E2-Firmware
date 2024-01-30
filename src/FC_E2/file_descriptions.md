@@ -15,3 +15,12 @@ Ducers.cpp: all the code for reading and sending PT data, plus callbacks to cali
 EReg.cpp: RS422 comms code to forward packets from GS to EREG, and vice versa. (Cursed packet id remapping present)
 
 IMU.cpp: all the code for reading and sending IMU data.
+
+Do we need to add:
+INA233 code?
+GPS code?
+radio code?
+blackbox code?
+baro code?
+kalman filter code?
+rtd code?

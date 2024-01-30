@@ -297,6 +297,7 @@ void loop()
 #include "Actuators.h"
 #include "ChannelMonitor.h"
 #include "EReg.h"
+#include "Automation.h"
 
 
 uint32_t print_task() { 
@@ -312,6 +313,7 @@ Task taskTable[] = {
   {ChannelMonitor::readChannels, 0, true},
   {AC::actuationDaemon, 0, true},
   {AC::task_actuatorStates, 0, true},
+  {Automation::task_sendAutoventConfig, 0, true}
   //automation config
   //launch daemon?
 };
@@ -326,6 +328,7 @@ void setup() {
   Ducers::init();
   IMU::init();
   ChannelMonitor::init(7, 6, 5, 3, 4);
+  Automation::init();
 
   while(1) {
     // main loop here to avoid arduino overhead

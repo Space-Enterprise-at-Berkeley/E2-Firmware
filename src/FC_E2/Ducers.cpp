@@ -39,8 +39,8 @@ namespace Ducers {
         offset[channel] = -data[channel] + offset[channel];
         Serial.println("zeroed channel " + String(channel) + " to " + String(offset[channel]));
         if (persistentCalibration){
-            EEPROM.begin(16*sizeof(float));
-            EEPROM.put(channel*sizeof(float),offset[channel]);
+            EEPROM.begin((16+2)*sizeof(float));
+            EEPROM.put((channel+2)*sizeof(float),offset[channel]);
             EEPROM.end();
         }
         return offset[channel];
@@ -50,8 +50,8 @@ namespace Ducers {
         multiplier[channel] *= (value) / data[channel];
         Serial.println("calibrated channel multiplier" + String(channel) + " to " + String(multiplier[channel]));
         if (persistentCalibration){
-            EEPROM.begin(16*sizeof(float));
-            EEPROM.put((channel+8)*sizeof(float),multiplier[channel]);
+            EEPROM.begin((16+2)*sizeof(float));
+            EEPROM.put((channel+10)*sizeof(float),multiplier[channel]);
             EEPROM.end();
         }
         return multiplier[channel];
