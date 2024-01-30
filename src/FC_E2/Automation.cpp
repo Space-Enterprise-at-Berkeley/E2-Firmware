@@ -32,7 +32,7 @@ namespace Automation {
     }
 
     void onLaunch(Comms::Packet packet, uint8_t ip) {
-        Mode systemMode = (Mode)packetGetUint8(&packet, 0);
+        Mode systemMode = (Mode)packetGetUint8(&packet, 0); //now actually important. Dashboard must send right thing.
         if (systemMode = LAUNCH){
             vehicleState = FLIGHT;
         } else {
@@ -42,6 +42,8 @@ namespace Automation {
     }
 
     void onAbort(Comms::Packet packet, uint8_t ip) {
+        EREG_Comms::forwardToOreg(&packet);
+        EREG_Comms::forwardToFreg(&packet);
         Mode systemMode = (Mode)packetGetUint8(&packet, 0);
         AbortReason abortReason = (AbortReason)packetGetUint8(&packet, 1);
         Serial.print("abort received: ");
@@ -50,6 +52,7 @@ namespace Automation {
         Serial.println(systemMode);
 
         // if we don't want aborts mid-flight, if vehicleMode == FLIGHT, return.
+        //overpressure abort is the only one that could actually trigger.
 
         switch(abortReason) {
             case TANK_OVERPRESSURE:
@@ -57,19 +60,19 @@ namespace Automation {
                 AC::actuate(LOX_GEMS, AC::ON, 0);
                 AC::actuate(FUEL_GEMS, AC::ON, 0);
                 break;
-            case ENGINE_OVERTEMP:
+            case ENGINE_OVERTEMP: // no tcs on flight
                 AC::actuate(LOX_GEMS, AC::ON, 0);
                 AC::actuate(FUEL_GEMS, AC::ON, 0);
                 //close n2 flow and fill
                 AC::actuate(N2_FLOW,AC::TIMED_RETRACT, 8000);
                 break;
-            case LC_UNDERTHRUST: // this wont happen.
+            case LC_UNDERTHRUST: // no lcs on flight
                 AC::actuate(LOX_GEMS, AC::ON, 0);
                 AC::actuate(FUEL_GEMS, AC::ON, 0);
                 //close n2 flow and fill
                 AC::actuate(N2_FLOW,AC::TIMED_RETRACT, 8000);
                 break;
-            case MANUAL_ABORT:
+            case MANUAL_ABORT: //not on flight
                 AC::actuate(LOX_GEMS, AC::ON, 0);
                 AC::actuate(FUEL_GEMS, AC::ON, 0);
                 //close n2 flow and fill
