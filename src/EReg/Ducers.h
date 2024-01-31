@@ -1,8 +1,11 @@
+#pragma once
+
 #include "Arduino.h"
 #include "HAL.h"
 #include "Util.h"
 #include "data_buff.h"
 #include "EEPROM.h"
+#include "RS422Comms.h"
 
 namespace Ducers {
 

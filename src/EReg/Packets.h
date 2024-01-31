@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Arduino.h>
+#include "RS422Comms.h"
 
 namespace Packets {
 
