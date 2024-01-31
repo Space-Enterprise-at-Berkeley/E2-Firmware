@@ -11,7 +11,9 @@ void MAX22201::init(uint8_t pin1, uint8_t pin2) {
     timeLeft = 0;
 
     pinMode(in1, OUTPUT);
-    pinMode(in2, OUTPUT);
+    if (pin2 != 255) {
+        pinMode(in2, OUTPUT);
+    }
 
     // default state is stopped
     stop();
@@ -21,25 +23,40 @@ void MAX22201::init(uint8_t pin1, uint8_t pin2) {
 // this is due to the sleep mode inbuilt in the chips, must hold both inputs high for 0.44ms to wake up
 // sleep mode is entered if both pins are held low for > 2ms
 void MAX22201::forwards() {
-    digitalWrite(in1, HIGH);
-    digitalWrite(in2, HIGH);
-    delay(1);
-    digitalWrite(in1, HIGH);
-    digitalWrite(in2, LOW);
+    if (in2 == 255) {
+        digitalWrite(in1, HIGH);
+    }
+    else {
+        digitalWrite(in1, HIGH);
+        digitalWrite(in2, HIGH);
+        delay(1);
+        digitalWrite(in1, HIGH);
+        digitalWrite(in2, LOW);
+    }
+    
 }
 
 void MAX22201::backwards() {
-    digitalWrite(in1, HIGH);
-    digitalWrite(in2, HIGH);
-    delay(1);
-    digitalWrite(in1, LOW);
-    digitalWrite(in2, HIGH);
+    if (in2 == 255) {
+        digitalWrite(in1, LOW);
+    }
+    else {
+        digitalWrite(in1, HIGH);
+        digitalWrite(in2, HIGH);
+        delay(1);
+        digitalWrite(in1, LOW);
+        digitalWrite(in2, HIGH);
+    }
+    
 }
 
 // stopping does hold both pins low, hence why they must be both pulled high to actuate for sleep wakeup
 // the reason we don't hold both high is because continuity sensing only works when both pins are held low
 void MAX22201::stop() {
-    state = 5;
-    digitalWrite(in1, LOW);
-    digitalWrite(in2, LOW);
+    if (in2 != 255) {
+        state = 5;
+        digitalWrite(in1, LOW);
+        digitalWrite(in2, LOW);
+    }
+    
 }
