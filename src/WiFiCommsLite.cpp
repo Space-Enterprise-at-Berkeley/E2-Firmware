@@ -10,6 +10,7 @@ namespace WiFiComms {
   uint8_t ip_start[] = {192, 168, 43}; //{10, 0, 0};
   IPAddress subnet = IPAddress(255, 255, 255, 0);
   IPAddress gateway = IPAddress(ip_start[0], ip_start[1], ip_start[2], 1);
+  bool enabled = false;
 
 // TODO: multiple ports. 
   const uint8_t groundStationCount = 1;
@@ -51,10 +52,14 @@ namespace WiFiComms {
 
     //TODO: multiple ports
     Udp.begin(ports[0]);
+    enabled = true;
   }
 
   void processWaitingPackets()
   {
+    if (!enabled || !WiFi.isConnected()) {
+      return;
+    }
     if (Udp.available()) {
       if (Udp.parsePacket()) {
         // if(Udp.remotePort() != port) return;
@@ -68,6 +73,9 @@ namespace WiFiComms {
 
   void emitPacketToGS(Comms::Packet *packet)
   {
+    if (!enabled || !WiFi.isConnected()) {
+      return;
+    }
     Comms::finishPacket(packet);
 
     // Send over UDP
@@ -85,6 +93,9 @@ namespace WiFiComms {
 
   void emitPacketToAll(Comms::Packet *packet)
   {
+    if (!enabled || !WiFi.isConnected()) {
+      return;
+    }
     Comms::finishPacket(packet);
 
     // Send over UDP
@@ -98,7 +109,10 @@ namespace WiFiComms {
     Udp.endPacket();
   }
 
-  void emitPacket(Comms::Packet *packet, uint8_t ip, uint16_t port){
+  void emitPacket(Comms::Packet *packet, uint8_t ip, uint16_t port){  
+    if (!enabled || !WiFi.isConnected()) {
+      return;
+    }
     //Serial.println("Emitting packet to " + String(ip));
     Comms::finishPacket(packet);
 
