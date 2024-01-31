@@ -7,14 +7,15 @@ namespace Ducers {
     
 
     uint32_t ptUpdatePeriod = 50 * 1000;
-    Comms::Packet ptPacket = {.id = 19};
-    float data[8];
-    float offset[8];
-    float multiplier[8];
+    Comms::Packet ptPacket = {.id = FC_PT_DATA};
+    const uint8_t numPT = 2;
+    float data[numPT];
+    float offset[numPT];
+    float multiplier[numPT];
     bool persistentCalibration = true;
     uint8_t channelCounter = 0;
-    uint8_t rtd0Channel = 1;
-    uint8_t rtd1Channel = 5;
+    // uint8_t rtd0Channel = 1;
+    // uint8_t rtd1Channel = 5;
 
     void handleFastReadPacket(Comms::Packet tmp, uint8_t ip) {
         if(tmp.data[0]) {
@@ -39,7 +40,7 @@ namespace Ducers {
         offset[channel] = -data[channel] + offset[channel];
         Serial.println("zeroed channel " + String(channel) + " to " + String(offset[channel]));
         if (persistentCalibration){
-            EEPROM.begin((16+2)*sizeof(float));
+            EEPROM.begin((numPT*2+2)*sizeof(float));
             EEPROM.put((channel+2)*sizeof(float),offset[channel]);
             EEPROM.end();
         }
@@ -50,8 +51,8 @@ namespace Ducers {
         multiplier[channel] *= (value) / data[channel];
         Serial.println("calibrated channel multiplier" + String(channel) + " to " + String(multiplier[channel]));
         if (persistentCalibration){
-            EEPROM.begin((16+2)*sizeof(float));
-            EEPROM.put((channel+10)*sizeof(float),multiplier[channel]);
+            EEPROM.begin((numPT*2+2)*sizeof(float));
+            EEPROM.put((channel+numPT+2)*sizeof(float),multiplier[channel]);
             EEPROM.end();
         }
         return multiplier[channel];
@@ -73,12 +74,14 @@ namespace Ducers {
 
     void sendCal(Comms::Packet packet, uint8_t ip){
         Comms::Packet response = {.id = SEND_CAL, .len = 0};
-        for (int i = 0; i < 8; i++){
+        for (int i = 0; i < numPT; i++){
             Comms::packetAddFloat(&response, offset[i]);
             Comms::packetAddFloat(&response, multiplier[i]);
             Serial.println("Channel " + String(i) + ": offset " + String(offset[i]) + ", multiplier " + String(multiplier[i]));
         }
         Comms::emitPacketToGS(&response);
+        WiFiComms::emitPacketToGS(&response);
+        Radio::forwardPacket(&response);
     }
 
     void resetCal(Comms::Packet packet, uint8_t ip){
@@ -86,9 +89,9 @@ namespace Ducers {
         offset[channel] = 0;
         multiplier[channel] = 1;
         if (persistentCalibration){
-            EEPROM.begin(16*sizeof(float));
-            EEPROM.put(channel*sizeof(float),offset[channel]);
-            EEPROM.put((channel+8)*sizeof(float),multiplier[channel]);
+            EEPROM.begin((numPT*2+2)*sizeof(float));
+            EEPROM.put((channel+2)*sizeof(float),offset[channel]);
+            EEPROM.put((channel+numPT+2)*sizeof(float),multiplier[channel]);
             EEPROM.end();
         }
     }
@@ -109,25 +112,25 @@ namespace Ducers {
 
         //load offset from flash or set to 0
         if (persistentCalibration){
-            EEPROM.begin(16*sizeof(float));
-            for (int i = 0; i < 8; i++){
-                EEPROM.get(i*sizeof(float),offset[i]);
+            EEPROM.begin((numPT*2+2)*sizeof(float));
+            for (int i = 0; i < numPT; i++){
+                EEPROM.get((i+2)*sizeof(float),offset[i]);
                 if (isnan(offset[i])){
                     offset[i] = 0;
                 }
             }
-            for (int i = 0; i < 8; i++){
-                EEPROM.get((i+8)*sizeof(float),multiplier[i]);
+            for (int i = 0; i < numPT; i++){
+                EEPROM.get((i+2+numPT)*sizeof(float),multiplier[i]);
                 if (isnan(multiplier[i])){
                     multiplier[i] = 1;
                 }
             }
             EEPROM.end();
         } else {
-            for (int i = 0; i < 8; i++){
+            for (int i = 0; i < numPT; i++){
                 offset[i] = 0;
             }
-            for (int i = 0; i < 8; i++){
+            for (int i = 0; i < numPT; i++){
                 multiplier[i] = 1;
             }
         }
@@ -149,19 +152,21 @@ namespace Ducers {
         // read from all 8 PTs in sequence
         if (channelCounter == 0){
              Comms::emitPacketToGS(&ptPacket);
+             WiFiComms::emitPacketToGS(&ptPacket);
+             Radio::forwardPacket(&ptPacket);
              ptPacket.len = 0;
         }
 
         data[channelCounter] = multiplier[channelCounter] * (interpolate1000(adc1.readData(channelCounter)) + offset[channelCounter]);
         Comms::packetAddFloat(&ptPacket, data[channelCounter]);
         
-        channelCounter = (channelCounter + 1) % 8;
+        channelCounter = (channelCounter + 1) % numPT;
 
-        return ptUpdatePeriod/8;
+        return ptUpdatePeriod/numPT;
     }
 
     void print_ptSample(){
-        for (int i = 0; i < 8; i ++){
+        for (int i = 0; i < numPT; i ++){
             Serial.print("  PT"+String(i)+": " + String(data[i]));
         }
         Serial.println();

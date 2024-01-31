@@ -108,7 +108,7 @@ namespace AC {
   // responsible for stopping all actuations - full actuations are stopped via current sense
   // - our linear actuators have in built limit switches, so pull close to 0 current when full extended either way
   // partial actuations are stopped via checking the current time against when the actuation started
-  uint32_t actuationDaemon() {
+  uint32_t task_actuationDaemon() {
     for (int i = 0; i < 4; i ++) {
       MAX22201 actuator = actuators[i];
       unsigned long t = millis();
@@ -158,11 +158,14 @@ namespace AC {
 
   // gets every actuator state, formats it, and emits a packet
   uint32_t task_actuatorStates() {
-    Comms::Packet acStates = {.id = AC_STATE};
+    Comms::Packet acStates = {.id = FC_ACT_STATE};
     for (int i = 0; i < 4; i++) {
       packetAddUint8(&acStates, formatActuatorState(actuators[i].state));
     }
     Comms::emitPacketToGS(&acStates);
+    WiFiComms::emitPacketToGS(&acStates);
+    Radio::forwardPacket(&acStates);
+    
     return 250 * 1000;
   }
 

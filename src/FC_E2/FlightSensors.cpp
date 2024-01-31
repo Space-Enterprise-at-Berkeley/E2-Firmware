@@ -1,9 +1,10 @@
-#include "IMU.h"
+#include "FlightSensors.h"
 #include <Wire.h>
 #include "Adafruit_BMP3XX.h"
 #include "MS5607.h"
 #include <Adafruit_LSM6DSO32.h>
 #include "SparkFun_KX13X.h"
+#include <SparkFun_u-blox_GNSS_Arduino_Library.h>
 
 
 #define SEALEVELPRESSURE_HPA (1013.25)
@@ -68,16 +69,19 @@ void loop()
 
 */
 
-namespace IMU {
+namespace FlightSensors {
 
     Adafruit_BMP3XX bmp;
     MS5607 fancyBarometer = MS5607(0x76);
-    Comms::Packet baroPacket = {.id = 3};
+    Comms::Packet baroPacket = {.id = BARO_DATA};
 
     Adafruit_LSM6DSO32 lowg_accel;
     SparkFun_KX132 highg_accel;
+    Comms::Packet accelPacket = {.id = IMU_DATA};
 
-    Comms::Packet accelPacket = {.id = 2};
+    SFE_UBLOX_GNSS neom9n;
+    Comms::Packet gpsPacket = {.id = GPS_DATA};
+
 
     // assumes initWire has been called
     void init() {
@@ -122,6 +126,18 @@ namespace IMU {
         highg_accel.setRange(SFE_KX134_RANGE64G); // 64g Range
         highg_accel.enableDataEngine(); // Enables the bit that indicates data is ready.
         highg_accel.enableAccel();
+
+        if (neom9n.begin() == false) //Connect to the u-blox module using Wire port
+        {
+            Serial.println(F("u-blox GNSS not detected at default I2C address. Please check wiring. Freezing."));
+            while (1);
+        }
+
+        neom9n.setI2COutput(COM_TYPE_UBX); //Set the I2C port to output UBX only (turn off NMEA noise)
+        neom9n.saveConfigSelective(VAL_CFG_SUBSEC_IOPORT); //Save (only) the communications port settings to flash and BBR
+        neom9n.setNavigationFrequency(40);
+        neom9n.setAutoPVT(true);
+        //neom9n.setHighPrecisionMode(): wonder if this helps
     }
 
 
@@ -154,6 +170,8 @@ namespace IMU {
         Comms::packetAddFloat(&baroPacket, MS5607_pressure);
 
         Comms::emitPacketToGS(&baroPacket);
+        WiFiComms::emitPacketToGS(&baroPacket);
+        Radio::forwardPacket(&baroPacket);
         return 50 * 1000;
     }
 
@@ -186,7 +204,26 @@ namespace IMU {
         Comms::packetAddFloat(&accelPacket, KX134_data.zData);
 
         Comms::emitPacketToGS(&accelPacket);
+        WiFiComms::emitPacketToGS(&accelPacket);
+        Radio::forwardPacket(&accelPacket);
         return 50 * 1000;
+    }
+
+    uint32_t task_GPS() {
+        gpsPacket.len = 0;
+        Comms::packetAddFloat(&gpsPacket, neom9n.getAltitude() / 1000);
+        Comms::packetAddFloat(&gpsPacket, neom9n.getLatitude() / 1e7);
+        Comms::packetAddFloat(&gpsPacket, neom9n.getLongitude() / 1e7);
+        Comms::packetAddFloat(&gpsPacket, neom9n.getNedDownVel() / 1000); //no clue about units. I think this is down velocity?
+        Comms::packetAddFloat(&gpsPacket, neom9n.getHeading() / 1e5);
+        Comms::packetAddFloat(&gpsPacket, neom9n.getGroundSpeed() / 1000);
+        Comms::packetAddUint8(&gpsPacket, (uint8_t)(neom9n.getSIV()));
+
+        // emit the packets
+        Comms::emitPacketToGS(&gpsPacket);
+        WiFiComms::emitPacketToGS(&gpsPacket);
+        Radio::forwardPacket(&gpsPacket);
+        return 100 * 1000;
     }
 
 

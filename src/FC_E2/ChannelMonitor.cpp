@@ -56,10 +56,10 @@ float adcToCont(uint16_t counts) {
 }
 
 // reads currents and continuity, reports them via packets and by setting the above arrays
-uint32_t readChannels() {
-    Comms::Packet contPacket = {.id = 6};
-    Comms::Packet currPacket = {.id = 7};
-    Comms::Packet breakwirePacket = {.id = 17};
+uint32_t task_readChannels() {
+    Comms::Packet contPacket = {.id = FC_ACT_CONT};
+    Comms::Packet currPacket = {.id = FC_ACT_CURR};
+    Comms::Packet breakwirePacket = {.id = FC_BREAKWIRE};
 
     // iterate through MUX channels
     for (int i = 0; i < 8; i ++){
@@ -108,8 +108,14 @@ uint32_t readChannels() {
 
 
     Comms::emitPacketToGS(&currPacket);
+    WiFiComms::emitPacketToGS(&currPacket);
+    Radio::forwardPacket(&currPacket);
     Comms::emitPacketToGS(&contPacket);
+    WiFiComms::emitPacketToGS(&contPacket);
+    Radio::forwardPacket(&contPacket);
     Comms::emitPacketToGS(&breakwirePacket);
+    WiFiComms::emitPacketToGS(&breakwirePacket);
+    Radio::forwardPacket(&breakwirePacket);
 
     return cmUpdatePeriod;
 }

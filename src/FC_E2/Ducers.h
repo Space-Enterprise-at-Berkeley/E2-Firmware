@@ -2,6 +2,8 @@
 
 #include <Common.h>
 #include <EspComms.h>
+#include "WiFiCommsLite.h"
+#include "Radio.h"
 #include <ADS8167.h>
 
 #include <Arduino.h>

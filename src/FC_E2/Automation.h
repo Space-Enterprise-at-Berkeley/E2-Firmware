@@ -4,6 +4,8 @@
 #include "Ereg.h"
 #include "Actuators.h"
 #include "EEPROM.h"
+#include "WiFiCommsLite.h"
+#include "Radio.h"
 
 namespace Automation {
 
@@ -19,7 +21,10 @@ namespace Automation {
         IDLE = 0,
         FLOW = 1,
         FLIGHT = 2,
+        REPLAY = 3,
     };
+
+    extern VehicleState vehicleState;
 
     void init();
     uint32_t task_sendAutoventConfig();

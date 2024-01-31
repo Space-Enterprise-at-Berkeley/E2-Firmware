@@ -2,6 +2,8 @@
 
 #include <Common.h>
 #include <EspComms.h>
+#include "WiFiCommsLite.h"
+#include "Radio.h"
 
 #include <Arduino.h>
 #include <Wire.h>
@@ -20,8 +22,8 @@ namespace EREG_Comms {
 
     void init();
     void emitPacket(Comms::Packet *packet, HardwareSerial *serialBus);
-    void forwardToOreg(Comms::Packet *packet);
-    void forwardToFreg(Comms::Packet *packet);
+    void forwardToOreg(Comms::Packet packet);
+    void forwardToFreg(Comms::Packet packet);
     uint32_t processAvailableData();
     void registerCallback(uint8_t id, Comms::commFunction function);
 }

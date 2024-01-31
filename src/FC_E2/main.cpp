@@ -87,7 +87,7 @@ void setup() {
     Serial.begin(921600);
     Wire.begin(1, 2);
     //Wire.setClock(100000);
-    // imu
+    // FlightSensors
         if (!dso32.begin_I2C(0x6B)) {
             while (1) {
             Serial.println("sad");
@@ -292,12 +292,16 @@ void loop()
 #include <Wire.h>
 #include <Arduino.h>
 
+#include "WiFiCommsLite.h"
 #include "Ducers.h"
-#include "IMU.h"
+#include "FlightSensors.h"
 #include "Actuators.h"
 #include "ChannelMonitor.h"
 #include "EReg.h"
 #include "Automation.h"
+#include "ReadPower.h"
+#include "BlackBox.h"
+#include "Radio.h"
 
 
 uint32_t print_task() { 
@@ -308,12 +312,13 @@ uint32_t print_task() {
 Task taskTable[] = {
   // Ducers
   {Ducers::task_ptSample, 0, true},
-  {IMU::task_barometers, 0, true},
-  {IMU::task_accels, 0, true},
-  {ChannelMonitor::readChannels, 0, true},
-  {AC::actuationDaemon, 0, true},
+  {FlightSensors::task_barometers, 0, true},
+  {FlightSensors::task_accels, 0, true},
+  {ChannelMonitor::task_readChannels, 0, true},
+  {AC::task_actuationDaemon, 0, true},
   {AC::task_actuatorStates, 0, true},
-  {Automation::task_sendAutoventConfig, 0, true}
+  {Automation::task_sendAutoventConfig, 0, true},
+  {Power::task_readSendPower, 0, true},
   //automation config
   //launch daemon?
 };
@@ -322,13 +327,17 @@ Task taskTable[] = {
 
 void setup() {
   // setup stuff here
+  Power::init();
   Comms::init(); // takes care of Serial.begin()
   EREG_Comms::init();
+  WiFiComms::init();
   initWire();
   Ducers::init();
-  IMU::init();
+  FlightSensors::init();
   ChannelMonitor::init(7, 6, 5, 3, 4);
   Automation::init();
+  BlackBox::init();
+  Radio::initRadio();
 
   while(1) {
     // main loop here to avoid arduino overhead
@@ -346,6 +355,8 @@ void setup() {
     }
     Comms::processWaitingPackets();
     EREG_Comms::processAvailableData();
+    WiFiComms::processWaitingPackets();
+    Radio::processRadio();
   }
 }
 

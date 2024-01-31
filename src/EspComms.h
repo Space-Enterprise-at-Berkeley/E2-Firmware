@@ -37,6 +37,7 @@ namespace Comms
    * @param function a pointer to a method that takes in a Packet struct.
    */
   void registerCallback(uint8_t id, commFunction function);
+  void evokeCallbackFunction(Packet *packet, uint8_t ip);
 
   void processWaitingPackets();
 
@@ -103,4 +104,5 @@ namespace Comms
    * @param abortReason The current abort reason. Follows enum in Common.h.
    */
   void sendAbort(uint8_t systemMode, uint8_t abortReason);
+  bool checkAvailable();
 };

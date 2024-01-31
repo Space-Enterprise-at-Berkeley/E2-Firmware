@@ -6,7 +6,7 @@ namespace Automation {
     //and live video?
 
     //launch
-    uint8_t vehicleState = IDLE;
+    VehicleState vehicleState = IDLE;
 
     //autovent
     Comms::Packet autovent_config = {.id = FC_SEND_AUTOVENT, .len = 0};
@@ -14,22 +14,6 @@ namespace Automation {
     float fuel_autoVentPressure;
     bool lox_autoVentOpenState = false; // closed
     bool fuel_autoVentOpenState = false; // closed
-
-    void init() {
-        //launch automation
-        Comms::registerCallback(STARTFLOW, onLaunch);
-
-        //abort handlers
-        Comms::registerCallback(ABORT, onAbort);
-        EREG_Comms::registerCallback(ABORT, onAbort);
-        //what is desired behavior for abort in flight?
-
-        //autovent handlers
-        EREG_Comms::registerCallback(FC_LOX_PRESSURE, loxAutoVent);
-        EREG_Comms::registerCallback(FC_FUEL_PRESSURE, fuelAutoVent);
-        Comms::registerCallback(FC_SET_AUTOVENT, setAutoVent);
-        //do we want autovent on during flight???
-    }
 
     void onLaunch(Comms::Packet packet, uint8_t ip) {
         Mode systemMode = (Mode)packetGetUint8(&packet, 0); //now actually important. Dashboard must send right thing.
@@ -42,8 +26,8 @@ namespace Automation {
     }
 
     void onAbort(Comms::Packet packet, uint8_t ip) {
-        EREG_Comms::forwardToOreg(&packet);
-        EREG_Comms::forwardToFreg(&packet);
+        EREG_Comms::forwardToOreg(packet);
+        EREG_Comms::forwardToFreg(packet);
         Mode systemMode = (Mode)packetGetUint8(&packet, 0);
         AbortReason abortReason = (AbortReason)packetGetUint8(&packet, 1);
         Serial.print("abort received: ");
@@ -53,6 +37,9 @@ namespace Automation {
 
         // if we don't want aborts mid-flight, if vehicleMode == FLIGHT, return.
         //overpressure abort is the only one that could actually trigger.
+        if (vehicleState == FLIGHT) {
+            return; //LET IT BLOW LET IT BLOW LET IT BLOW 
+        }
 
         switch(abortReason) {
             case TANK_OVERPRESSURE:
@@ -92,6 +79,8 @@ namespace Automation {
         Comms::packetAddFloat(&autovent_config, lox_autoVentPressure);
         Comms::packetAddFloat(&autovent_config, fuel_autoVentPressure);
         Comms::emitPacketToGS(&autovent_config);
+        WiFiComms::emitPacketToGS(&autovent_config);
+        Radio::forwardPacket(&autovent_config);
         return 1000*1000;
     }
 
@@ -109,6 +98,9 @@ namespace Automation {
     }
 
     void loxAutoVent(Comms::Packet packet, uint8_t ip){
+        if (vehicleState == FLIGHT) {
+            return;
+        }
         float p1 = packetGetFloat(&packet, 0);
         float p2 = packetGetFloat(&packet, 4);
         if (p1 > lox_autoVentPressure || p2 > lox_autoVentPressure){
@@ -127,6 +119,9 @@ namespace Automation {
     }
 
     void fuelAutoVent(Comms::Packet packet, uint8_t ip) {
+        if (vehicleState == FLIGHT) {
+            return;
+        }
         float p1 = packetGetFloat(&packet, 0);
         float p2 = packetGetFloat(&packet, 4);
         if (p1 > fuel_autoVentPressure || p2 > fuel_autoVentPressure){
@@ -143,5 +138,21 @@ namespace Automation {
             }
         }
         
+    }
+
+    void init() {
+        //launch automation
+        Comms::registerCallback(STARTFLOW, onLaunch);
+
+        //abort handlers
+        Comms::registerCallback(ABORT, onAbort);
+        EREG_Comms::registerCallback(ABORT, onAbort);
+        //what is desired behavior for abort in flight?
+
+        //autovent handlers
+        EREG_Comms::registerCallback(FC_LOX_PRESSURE, loxAutoVent);
+        EREG_Comms::registerCallback(FC_FUEL_PRESSURE, fuelAutoVent);
+        Comms::registerCallback(FC_SET_AUTOVENT, setAutoVent);
+        //do we want autovent on during flight???
     }
 }

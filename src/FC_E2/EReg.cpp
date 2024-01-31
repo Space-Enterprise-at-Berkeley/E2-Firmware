@@ -9,46 +9,7 @@ namespace EREG_Comms {
     //so you can callback from packets sent to FC from ereg (gems autovent, abort)
     std::map<uint8_t, Comms::commFunction> callbackMap; 
 
-    void init() {
-        OREG_SERIAL.begin(115200, SERIAL_8N1, rx0P, tx0P);
-        FREG_SERIAL.begin(115200, SERIAL_8N1, rx1P, tx1P);
-
-        //register callbacks to automatically forward GS -> EREG
-        // Comms::registerCallback(200, [](Comms::Packet packet, uint8_t id) {
-        //     Serial.println("Got packet!");
-        //     Serial.println((char*)packet.data);
-        // });
-
-        for (int i = 200; i <= 210; i++) {
-            Comms::registerCallback(i, [](Comms::Packet packet, uint8_t id) {
-            forwardToOreg(packet, 0);
-            });
-        }
-        for (int i = 211; i <= 214; i++) {
-            Comms::registerCallback(i, [](Comms::Packet packet, uint8_t id) {
-            forwardToOreg(packet, -111);
-            });
-        }
-
-        for (int i = 220; i <= 230; i ++) {
-            Comms::registerCallback(i, [](Comms::Packet packet, uint8_t id) {
-            forwardToFreg(packet, -20);
-            });
-        }
-        for (int i = 231; i <= 234; i++) {
-            Comms::registerCallback(i, [](Comms::Packet packet, uint8_t id) {
-            forwardToOreg(packet, -131);
-            });
-        }
-        
-        // Will likely break when merged, this stuff just needs to get run whenever there's an abort
-        // Comms::registerCallback(ABORT, [](Comms::Packet packet, uint8_t id) {
-        //     sendToOreg(packet, 0);
-        //     sendToFreg(packet, 0);
-        // });
-    }
-
-    void forwardToOreg(Comms::Packet packet, int8_t offset) {
+    void forwardToOreg(Comms::Packet packet, int16_t offset) {
         //Serial.println("Oreg send");
         packet.id += offset;
         emitPacket(&packet, &OREG_SERIAL);
@@ -57,7 +18,7 @@ namespace EREG_Comms {
         forwardToOreg(packet, 0);
     } 
 
-    void forwardToFreg(Comms::Packet packet, int8_t offset) {
+    void forwardToFreg(Comms::Packet packet, int16_t offset) {
         //Serial.println("Freg send");
         packet.id += offset;
         emitPacket(&packet, &FREG_SERIAL);
@@ -69,40 +30,42 @@ namespace EREG_Comms {
     void oregForwardToGS(Comms::Packet *packet) {
         if (packet->id == 133) {
             Comms::sendAbort(packet->data[0], packet->data[1]);
+            return;
         }
         else if (packet->id <= 10) {
             packet->id += 30;
             //Comms::finishPacket(packet); done in emit
-            Comms::emitPacketToGS(packet);
         }
         else if (packet->id == 102) {
             packet->id = 42;
             //Comms::finishPacket(packet); done in emit
-            Comms::emitPacketToGS(packet);
         }
         else if (packet->id == 171) {
-            Comms::emitPacketToGS(packet);
         }
+        Comms::emitPacketToGS(packet);
+        WiFiComms::emitPacketToGS(packet);
+        Radio::forwardPacket(packet);
     }
 
     void fregForwardToGS(Comms::Packet *packet) {
         if (packet->id == 133) {
             Comms::sendAbort(packet->data[0], packet->data[1]);
+            return;
         }
         else if (packet->id <= 10) {
             packet->id += 50;
             //Comms::finishPacket(packet); done in emit
-            Comms::emitPacketToGS(packet);
         }
         else if (packet->id == 102) {
             packet->id = 62;
             //Comms::finishPacket(packet); done in emit
-            Comms::emitPacketToGS(packet);
         }
         else if (packet->id == 171) {
             packet->id = 172;
-            Comms::emitPacketToGS(packet);
         }
+        Comms::emitPacketToGS(packet);
+        WiFiComms::emitPacketToGS(packet);
+        Radio::forwardPacket(packet);
     }
 
     void emitPacket(Comms::Packet *packet, HardwareSerial *serialBus) {
@@ -182,5 +145,44 @@ namespace EREG_Comms {
     void registerCallback(uint8_t id, Comms::commFunction function)
     {
         callbackMap.insert(std::pair<int, Comms::commFunction>(id, function));
+    }
+
+    void init() {
+        OREG_SERIAL.begin(115200, SERIAL_8N1, rx0P, tx0P);
+        FREG_SERIAL.begin(115200, SERIAL_8N1, rx1P, tx1P);
+
+        //register callbacks to automatically forward GS -> EREG
+        // Comms::registerCallback(200, [](Comms::Packet packet, uint8_t id) {
+        //     Serial.println("Got packet!");
+        //     Serial.println((char*)packet.data);
+        // });
+
+        for (int i = 200; i <= 210; i++) {
+            Comms::registerCallback(i, [](Comms::Packet packet, uint8_t id) {
+            forwardToOreg(packet, 0);
+            });
+        }
+        for (int i = 211; i <= 214; i++) {
+            Comms::registerCallback(i, [](Comms::Packet packet, uint8_t id) {
+            forwardToOreg(packet, -111);
+            });
+        }
+
+        for (int i = 220; i <= 230; i ++) {
+            Comms::registerCallback(i, [](Comms::Packet packet, uint8_t id) {
+            forwardToFreg(packet, -20);
+            });
+        }
+        for (int i = 231; i <= 234; i++) {
+            Comms::registerCallback(i, [](Comms::Packet packet, uint8_t id) {
+            forwardToOreg(packet, -131);
+            });
+        }
+        
+        // Will likely break when merged, this stuff just needs to get run whenever there's an abort
+        // Comms::registerCallback(ABORT, [](Comms::Packet packet, uint8_t id) {
+        //     sendToOreg(packet, 0);
+        //     sendToFreg(packet, 0);
+        // });
     }
 }

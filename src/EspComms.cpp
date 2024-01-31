@@ -2,9 +2,9 @@
 
 namespace Comms {
   std::map<uint8_t, commFunction> callbackMap;
-
-  // Define 3 UDP instances
+ 
   EthernetUDP Udp;
+
   char packetBuffer[sizeof(Packet)];
   bool multicast = false;
 
@@ -386,4 +386,9 @@ namespace Comms {
     emitPacketToAll(&packet);
     Serial.println("Abort sent, mode " + String((Mode)systemMode) + " reason " + String((AbortReason)abortReason));
   }
+
+  bool checkAvailable() {
+    return (Ethernet.detectRead() && Udp.parsePacket());
+  }
+  
 };

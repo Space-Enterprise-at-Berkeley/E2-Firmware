@@ -1,6 +1,8 @@
 #pragma once
 
 #include "EspComms.h"
+#include "WiFiCommsLite.h"
+#include "Radio.h"
 #include <Arduino.h>
 
 namespace AC {
@@ -38,7 +40,7 @@ enum ActuatorCommand {
   float sample(uint8_t index);
   uint32_t task_actuatorStates();
   uint32_t task_printActuatorStates();
-  uint32_t actuationDaemon();
+  uint32_t task_actuationDaemon();
   void actuate(uint8_t channel, uint8_t cmd, uint32_t time);
   void delayedActuate(uint8_t channel, uint8_t cmd, uint32_t time, uint32_t delay);
   uint8_t getActuatorState(uint8_t channel);

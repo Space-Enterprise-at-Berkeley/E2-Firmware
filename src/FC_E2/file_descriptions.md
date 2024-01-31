@@ -1,8 +1,6 @@
 Organization:
 
-The main.cpp file is the jumping off place for all code. In an effort to keep code neat,
-everything the FC does is segregated as "tasks" and "callback functions" in other files,
-which is why the main.cpp file has very little actual code.
+The main.cpp file is the jumping off place for all code. In an effort to keep code neat, everything the FC does is segregated as "tasks" and "callback functions" in other files, which is why the main.cpp file has very little actual code.
 
 Actuators.cpp: all the code that allows you to actuate things, plus callbacks that listen for the actuate command and do it.
 
@@ -14,13 +12,4 @@ Ducers.cpp: all the code for reading and sending PT data, plus callbacks to cali
 
 EReg.cpp: RS422 comms code to forward packets from GS to EREG, and vice versa. (Cursed packet id remapping present)
 
-IMU.cpp: all the code for reading and sending IMU data.
-
-Do we need to add:
-INA233 code?
-GPS code?
-radio code?
-blackbox code?
-baro code?
-kalman filter code?
-rtd code?
+FlightSensors.cpp: all the code for reading and sending IMUs, barometers, and GPS.
