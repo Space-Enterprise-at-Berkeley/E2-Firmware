@@ -16,6 +16,8 @@ namespace Radio {
     char packetBuffer[sizeof(Comms::Packet)];
 
     Comms::Packet rssiPacket = {.id = FC_RSSI};
+
+    bool enabled = false;
     
     void initRadio() {
 
@@ -25,9 +27,13 @@ namespace Radio {
 
         radioMode = TX;
         Serial.println("Starting in flight mode");
+        enabled = true;
     }
 
     void transmitRadioBuffer(bool swapFlag){
+        if (!enabled) {
+            return;
+        }
         if(radioBufferSize == 0){
             return;
         }
@@ -48,6 +54,9 @@ namespace Radio {
     void transmitRadioBuffer(){ transmitRadioBuffer(false);}
 
     void forwardPacket(Comms::Packet *packet){
+        if (!enabled) {
+            return;
+        }
         // BlackBox::writePacket(packet);
         Serial.println("forwarding packet");
         int packetLen = packet->len + 8;
@@ -61,6 +70,9 @@ namespace Radio {
     }
 
     bool processWaitingRadioPacket() {
+        if (!enabled) {
+            return;
+        }
         if(recvRadio.ready == 1){
             Serial.print("Received radio packet of size ");
             Serial.println(recvRadio.length);
@@ -105,6 +117,9 @@ namespace Radio {
     }
 
     void processRadio() {
+        if (!enabled) {
+            return;
+        }
         Si446x_SERVICE();
     }
 }
