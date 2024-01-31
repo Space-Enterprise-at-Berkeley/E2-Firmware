@@ -152,8 +152,8 @@ namespace Ducers {
         // read from all 8 PTs in sequence
         if (channelCounter == 0){
              Comms::emitPacketToGS(&ptPacket);
-             WiFiComms::emitPacketToGS(&ptPacket);
-             Radio::forwardPacket(&ptPacket);
+             //WiFiComms::emitPacketToGS(&ptPacket);
+             //Radio::forwardPacket(&ptPacket);
              ptPacket.len = 0;
         }
 

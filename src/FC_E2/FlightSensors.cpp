@@ -126,7 +126,7 @@ namespace FlightSensors {
         highg_accel.setRange(SFE_KX134_RANGE64G); // 64g Range
         highg_accel.enableDataEngine(); // Enables the bit that indicates data is ready.
         highg_accel.enableAccel();
-
+        /*
         if (neom9n.begin() == false) //Connect to the u-blox module using Wire port
         {
             Serial.println(F("u-blox GNSS not detected at default I2C address. Please check wiring. Freezing."));
@@ -138,6 +138,7 @@ namespace FlightSensors {
         neom9n.setNavigationFrequency(40);
         neom9n.setAutoPVT(true);
         //neom9n.setHighPrecisionMode(): wonder if this helps
+        */
     }
 
 
