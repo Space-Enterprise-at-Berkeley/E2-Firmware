@@ -8,7 +8,7 @@ namespace RS422
   int cnt;
 
   void init(int rxpin, int txpin) {
-    RS422_SERIAL.begin(115200, SERIAL_8N1, rxpin, txpin);
+    RS422_SERIAL.begin(921600, SERIAL_8N1, rxpin, txpin);
     cnt = 0;
   }
 
