@@ -33,7 +33,8 @@ int EthernetClass::begin(uint8_t *mac, unsigned long timeout, unsigned long resp
 	W5500.setMACAddress(mac);
 	W5500.setIPAddress(IPAddress(0,0,0,0).raw_address());
 	SPI.endTransaction();
-	return 0;
+
+	return 1;
 }
 
 void EthernetClass::begin(uint8_t *mac, IPAddress ip)

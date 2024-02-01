@@ -82,6 +82,7 @@ uint8_t W5500Class::init(int spiMisoPin, int spiMosiPin, int spiSclkPin)
 
 	SPI.endTransaction();
 	initialized = true;
+
 	return 1; // successful init
 }
 

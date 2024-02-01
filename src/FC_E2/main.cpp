@@ -296,7 +296,7 @@ void loop()
 #include "IMU.h"
 #include "Actuators.h"
 #include "ChannelMonitor.h"
-#include "EReg.h"
+//#include "EReg.h"
 
 
 uint32_t print_task() { 
@@ -306,12 +306,13 @@ uint32_t print_task() {
 
 Task taskTable[] = {
   // Ducers
+  {print_task, 0, true},
   {Ducers::task_ptSample, 0, true},
-  {IMU::task_barometers, 0, true},
-  {IMU::task_accels, 0, true},
-  {ChannelMonitor::readChannels, 0, true},
-  {AC::actuationDaemon, 0, true},
-  {AC::task_actuatorStates, 0, true},
+  //{IMU::task_barometers, 0, true},
+  //{IMU::task_accels, 0, true},
+  //{ChannelMonitor::readChannels, 0, true},
+  //{AC::actuationDaemon, 0, true},
+  //{AC::task_actuatorStates, 0, true},
   //automation config
   //launch daemon?
 };
@@ -320,12 +321,13 @@ Task taskTable[] = {
 
 void setup() {
   // setup stuff here
-  Comms::init(); // takes care of Serial.begin()
-  EREG_Comms::init();
+  //Comms::init(10, 13, 11, 12, 9); // takes care of Serial.begin()
+  Comms.init();
+  //EREG_Comms::init();
   initWire();
   Ducers::init();
-  IMU::init();
-  ChannelMonitor::init(7, 6, 5, 3, 4);
+  //IMU::init();
+  //ChannelMonitor::init(7, 6, 5, 3, 4);
 
   while(1) {
     // main loop here to avoid arduino overhead
@@ -342,7 +344,7 @@ void setup() {
       }
     }
     Comms::processWaitingPackets();
-    EREG_Comms::processAvailableData();
+    //EREG_Comms::processAvailableData();
   }
 }
 
