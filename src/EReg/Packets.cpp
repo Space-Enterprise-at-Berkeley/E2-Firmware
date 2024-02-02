@@ -77,9 +77,10 @@ namespace Packets {
             lastPT_to_AC = millis();
             packet.id = PT_TO_AC;
             packet.len = 0;
-            Comms::packetAddFloat(&packet, filteredDownstreamPressure1);
+            // Comms::packetAddFloat(&packet, filteredDownstreamPressure1);
             //not using downstreampressur2
-            //::packetAddFloat(&packet, filteredDownstreamPressure2);
+            //flight actually uses downstreampressure2 lmao
+            Comms::packetAddFloat(&packet, filteredDownstreamPressure2);
             Comms::packetAddFloat(&packet, 0);
             //using send to all right now instead of extra socket
             //Comms::emitPacketToExtra(&packet);
