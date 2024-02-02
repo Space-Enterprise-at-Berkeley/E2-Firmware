@@ -24,7 +24,7 @@ void MAX22201::init(uint8_t pin1, uint8_t pin2) {
 // sleep mode is entered if both pins are held low for > 2ms
 void MAX22201::forwards() {
     if (in2 == 255) {
-        digitalWrite(in1, HIGH);
+        digitalWrite(in1, LOW);
     }
     else {
         digitalWrite(in1, HIGH);
@@ -57,6 +57,9 @@ void MAX22201::stop() {
         state = 5;
         digitalWrite(in1, LOW);
         digitalWrite(in2, LOW);
+    }
+    else {
+        digitalWrite(in1, HIGH);
     }
     
 }

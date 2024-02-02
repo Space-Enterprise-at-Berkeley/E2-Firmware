@@ -42,9 +42,9 @@ namespace AC {
 // configure actuator driving pins here, in1, in2 from channels 1 to 8
   uint8_t actuatorPins[8] = 
   {
+    34, 35,
     47, 255,
     33, 255,
-    34, 35,
     8, 255,
   };
 

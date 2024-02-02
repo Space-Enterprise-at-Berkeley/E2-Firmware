@@ -71,7 +71,7 @@ uint32_t task_readChannels() {
         // read raw current and continuity voltages in ADC counts
         uint16_t mux1Val = analogRead(mux1out);
         uint16_t mux2Val = analogRead(mux2out);
-        Serial.println(mux1Val);
+        //Serial.println(mux1Val);
         mux1Data[i] = mux1Val;
         mux2Data[i] = mux2Val;
     } 
@@ -102,8 +102,8 @@ uint32_t task_readChannels() {
 
     Comms::packetAddFloat(&breakwirePacket, breakwires[0]);
     Comms::packetAddFloat(&breakwirePacket, breakwires[1]);
-    Serial.println(breakwires[0]);
-    Serial.println(breakwires[1]);
+    //Serial.println(breakwires[0]);
+    //Serial.println(breakwires[1]);
 
 
 

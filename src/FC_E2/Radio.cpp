@@ -71,7 +71,7 @@ namespace Radio {
 
     bool processWaitingRadioPacket() {
         if (!enabled) {
-            return;
+            return false;
         }
         if(recvRadio.ready == 1){
             Serial.print("Received radio packet of size ");

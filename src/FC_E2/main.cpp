@@ -312,14 +312,14 @@ uint32_t print_task() {
 Task taskTable[] = {
   // Ducers
   {Ducers::task_ptSample, 0, true},
-  {print_task, 0, true}
-  //{FlightSensors::task_barometers, 0, true},
-  //{FlightSensors::task_accels, 0, true},
-  //{ChannelMonitor::task_readChannels, 0, true},
-  //{AC::task_actuationDaemon, 0, true},
-  //{AC::task_actuatorStates, 0, true},
+  {print_task, 0, true},
+  {FlightSensors::task_barometers, 0, true},
+  {FlightSensors::task_accels, 0, true},
+  {ChannelMonitor::task_readChannels, 0, true},
+  {AC::task_actuationDaemon, 0, true},
+  {AC::task_actuatorStates, 0, true},
   //{Automation::task_sendAutoventConfig, 0, true},
-  //Power::task_readSendPower, 0, true},
+  {Power::task_readSendPower, 0, true},
   //automation config
   //launch daemon?
 };
@@ -328,14 +328,15 @@ Task taskTable[] = {
 
 void setup() {
   // setup stuff here
-  //Power::init();
+  Power::init();
   Comms::init(); // takes care of Serial.begin()
-  //EREG_Comms::init();
+  EREG_Comms::init();
   //WiFiComms::init();
   initWire();
   Ducers::init();
-  //FlightSensors::init();
-  //ChannelMonitor::init(7, 6, 5, 3, 4);
+  AC::init();
+  FlightSensors::init();
+  ChannelMonitor::init(7, 6, 5, 3, 4);
   //Automation::init();
   //BlackBox::init();
   //Radio::initRadio();
@@ -355,7 +356,7 @@ void setup() {
       }
     }
     Comms::processWaitingPackets();
-    //EREG_Comms::processAvailableData();
+    EREG_Comms::processAvailableData();
     //WiFiComms::processWaitingPackets();
     //Radio::processRadio();
   }

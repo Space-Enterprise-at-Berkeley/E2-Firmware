@@ -103,7 +103,7 @@ namespace EREG_Comms {
                     //Comms::emitPacket(packet, &RADIO_SERIAL, "\r\n\n", 3);
                 }
                 ocnt = 0;
-                break;
+                continue;
             }
             ocnt++;
             if (ocnt > sizeof(Comms::Packet)) {
@@ -132,7 +132,7 @@ namespace EREG_Comms {
                     //Comms::emitPacket(packet, &RADIO_SERIAL, "\r\n\n", 3);
                 }
                 fcnt = 0;
-                break;
+                continue;
             }
             fcnt++;
             if (fcnt > sizeof(Comms::Packet)) {
@@ -148,8 +148,8 @@ namespace EREG_Comms {
     }
 
     void init() {
-        OREG_SERIAL.begin(115200, SERIAL_8N1, rx0P, tx0P);
-        FREG_SERIAL.begin(115200, SERIAL_8N1, rx1P, tx1P);
+        OREG_SERIAL.begin(921600, SERIAL_8N1, rx0P, tx0P);
+        FREG_SERIAL.begin(921600, SERIAL_8N1, rx1P, tx1P);
 
         //register callbacks to automatically forward GS -> EREG
         // Comms::registerCallback(200, [](Comms::Packet packet, uint8_t id) {
