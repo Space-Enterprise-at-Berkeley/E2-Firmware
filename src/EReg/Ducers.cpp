@@ -264,7 +264,7 @@ namespace Ducers {
     //         return 10000; //easy way to abort
     //     }
     //    return max(ducer1, ducer2);
-    return ducer1;
+    return ducer2;
    }
 
 
