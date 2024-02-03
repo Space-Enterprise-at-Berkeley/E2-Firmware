@@ -156,7 +156,7 @@ uint32_t launchDaemon(){
         Comms::Packet endFlow2 = {.id = 209, .len = 0};
         Comms::emitPacketToAll(&endFlow2);
 
-        Comms::Packet endFlow3 = {.id = 223, .len = 0};
+        Comms::Packet endFlow3 = {.id = 229, .len = 0};
         Comms::emitPacketToAll(&endFlow3);
 
         //arm and close main valves
