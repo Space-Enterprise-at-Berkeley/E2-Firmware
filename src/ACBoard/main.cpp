@@ -125,6 +125,16 @@ uint32_t launchDaemon(){
         Comms::packetAddUint32(&launch, flowLength);
         Comms::emitPacketToAll(&launch);
 
+        Comms::Packet launch2 = {.id = 213, .len = 0};
+        Comms::packetAddUint8(&launch2, systemMode);
+        Comms::packetAddUint32(&launch2, flowLength);
+        Comms::emitPacketToAll(&launch2);
+
+        Comms::Packet launch3 = {.id = 233, .len = 0};
+        Comms::packetAddUint8(&launch3, systemMode);
+        Comms::packetAddUint32(&launch3, flowLength);
+        Comms::emitPacketToAll(&launch3);
+
         //arm and open main valves
         AC::actuate(ARM, AC::ON, 0);
         AC::delayedActuate(LOX_MAIN_VALVE, AC::ON, 0, 100);
@@ -142,6 +152,12 @@ uint32_t launchDaemon(){
         //end packet for eregs
         Comms::Packet endFlow = {.id = ENDFLOW, .len = 0};
         Comms::emitPacketToAll(&endFlow);
+
+        Comms::Packet endFlow2 = {.id = 209, .len = 0};
+        Comms::emitPacketToAll(&endFlow2);
+
+        Comms::Packet endFlow3 = {.id = 223, .len = 0};
+        Comms::emitPacketToAll(&endFlow3);
 
         //arm and close main valves
         AC::actuate(LOX_MAIN_VALVE, AC::OFF, 0);
