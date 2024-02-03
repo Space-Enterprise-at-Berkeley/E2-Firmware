@@ -48,6 +48,9 @@ void flow(Comms::Packet packet, uint8_t ip) {
         Serial.printf("bad flow duration %d\n", flowLength);
         return;
     }
+    Comms::Packet ack = {.id = 155, .len = 0};
+    Comms::emitPacketToAll(&ack);
+    RS422::emitPacket(&ack);
     if (sizeof(unsigned long) != sizeof(uint32_t)) {
         while(1) {
             Serial.printf("bro fix this\n");
