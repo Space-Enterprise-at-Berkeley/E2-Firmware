@@ -164,7 +164,7 @@ namespace Ducers {
 
             Comms::registerCallback(100, onCal1Command);
             Comms::registerCallback(101, onCal2Command);
-            Comms::registerCallback(102, sendCal);
+            //Comms::registerCallback(102, sendCal);
             Comms::registerCallback(103, resetCal);
 
 
