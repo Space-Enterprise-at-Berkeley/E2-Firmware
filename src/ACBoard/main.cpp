@@ -119,17 +119,17 @@ uint32_t launchDaemon(){
           }
         }
 
-        Comms::Packet launch2 = {.id = 210, .len = 0};
-        Comms::packetAddUint8(&launch2, systemMode);
-        Comms::packetAddUint32(&launch2, flowLength);
-        Comms::emitPacketToAll(&launch2);
+        // Comms::Packet launch2 = {.id = 210, .len = 0};
+        // Comms::packetAddUint8(&launch2, systemMode);
+        // Comms::packetAddUint32(&launch2, flowLength);
+        // Comms::emitPacketToAll(&launch2);
 
-        Comms::Packet launch3 = {.id = 230, .len = 0};
-        Comms::packetAddUint8(&launch3, systemMode);
-        Comms::packetAddUint32(&launch3, flowLength);
-        Comms::emitPacketToAll(&launch3);
+        // Comms::Packet launch3 = {.id = 230, .len = 0};
+        // Comms::packetAddUint8(&launch3, systemMode);
+        // Comms::packetAddUint32(&launch3, flowLength);
+        // Comms::emitPacketToAll(&launch3);
 
-        delay(1000);
+        // delay(1000);
         //send packet for eregs
         Comms::Packet launch = {.id = STARTFLOW, .len = 0};
         Comms::packetAddUint8(&launch, systemMode);
@@ -154,11 +154,11 @@ uint32_t launchDaemon(){
         Comms::Packet endFlow = {.id = ENDFLOW, .len = 0};
         Comms::emitPacketToAll(&endFlow);
 
-        Comms::Packet endFlow2 = {.id = 209, .len = 0};
-        Comms::emitPacketToAll(&endFlow2);
+        // Comms::Packet endFlow2 = {.id = 209, .len = 0};
+        // Comms::emitPacketToAll(&endFlow2);
 
-        Comms::Packet endFlow3 = {.id = 229, .len = 0};
-        Comms::emitPacketToAll(&endFlow3);
+        // Comms::Packet endFlow3 = {.id = 229, .len = 0};
+        // Comms::emitPacketToAll(&endFlow3);
 
         //arm and close main valves
         AC::actuate(LOX_MAIN_VALVE, AC::OFF, 0);
