@@ -10,8 +10,8 @@ namespace Automation {
 
     //autovent
     Comms::Packet autovent_config = {.id = FC_SEND_AUTOVENT, .len = 0};
-    float lox_autoVentPressure;
-    float fuel_autoVentPressure;
+    float lox_autoVentPressure = 600;
+    float fuel_autoVentPressure = 600;
     bool lox_autoVentOpenState = false; // closed
     bool fuel_autoVentOpenState = false; // closed
 
@@ -103,7 +103,9 @@ namespace Automation {
         }
         float p1 = packetGetFloat(&packet, 0);
         float p2 = packetGetFloat(&packet, 4);
+
         if (p1 > lox_autoVentPressure || p2 > lox_autoVentPressure){
+            Serial.println(AC::getActuatorState(LOX_GEMS));
             if (AC::getActuatorState(LOX_GEMS) == AC::OFF){
                 lox_autoVentOpenState = true;
                 AC::actuate(LOX_GEMS, AC::ON, 0);
@@ -114,6 +116,7 @@ namespace Automation {
             if (lox_autoVentOpenState && AC::getActuatorState(LOX_GEMS) == AC::ON){
                 lox_autoVentOpenState = false;
                 AC::actuate(LOX_GEMS, AC::OFF, 0);
+
             }
         } 
     }
@@ -124,6 +127,9 @@ namespace Automation {
         }
         float p1 = packetGetFloat(&packet, 0);
         float p2 = packetGetFloat(&packet, 4);
+        Serial.println(p1);
+        Serial.println(p2);
+        Serial.println(fuel_autoVentPressure);
         if (p1 > fuel_autoVentPressure || p2 > fuel_autoVentPressure){
             if (AC::getActuatorState(FUEL_GEMS) == AC::OFF){
                 fuel_autoVentOpenState = true;

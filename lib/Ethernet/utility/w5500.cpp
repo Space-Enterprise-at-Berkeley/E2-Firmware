@@ -49,6 +49,7 @@ uint8_t W5500Class::init(int spiMisoPin, int spiMosiPin, int spiSclkPin)
 	// reset time, this can be edited or removed.
 	delay(560);
 	//Serial.println("w5100 init");
+	// SPI.begin();
 	if ((spiMisoPin == -1) || (spiMosiPin == -1) || (spiSclkPin == -1)) {
 		SPI.begin();
 	} else {

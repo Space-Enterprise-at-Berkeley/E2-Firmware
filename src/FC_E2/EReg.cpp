@@ -90,9 +90,9 @@ namespace EREG_Comms {
                 Comms::Packet *packet = (Comms::Packet *)&oregbuffer;
                 //Serial.println("Got oreg packet");
                 if(Comms::verifyPacket(packet)) {
-                    Serial.print("Found oreg packet with ID ");
-                    Serial.print(packet->id);
-                    Serial.print('\n');
+                    //Serial.print("Found oreg packet with ID ");
+                    //Serial.print(packet->id);
+                    //Serial.print('\n');
                     
                     oregForwardToGS(packet);
                     if (callbackMap.count(packet->id)) //after so offset is applied
@@ -120,9 +120,9 @@ namespace EREG_Comms {
                 Comms::Packet *packet = (Comms::Packet *)&fregbuffer;
                 //Serial.println("Got freg packet");
                 if(Comms::verifyPacket(packet)) {
-                    Serial.print("Found freg packet with ID ");
-                    Serial.print(packet->id);
-                    Serial.print('\n');
+                    //Serial.print("Found freg packet with ID ");
+                    //Serial.print(packet->id);
+                    //Serial.print('\n');
                     
                     fregForwardToGS(packet);
                     if (callbackMap.count(packet->id)) //after so offset is applied

@@ -7,20 +7,22 @@ void setup()
   Comms::init();
 }
 
+char packetBuffer[sizeof(Packet)];
+
+
 void loop()
 {
   // Serial.println("before begin");
   // Serial.flush();
-  static int cnt = 0;
-  while(1) {
-    Serial.println("sending packet");
-    Comms::Packet tmp = {.id = 2};
-    Comms::packetAddFloat(&tmp, 1.0);
-    Comms::packetAddFloat(&tmp, 1.0);
-    Comms::packetAddFloat(&tmp, 1.0);
-    Comms::emitPacketToGS(&tmp);
-    cnt++;
-    delay(100);
+  if (Ethernet.detectRead()) {
+      if (Udp.parsePacket()) {
+        Serial.println("packet");
+        // if(Udp.remotePort() != port) return;
+        Udp.read(packetBuffer, sizeof(Comms::Packet));
+        Packet *packet = (Packet*) &packetBuffer;
+        evokeCallbackFunction(packet, Udp.remoteIP()[3]);
+        
+      }
   }
 
   // Serial.println(count);

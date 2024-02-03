@@ -106,7 +106,7 @@ void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress g
 	if (ETH_intN == -1) {
 		ETH_intN = 9;
 	}
-	pinMode(ETH_intN, INPUT);
+	pinMode(ETH_intN, INPUT_PULLUP);
 	//attachInterrupt(ETH_intN, setRecvFlag, FALLING);
 	SPI.endTransaction();
 }

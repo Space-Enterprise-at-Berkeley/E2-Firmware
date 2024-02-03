@@ -328,6 +328,10 @@ Task taskTable[] = {
 
 void setup() {
   // setup stuff here
+
+  pinMode(19, OUTPUT);
+  digitalWrite(19, HIGH);
+
   Power::init();
   Comms::init(); // takes care of Serial.begin()
   EREG_Comms::init();
@@ -337,7 +341,7 @@ void setup() {
   AC::init();
   FlightSensors::init();
   ChannelMonitor::init(7, 6, 5, 3, 4);
-  //Automation::init();
+  Automation::init();
   //BlackBox::init();
   //Radio::initRadio();
 

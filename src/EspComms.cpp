@@ -44,7 +44,8 @@ namespace Comms {
   }
 
   void init() {
-    init(10, -1, -1, -1, -1);
+    //init(10, -1, -1, -1, -1);
+    init(10, 13, 26, 12, 9);
   }
 
   void initExtraSocket(int port, uint8_t ip){
@@ -108,6 +109,7 @@ namespace Comms {
   {
     if (Ethernet.detectRead()) {
       if (Udp.parsePacket()) {
+        Serial.println("packet");
         // if(Udp.remotePort() != port) return;
         Udp.read(packetBuffer, sizeof(Comms::Packet));
         Packet *packet = (Packet*) &packetBuffer;
