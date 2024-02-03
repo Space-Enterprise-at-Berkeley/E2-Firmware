@@ -297,7 +297,6 @@ void loop()
 #include "FlightSensors.h"
 #include "Actuators.h"
 #include "ChannelMonitor.h"
-#include "EReg.h"
 #include "Automation.h"
 #include "ReadPower.h"
 #include "BlackBox.h"
@@ -334,7 +333,7 @@ void setup() {
 
   Power::init();
   Comms::init(); // takes care of Serial.begin()
-  EREG_Comms::init();
+  //EREG_Comms::init();
   //WiFiComms::init();
   initWire();
   Ducers::init();
@@ -360,7 +359,7 @@ void setup() {
       }
     }
     Comms::processWaitingPackets();
-    EREG_Comms::processAvailableData();
+    //EREG_Comms::processAvailableData();
     //WiFiComms::processWaitingPackets();
     //Radio::processRadio();
   }

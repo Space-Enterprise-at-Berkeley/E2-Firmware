@@ -26,8 +26,8 @@ namespace Automation {
     }
 
     void onAbort(Comms::Packet packet, uint8_t ip) {
-        EREG_Comms::forwardToOreg(packet);
-        EREG_Comms::forwardToFreg(packet);
+        //EREG_Comms::forwardToOreg(packet);
+        //EREG_Comms::forwardToFreg(packet);
         Mode systemMode = (Mode)packetGetUint8(&packet, 0);
         AbortReason abortReason = (AbortReason)packetGetUint8(&packet, 1);
         Serial.print("abort received: ");
@@ -152,12 +152,14 @@ namespace Automation {
 
         //abort handlers
         Comms::registerCallback(ABORT, onAbort);
-        EREG_Comms::registerCallback(ABORT, onAbort);
+        //EREG_Comms::registerCallback(ABORT, onAbort);
         //what is desired behavior for abort in flight?
 
         //autovent handlers
-        EREG_Comms::registerCallback(FC_LOX_PRESSURE, loxAutoVent);
-        EREG_Comms::registerCallback(FC_FUEL_PRESSURE, fuelAutoVent);
+        //EREG_Comms::registerCallback(FC_LOX_PRESSURE, loxAutoVent);
+        //EREG_Comms::registerCallback(FC_FUEL_PRESSURE, fuelAutoVent);
+        Comms::registerCallback(FC_LOX_PRESSURE, loxAutoVent);
+        Comms::registerCallback(FC_LOX_PRESSURE, loxAutoVent);
         Comms::registerCallback(FC_SET_AUTOVENT, setAutoVent);
         //do we want autovent on during flight???
     }
