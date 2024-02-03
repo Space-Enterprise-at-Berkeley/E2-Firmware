@@ -119,12 +119,12 @@ uint32_t launchDaemon(){
           }
         }
 
-        Comms::Packet launch2 = {.id = 213, .len = 0};
+        Comms::Packet launch2 = {.id = 210, .len = 0};
         Comms::packetAddUint8(&launch2, systemMode);
         Comms::packetAddUint32(&launch2, flowLength);
         Comms::emitPacketToAll(&launch2);
 
-        Comms::Packet launch3 = {.id = 233, .len = 0};
+        Comms::Packet launch3 = {.id = 230, .len = 0};
         Comms::packetAddUint8(&launch3, systemMode);
         Comms::packetAddUint32(&launch3, flowLength);
         Comms::emitPacketToAll(&launch3);
