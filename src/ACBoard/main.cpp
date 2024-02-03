@@ -25,12 +25,12 @@ enum Actuators {
   LP_N2_FILL = 0, 
   N2_VENT = 1,
   N2_FLOW = 2,
-  N2_RQD = 3,
+  N2_RQD = 6, // N2_RQD = 3,
 
   LOX_VENT_RBV = 4,
   FUEL_VENT_RBV = 5,
-  LOX_GEMS = 6,
-  FUEL_GEMS = 7,
+  // LOX_GEMS = 6,
+  // FUEL_GEMS = 7,
 };
 
 uint8_t heartCounter = 0;
@@ -237,8 +237,9 @@ void onAbort(Comms::Packet packet, uint8_t ip) {
         AC::actuate(HP_N2_FILL,AC::EXTEND_FULLY, 0);
       } else if (ID == AC2){
         //open lox and fuel gems
-        AC::actuate(LOX_GEMS, AC::ON, 0);
-        AC::actuate(FUEL_GEMS, AC::ON, 0);
+        //ACs don't control GEMS for launch
+        // AC::actuate(LOX_GEMS, AC::ON, 0);
+        // AC::actuate(FUEL_GEMS, AC::ON, 0);
         //open lox and fuel vent rbvs
         //AC::actuate(LOX_VENT_RBV, AC::RETRACT_FULLY, 0);
         //AC::actuate(FUEL_VENT_RBV, AC::RETRACT_FULLY, 0);
@@ -259,10 +260,11 @@ void onAbort(Comms::Packet packet, uint8_t ip) {
         AC::actuate(HP_N2_FILL,AC::EXTEND_FULLY, 0);
       } else if (ID == AC2){
         //open lox and fuel gems
-        AC::actuate(LOX_GEMS, AC::ON, 0);
-        AC::actuate(FUEL_GEMS, AC::ON, 0);
+        //ACs don't control GEMS for launch
+        // AC::actuate(LOX_GEMS, AC::ON, 0);
+        // AC::actuate(FUEL_GEMS, AC::ON, 0);
         //close n2 flow and fill
-        AC::actuate(N2_FLOW,AC::TIMED_RETRACT, 8000);
+        // AC::actuate(N2_FLOW,AC::TIMED_RETRACT, 8000);
         AC::actuate(LP_N2_FILL,AC::EXTEND_FULLY, 0);
 
       }
@@ -280,12 +282,13 @@ void onAbort(Comms::Packet packet, uint8_t ip) {
 
       } else if (ID == AC2){
         //open lox and fuel gems
-        AC::actuate(LOX_GEMS, AC::ON, 0);
-        AC::actuate(FUEL_GEMS, AC::ON, 0);
+        //ACs don't control GEMS for launch
+        // AC::actuate(LOX_GEMS, AC::ON, 0);
+        // AC::actuate(FUEL_GEMS, AC::ON, 0);
         //AC::actuate(N2_FLOW, AC::RETRACT_FULLY, 0);
 
         //close n2 flow and fill
-        AC::actuate(N2_FLOW,AC::TIMED_RETRACT, 8000);
+        // AC::actuate(N2_FLOW,AC::TIMED_RETRACT, 8000);
         AC::actuate(LP_N2_FILL,AC::EXTEND_FULLY, 0);
       }    
       break;
@@ -294,10 +297,11 @@ void onAbort(Comms::Packet packet, uint8_t ip) {
         AC::actuate(HP_N2_FILL,AC::EXTEND_FULLY, 0);
       } else if (ID == AC2){
         //open lox and fuel gems
-        AC::actuate(LOX_GEMS, AC::ON, 0);
-        AC::actuate(FUEL_GEMS, AC::ON, 0);
+        //ACs don't control GEMS for launch
+        // AC::actuate(LOX_GEMS, AC::ON, 0);
+        // AC::actuate(FUEL_GEMS, AC::ON, 0);
         //close n2 flow and fill
-        AC::actuate(N2_FLOW,AC::TIMED_RETRACT, 8000);
+        // AC::actuate(N2_FLOW,AC::TIMED_RETRACT, 8000);
         AC::actuate(LP_N2_FILL,AC::EXTEND_FULLY, 0);
 
       }
@@ -316,8 +320,9 @@ void onAbort(Comms::Packet packet, uint8_t ip) {
         AC::actuate(HP_N2_FILL,AC::EXTEND_FULLY, 0);
       } else if (ID == AC2){
         //open lox and fuel gems
-        AC::actuate(LOX_GEMS, AC::ON, 0);
-        AC::actuate(FUEL_GEMS, AC::ON, 0);
+        //ACs don't control GEMS for launch
+        // AC::actuate(LOX_GEMS, AC::ON, 0);
+        // AC::actuate(FUEL_GEMS, AC::ON, 0);
       }
       break;
   }
@@ -326,11 +331,12 @@ void onAbort(Comms::Packet packet, uint8_t ip) {
 void onEndFlow(Comms::Packet packet, uint8_t ip) {
   if (ID == AC2){
     //open lox and fuel gems
-    AC::actuate(LOX_GEMS, AC::ON, 0);
-    AC::actuate(FUEL_GEMS, AC::ON, 0);
+    //ACs don't control GEMS for launch
+    // AC::actuate(LOX_GEMS, AC::ON, 0);
+    // AC::actuate(FUEL_GEMS, AC::ON, 0);
 
     //close n2 flow and fill
-    AC::actuate(N2_FLOW,AC::TIMED_RETRACT, 8000);
+    // AC::actuate(N2_FLOW,AC::TIMED_RETRACT, 8000);
     AC::actuate(LP_N2_FILL,AC::EXTEND_FULLY, 0);
   }
 }
@@ -383,41 +389,41 @@ void setAutoVent(Comms::Packet packet, uint8_t ip){
   EEPROM.end();
 }
 
-bool lox_autoVentOpenState = false; // closed
-bool fuel_autoVentOpenState = false; // closed
-void ac2AutoVent(Comms::Packet packet, uint8_t ip){
-  float p1 = packetGetFloat(&packet, 0);
-  float p2 = packetGetFloat(&packet, 4);
-  if (ip == LOX_EREG){
-    if (p1 > lox_autoVentPressure || p2 > lox_autoVentPressure){
-      if (AC::getActuatorState(LOX_GEMS) == AC::OFF){
-        lox_autoVentOpenState = true;
-        AC::actuate(LOX_GEMS, AC::ON, 0);
-      }
-    } else {
-      //close lox gems if open, and if autovent opened them. 
-      // (if dashboard opened it, autoventstate is false and it won't close)
-      if (lox_autoVentOpenState && AC::getActuatorState(LOX_GEMS) == AC::ON){
-        lox_autoVentOpenState = false;
-        AC::actuate(LOX_GEMS, AC::OFF, 0);
-      }
-    }
-  } else if (ip == FUEL_EREG){
-    if (p1 > fuel_autoVentPressure || p2 > fuel_autoVentPressure){
-      if (AC::getActuatorState(FUEL_GEMS) == AC::OFF){
-        fuel_autoVentOpenState = true;
-        AC::actuate(FUEL_GEMS, AC::ON, 0);
-      }
-    } else {
-      //close lox gems if open, and if autovent opened them. 
-      // (if dashboard opened it, autoventstate is false and it won't close)
-      if (AC::getActuatorState(FUEL_GEMS) == AC::ON && fuel_autoVentOpenState){
-        fuel_autoVentOpenState = false;
-        AC::actuate(FUEL_GEMS, AC::OFF, 0);
-      }
-    }
-  }
-}
+// bool lox_autoVentOpenState = false; // closed
+// bool fuel_autoVentOpenState = false; // closed
+// void ac2AutoVent(Comms::Packet packet, uint8_t ip){
+//   float p1 = packetGetFloat(&packet, 0);
+//   float p2 = packetGetFloat(&packet, 4);
+//   if (ip == LOX_EREG){
+//     if (p1 > lox_autoVentPressure || p2 > lox_autoVentPressure){
+//       if (AC::getActuatorState(LOX_GEMS) == AC::OFF){
+//         lox_autoVentOpenState = true;
+//         AC::actuate(LOX_GEMS, AC::ON, 0);
+//       }
+//     } else {
+//       //close lox gems if open, and if autovent opened them. 
+//       // (if dashboard opened it, autoventstate is false and it won't close)
+//       if (lox_autoVentOpenState && AC::getActuatorState(LOX_GEMS) == AC::ON){
+//         lox_autoVentOpenState = false;
+//         AC::actuate(LOX_GEMS, AC::OFF, 0);
+//       }
+//     }
+//   } else if (ip == FUEL_EREG){
+//     if (p1 > fuel_autoVentPressure || p2 > fuel_autoVentPressure){
+//       if (AC::getActuatorState(FUEL_GEMS) == AC::OFF){
+//         fuel_autoVentOpenState = true;
+//         AC::actuate(FUEL_GEMS, AC::ON, 0);
+//       }
+//     } else {
+//       //close lox gems if open, and if autovent opened them. 
+//       // (if dashboard opened it, autoventstate is false and it won't close)
+//       if (AC::getActuatorState(FUEL_GEMS) == AC::ON && fuel_autoVentOpenState){
+//         fuel_autoVentOpenState = false;
+//         AC::actuate(FUEL_GEMS, AC::OFF, 0);
+//       }
+//     }
+//   }
+// }
 
 void setup() {
   // setup stuff here
@@ -436,7 +442,7 @@ void setup() {
 
   if (ID == AC2) {
     //Comms::initExtraSocket(42042, ALL);
-    Comms::registerCallback(EREG_PRESSURE, ac2AutoVent);
+    // Comms::registerCallback(EREG_PRESSURE, ac2AutoVent);
     Comms::registerCallback(AC_CHANGE_CONFIG, setAutoVent);
 
     //pull auto vent pressure from eeprom
