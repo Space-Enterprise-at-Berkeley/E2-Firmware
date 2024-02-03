@@ -119,12 +119,6 @@ uint32_t launchDaemon(){
           }
         }
 
-        //send packet for eregs
-        Comms::Packet launch = {.id = STARTFLOW, .len = 0};
-        Comms::packetAddUint8(&launch, systemMode);
-        Comms::packetAddUint32(&launch, flowLength);
-        Comms::emitPacketToAll(&launch);
-
         Comms::Packet launch2 = {.id = 213, .len = 0};
         Comms::packetAddUint8(&launch2, systemMode);
         Comms::packetAddUint32(&launch2, flowLength);
@@ -134,6 +128,12 @@ uint32_t launchDaemon(){
         Comms::packetAddUint8(&launch3, systemMode);
         Comms::packetAddUint32(&launch3, flowLength);
         Comms::emitPacketToAll(&launch3);
+
+        //send packet for eregs
+        Comms::Packet launch = {.id = STARTFLOW, .len = 0};
+        Comms::packetAddUint8(&launch, systemMode);
+        Comms::packetAddUint32(&launch, flowLength);
+        Comms::emitPacketToAll(&launch);
 
         //arm and open main valves
         AC::actuate(ARM, AC::ON, 0);
