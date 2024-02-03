@@ -24,6 +24,82 @@ namespace Packets {
     uint32_t lastPT_to_AC = 0;
     uint32_t ac2_freq = 500; //ms
 
+    void sendReducedTelemetryRS422(
+        float filteredUpstreamPressure1,
+        float filteredUpstreamPressure2,
+        float filteredDownstreamPressure1,
+        float filteredDownstreamPressure2,
+        float rawUpstreamPressure1,
+        float rawUpstreamPressure2,
+        float rawDownstreamPressure1,
+        float rawDownstreamPressure2,
+        float encoderAngle,
+        float angleSetpoint,
+        float pressureSetpoint,
+        float motorPower,
+        float pressureControlP,
+        float pressureControlI,
+        float pressureControlD
+    ) {
+        //pressure data
+        Comms::Packet packet = {.id = PT_TELEMETRY_ID, .len=0};
+        // Comms::packetAddFloat(&packet, filteredUpstreamPressure1);
+        // Comms::packetAddFloat(&packet, filteredUpstreamPressure2);
+        // Comms::packetAddFloat(&packet, filteredDownstreamPressure1);
+        // Comms::packetAddFloat(&packet, filteredDownstreamPressure2);
+        Comms::packetAddFloat(&packet, rawUpstreamPressure1);
+        // Comms::packetAddFloat(&packet, rawUpstreamPressure2);
+        // Comms::packetAddFloat(&packet, rawDownstreamPressure1);
+        Comms::packetAddFloat(&packet, rawDownstreamPressure2);
+        // Comms::emitPacket(&packet);
+        RS422::emitPacket(&packet);
+
+        //misc data
+        packet.id = MISC_TELEMETRY_ID;
+        packet.len = 0;
+        Comms::packetAddFloat(&packet, encoderAngle);
+        Comms::packetAddFloat(&packet, angleSetpoint);
+        Comms::packetAddFloat(&packet, pressureSetpoint);
+        Comms::packetAddFloat(&packet, motorPower);
+        Comms::packetAddFloat(&packet, pressureControlP);
+        Comms::packetAddFloat(&packet, pressureControlI);
+        Comms::packetAddFloat(&packet, pressureControlD);
+        // Comms::emitPacket(&packet);
+        RS422::emitPacket(&packet);
+
+        // sendTemperatures();
+        // sendPhaseCurrents();
+        // sendLimitSwitches();
+
+        //send PT to AC data for GEMS autovent
+        if (millis() - lastPT_to_AC > ac2_freq) {
+            lastPT_to_AC = millis();
+            packet.id = PT_TO_AC;
+            packet.len = 0;
+            // Comms::packetAddFloat(&packet, filteredDownstreamPressure1);
+            //not using downstreampressur2
+            //flight actually uses downstreampressure2 lmao
+            Comms::packetAddFloat(&packet, filteredDownstreamPressure2);
+            Comms::packetAddFloat(&packet, 0);
+            //using send to all right now instead of extra socket
+            //Comms::emitPacketToExtra(&packet);
+            //RS422::emitPacket(&packet);
+            // Comms:emitPacketToAll(&packet);
+            RS422::emitPacket(&packet);
+        }
+
+        if (millis() - lastTelemetry > 2000) {
+            lastTelemetry = millis();
+            Serial.println("Upstream Pressure 1: filtered" + String(filteredUpstreamPressure1) + ", raw" + String(rawUpstreamPressure1));
+            Serial.println("Upstream Pressure 2: filtered" + String(filteredUpstreamPressure2) + ", raw" + String(rawUpstreamPressure2));
+            Serial.println("Downstream Pressure 1: filtered" + String(filteredDownstreamPressure1) + ", raw" + String(rawDownstreamPressure1));
+            Serial.println("Downstream Pressure 2: filtered" + String(filteredDownstreamPressure2) + ", raw" + String(rawDownstreamPressure2));
+            Serial.println("Encoder Angle: " + String(encoderAngle) + ", Setpoint: " + String(angleSetpoint) + ", Pressure Setpoint: " + String(pressureSetpoint) + ", Motor Power: " + String(motorPower));
+            Serial.println("Pressure Control P: " + String(pressureControlP) + ", I: " + String(pressureControlI) + ", D: " + String(pressureControlD));
+        }
+        // Serial.printf("packet sent\n");
+    }
+
     void sendTelemetry(
         float filteredUpstreamPressure1,
         float filteredUpstreamPressure2,
@@ -42,6 +118,24 @@ namespace Packets {
         float pressureControlD
     ) {
 
+        sendReducedTelemetryRS422(
+         filteredUpstreamPressure1,
+         filteredUpstreamPressure2,
+         filteredDownstreamPressure1,
+         filteredDownstreamPressure2,
+         rawUpstreamPressure1,
+         rawUpstreamPressure2,
+         rawDownstreamPressure1,
+         rawDownstreamPressure2,
+         encoderAngle,
+         angleSetpoint,
+         pressureSetpoint,
+         motorPower,
+         pressureControlP,
+         pressureControlI,
+         pressureControlD
+        );
+
         //pressure data
         Comms::Packet packet = {.id = PT_TELEMETRY_ID, .len=0};
         Comms::packetAddFloat(&packet, filteredUpstreamPressure1);
@@ -53,7 +147,7 @@ namespace Packets {
         Comms::packetAddFloat(&packet, rawDownstreamPressure1);
         Comms::packetAddFloat(&packet, rawDownstreamPressure2);
         Comms::emitPacket(&packet);
-        RS422::emitPacket(&packet);
+        // RS422::emitPacket(&packet);
 
         //misc data
         packet.id = MISC_TELEMETRY_ID;
@@ -66,7 +160,7 @@ namespace Packets {
         Comms::packetAddFloat(&packet, pressureControlI);
         Comms::packetAddFloat(&packet, pressureControlD);
         Comms::emitPacket(&packet);
-        RS422::emitPacket(&packet);
+        // RS422::emitPacket(&packet);
 
         sendTemperatures();
         sendPhaseCurrents();
