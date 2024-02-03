@@ -75,7 +75,11 @@ namespace Packets {
         //send PT to AC data for GEMS autovent
         if (millis() - lastPT_to_AC > ac2_freq) {
             lastPT_to_AC = millis();
-            packet.id = PT_TO_AC;
+            #ifdef FUEL
+            packet.id = 172;
+            #else
+            packet.id = 171;
+            #endif
             packet.len = 0;
             // Comms::packetAddFloat(&packet, filteredDownstreamPressure1);
             //not using downstreampressur2
