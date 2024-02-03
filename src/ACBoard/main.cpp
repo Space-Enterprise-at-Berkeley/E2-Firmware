@@ -129,6 +129,7 @@ uint32_t launchDaemon(){
         Comms::packetAddUint32(&launch3, flowLength);
         Comms::emitPacketToAll(&launch3);
 
+        delay(1000);
         //send packet for eregs
         Comms::Packet launch = {.id = STARTFLOW, .len = 0};
         Comms::packetAddUint8(&launch, systemMode);
