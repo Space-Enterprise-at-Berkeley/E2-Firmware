@@ -23,6 +23,14 @@ namespace Packets {
     uint32_t lastTelemetry = 0;
     uint32_t lastPT_to_AC = 0;
     uint32_t ac2_freq = 500; //ms
+    uint32_t lastRS422 = 0;
+    uint32_t reducedTelemFreq = 100; //ms
+
+    #ifdef FUEL
+    const uint8_t REDUCED_TELEM_ID = 32;
+    #else
+    const uint8_t REDUCED_TELEM_ID = 31;
+    #endif
 
     void sendReducedTelemetryRS422(
         float filteredUpstreamPressure1,
@@ -42,21 +50,11 @@ namespace Packets {
         float pressureControlD
     ) {
         //pressure data
-        Comms::Packet packet = {.id = PT_TELEMETRY_ID, .len=0};
-        // Comms::packetAddFloat(&packet, filteredUpstreamPressure1);
-        // Comms::packetAddFloat(&packet, filteredUpstreamPressure2);
-        // Comms::packetAddFloat(&packet, filteredDownstreamPressure1);
-        // Comms::packetAddFloat(&packet, filteredDownstreamPressure2);
+        Comms::Packet packet = {.id = REDUCED_TELEM_ID, .len=0};
         Comms::packetAddFloat(&packet, rawUpstreamPressure1);
-        // Comms::packetAddFloat(&packet, rawUpstreamPressure2);
-        // Comms::packetAddFloat(&packet, rawDownstreamPressure1);
+        Comms::packetAddFloat(&packet, filteredUpstreamPressure1);
         Comms::packetAddFloat(&packet, rawDownstreamPressure2);
-        // Comms::emitPacket(&packet);
-        RS422::emitPacket(&packet);
-
-        //misc data
-        packet.id = MISC_TELEMETRY_ID;
-        packet.len = 0;
+        Comms::packetAddFloat(&packet, filteredDownstreamPressure2);
         Comms::packetAddFloat(&packet, encoderAngle);
         Comms::packetAddFloat(&packet, angleSetpoint);
         Comms::packetAddFloat(&packet, pressureSetpoint);
@@ -64,40 +62,12 @@ namespace Packets {
         Comms::packetAddFloat(&packet, pressureControlP);
         Comms::packetAddFloat(&packet, pressureControlI);
         Comms::packetAddFloat(&packet, pressureControlD);
-        // Comms::emitPacket(&packet);
+        Comms::emitPacket(&packet);
         RS422::emitPacket(&packet);
 
         // sendTemperatures();
         // sendPhaseCurrents();
         // sendLimitSwitches();
-
-        //send PT to AC data for GEMS autovent
-        if (millis() - lastPT_to_AC > ac2_freq) {
-            lastPT_to_AC = millis();
-            packet.id = PT_TO_AC;
-            packet.len = 0;
-            // Comms::packetAddFloat(&packet, filteredDownstreamPressure1);
-            //not using downstreampressur2
-            //flight actually uses downstreampressure2 lmao
-            Comms::packetAddFloat(&packet, filteredDownstreamPressure2);
-            Comms::packetAddFloat(&packet, 0);
-            //using send to all right now instead of extra socket
-            //Comms::emitPacketToExtra(&packet);
-            //RS422::emitPacket(&packet);
-            // Comms:emitPacketToAll(&packet);
-            RS422::emitPacket(&packet);
-        }
-
-        if (millis() - lastTelemetry > 2000) {
-            lastTelemetry = millis();
-            Serial.println("Upstream Pressure 1: filtered" + String(filteredUpstreamPressure1) + ", raw" + String(rawUpstreamPressure1));
-            Serial.println("Upstream Pressure 2: filtered" + String(filteredUpstreamPressure2) + ", raw" + String(rawUpstreamPressure2));
-            Serial.println("Downstream Pressure 1: filtered" + String(filteredDownstreamPressure1) + ", raw" + String(rawDownstreamPressure1));
-            Serial.println("Downstream Pressure 2: filtered" + String(filteredDownstreamPressure2) + ", raw" + String(rawDownstreamPressure2));
-            Serial.println("Encoder Angle: " + String(encoderAngle) + ", Setpoint: " + String(angleSetpoint) + ", Pressure Setpoint: " + String(pressureSetpoint) + ", Motor Power: " + String(motorPower));
-            Serial.println("Pressure Control P: " + String(pressureControlP) + ", I: " + String(pressureControlI) + ", D: " + String(pressureControlD));
-        }
-        // Serial.printf("packet sent\n");
     }
 
     void sendTelemetry(
@@ -118,26 +88,10 @@ namespace Packets {
         float pressureControlD
     ) {
 
-        sendReducedTelemetryRS422(
-         filteredUpstreamPressure1,
-         filteredUpstreamPressure2,
-         filteredDownstreamPressure1,
-         filteredDownstreamPressure2,
-         rawUpstreamPressure1,
-         rawUpstreamPressure2,
-         rawDownstreamPressure1,
-         rawDownstreamPressure2,
-         encoderAngle,
-         angleSetpoint,
-         pressureSetpoint,
-         motorPower,
-         pressureControlP,
-         pressureControlI,
-         pressureControlD
-        );
-
+        
         //pressure data
         Comms::Packet packet = {.id = PT_TELEMETRY_ID, .len=0};
+        /* // commented out for testing reduced comms, uncomment before flight
         Comms::packetAddFloat(&packet, filteredUpstreamPressure1);
         Comms::packetAddFloat(&packet, filteredUpstreamPressure2);
         Comms::packetAddFloat(&packet, filteredDownstreamPressure1);
@@ -165,10 +119,12 @@ namespace Packets {
         sendTemperatures();
         sendPhaseCurrents();
         sendLimitSwitches();
+        */
 
         //send PT to AC data for GEMS autovent
-        if (millis() - lastPT_to_AC > ac2_freq) {
-            lastPT_to_AC = millis();
+        uint32_t currTime = millis();
+        if (currTime - lastPT_to_AC > ac2_freq) {
+            lastPT_to_AC = currTime;
             #ifdef FUEL
             packet.id = 172;
             #else
@@ -184,11 +140,12 @@ namespace Packets {
             //Comms::emitPacketToExtra(&packet);
             //RS422::emitPacket(&packet);
             Comms:emitPacketToAll(&packet);
-            RS422::emitPacket(&packet);
+            //RS422::emitPacket(&packet);
         }
 
-        if (millis() - lastTelemetry > 2000) {
-            lastTelemetry = millis();
+
+        if (currTime - lastTelemetry > 2000) {
+            lastTelemetry = currTime;
             Serial.println("Upstream Pressure 1: filtered" + String(filteredUpstreamPressure1) + ", raw" + String(rawUpstreamPressure1));
             Serial.println("Upstream Pressure 2: filtered" + String(filteredUpstreamPressure2) + ", raw" + String(rawUpstreamPressure2));
             Serial.println("Downstream Pressure 1: filtered" + String(filteredDownstreamPressure1) + ", raw" + String(rawDownstreamPressure1));
@@ -196,8 +153,30 @@ namespace Packets {
             Serial.println("Encoder Angle: " + String(encoderAngle) + ", Setpoint: " + String(angleSetpoint) + ", Pressure Setpoint: " + String(pressureSetpoint) + ", Motor Power: " + String(motorPower));
             Serial.println("Pressure Control P: " + String(pressureControlP) + ", I: " + String(pressureControlI) + ", D: " + String(pressureControlD));
         }
+
+        if (currTime - lastRS422 > reducedTelemFreq) {
+            lastRS422 = currTime;
+
+            void sendReducedTelemetryRS422(
+                float filteredUpstreamPressure1,
+                float filteredUpstreamPressure2,
+                float filteredDownstreamPressure1,
+                float filteredDownstreamPressure2,
+                float rawUpstreamPressure1,
+                float rawUpstreamPressure2,
+                float rawDownstreamPressure1,
+                float rawDownstreamPressure2,
+                float encoderAngle,
+                float angleSetpoint,
+                float pressureSetpoint,
+                float motorPower,
+                float pressureControlP,
+                float pressureControlI,
+                float pressureControlD
+            );
+        }
         // Serial.printf("packet sent\n");
-    }
+    }   
 
     /**
      * Send config packet:
@@ -220,7 +199,7 @@ namespace Packets {
         Comms::packetAddFloat(&packet, Config::d_inner);
         Comms::packetAddFloat(&packet, (float) (Config::getFlowDuration() / 1e6));
         Comms::emitPacket(&packet);
-        RS422::emitPacket(&packet);
+        //RS422::emitPacket(&packet);
     }
 
     /**
@@ -236,7 +215,7 @@ namespace Packets {
         Comms::packetAddUint8(&packet, motorDirPass);
         Comms::packetAddUint8(&packet, servoPass);
         Comms::emitPacket(&packet);
-        RS422::emitPacket(&packet);
+        //RS422::emitPacket(&packet);
         #endif
     }
 
@@ -253,7 +232,7 @@ namespace Packets {
         packet.len = 0;
         Comms::packetAddUint8(&packet, errorCode);
         Comms::emitPacket(&packet);
-        RS422::emitPacket(&packet);
+        //RS422::emitPacket(&packet);
         #endif
     }
 
@@ -267,7 +246,7 @@ namespace Packets {
         packet.len = 0;
         Comms::packetAddUint8(&packet, flowState);
         Comms::emitPacket(&packet);
-        RS422::emitPacket(&packet);
+        //RS422::emitPacket(&packet);
     }
 
 
@@ -277,7 +256,7 @@ namespace Packets {
         Comms::packetAddUint8(&packet, HOTFIRE);
         Comms::packetAddUint8(&packet, TANK_OVERPRESSURE);
         Comms::emitPacketToAll(&packet);
-        RS422::emitPacket(&packet);
+        //RS422::emitPacket(&packet);
 
         // //send abort to ACs
         // Comms::Packet actuate = {.id = ACTUATE_IP, .len=0};
@@ -325,7 +304,7 @@ namespace Packets {
         packet.len = 0;
         HAL::packetizePhaseCurrents(&packet);
         Comms::emitPacket(&packet);
-        RS422::emitPacket(&packet);
+        //RS422::emitPacket(&packet);
     }
 
     void sendTemperatures() {
@@ -333,14 +312,14 @@ namespace Packets {
         packet.len = 0;
         HAL::packetizeTemperatures(&packet);
         Comms::emitPacket(&packet);
-        RS422::emitPacket(&packet);
+        //RS422::emitPacket(&packet);
     }
 
     void sendOvercurrentPacket() {
         Comms::Packet packet = {.id = OVERCURRENT_ID};
         packet.len = 0;
         Comms::emitPacket(&packet);
-        RS422::emitPacket(&packet);
+        //RS422::emitPacket(&packet);
     }
 
     void sendLimitSwitches() {
@@ -349,7 +328,7 @@ namespace Packets {
         Comms::packetAddFloat(&packet, HAL::getClosedLimitSwitchState());
         Comms::packetAddFloat(&packet, HAL::getOpenLimitSwitchState());
         Comms::emitPacket(&packet);
-        RS422::emitPacket(&packet);
+        //RS422::emitPacket(&packet);
     }
 
 }
