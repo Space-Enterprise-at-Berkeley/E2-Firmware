@@ -7,62 +7,62 @@ namespace EREG_Comms {
     char fregbuffer[sizeof(Comms::Packet)];
     uint8_t fcnt = 0;
     //so you can callback from packets sent to FC from ereg (gems autovent, abort)
-    std::map<uint8_t, Comms::commFunction> callbackMap; 
+    //std::map<uint8_t, Comms::commFunction> callbackMap; 
 
-    void forwardToOreg(Comms::Packet packet, int16_t offset) {
-        //Serial.println("Oreg send");
-        packet.id += offset;
-        emitPacket(&packet, &OREG_SERIAL);
-    } 
-    void forwardToOreg(Comms::Packet packet) {
-        forwardToOreg(packet, 0);
-    } 
+    // void forwardToOreg(Comms::Packet packet, int16_t offset) {
+    //     //Serial.println("Oreg send");
+    //     packet.id += offset;
+    //     emitPacket(&packet, &OREG_SERIAL);
+    // } 
+    // void forwardToOreg(Comms::Packet packet) {
+    //     forwardToOreg(packet, 0);
+    // } 
 
-    void forwardToFreg(Comms::Packet packet, int16_t offset) {
-        //Serial.println("Freg send");
-        packet.id += offset;
-        emitPacket(&packet, &FREG_SERIAL);
-    }
-    void forwardToFreg(Comms::Packet packet) {
-        forwardToFreg(packet, 0);
-    } 
+    // void forwardToFreg(Comms::Packet packet, int16_t offset) {
+    //     //Serial.println("Freg send");
+    //     packet.id += offset;
+    //     emitPacket(&packet, &FREG_SERIAL);
+    // }
+    // void forwardToFreg(Comms::Packet packet) {
+    //     forwardToFreg(packet, 0);
+    // } 
 
     void oregForwardToGS(Comms::Packet *packet) {
-        if (packet->id == 133) {
-            Comms::sendAbort(packet->data[0], packet->data[1]);
-            return;
-        }
-        else if (packet->id <= 10) {
-            packet->id += 30;
-            //Comms::finishPacket(packet); done in emit
-        }
-        else if (packet->id == 102) {
-            packet->id = 42;
-            //Comms::finishPacket(packet); done in emit
-        }
-        else if (packet->id == 171) {
-        }
+        // if (packet->id == 133) {
+        //     Comms::sendAbort(packet->data[0], packet->data[1]);
+        //     return;
+        // }
+        // else if (packet->id <= 10) {
+        //     packet->id += 30;
+        //     //Comms::finishPacket(packet); done in emit
+        // }
+        // else if (packet->id == 102) {
+        //     packet->id = 42;
+        //     //Comms::finishPacket(packet); done in emit
+        // }
+        // else if (packet->id == 171) {
+        // }
         //Comms::emitPacketToGS(packet);
         //WiFiComms::emitPacketToGS(packet);
         Radio::forwardPacket(packet);
     }
 
     void fregForwardToGS(Comms::Packet *packet) {
-        if (packet->id == 133) {
-            Comms::sendAbort(packet->data[0], packet->data[1]);
-            return;
-        }
-        else if (packet->id <= 10) {
-            packet->id += 50;
-            //Comms::finishPacket(packet); done in emit
-        }
-        else if (packet->id == 102) {
-            packet->id = 62;
-            //Comms::finishPacket(packet); done in emit
-        }
-        else if (packet->id == 171) {
-            packet->id = 172;
-        }
+        // if (packet->id == 133) {
+        //     Comms::sendAbort(packet->data[0], packet->data[1]);
+        //     return;
+        // }
+        // else if (packet->id <= 10) {
+        //     packet->id += 50;
+        //     //Comms::finishPacket(packet); done in emit
+        // }
+        // else if (packet->id == 102) {
+        //     packet->id = 62;
+        //     //Comms::finishPacket(packet); done in emit
+        // }
+        // else if (packet->id == 171) {
+        //     packet->id = 172;
+        // }
         //Comms::emitPacketToGS(packet);
         //WiFiComms::emitPacketToGS(packet);
         Radio::forwardPacket(packet);
@@ -95,10 +95,10 @@ namespace EREG_Comms {
                     //Serial.print('\n');
                     
                     oregForwardToGS(packet);
-                    if (callbackMap.count(packet->id)) //after so offset is applied
-                    {
-                        callbackMap.at(packet->id)(*packet, FC);
-                    }
+                    // if (callbackMap.count(packet->id)) //after so offset is applied
+                    // {
+                    //     callbackMap.at(packet->id)(*packet, FC);
+                    // }
                     //handle packet (forward to GS)
                     //Comms::emitPacket(packet, &RADIO_SERIAL, "\r\n\n", 3);
                 }
@@ -125,10 +125,10 @@ namespace EREG_Comms {
                     //Serial.print('\n');
                     
                     fregForwardToGS(packet);
-                    if (callbackMap.count(packet->id)) //after so offset is applied
-                    {
-                        callbackMap.at(packet->id)(*packet, FC);
-                    }
+                    // if (callbackMap.count(packet->id)) //after so offset is applied
+                    // {
+                    //     callbackMap.at(packet->id)(*packet, FC);
+                    // }
                     //Comms::emitPacket(packet, &RADIO_SERIAL, "\r\n\n", 3);
                 }
                 fcnt = 0;
@@ -142,10 +142,10 @@ namespace EREG_Comms {
         return 10;
     }
 
-    void registerCallback(uint8_t id, Comms::commFunction function)
-    {
-        callbackMap.insert(std::pair<int, Comms::commFunction>(id, function));
-    }
+    // void registerCallback(uint8_t id, Comms::commFunction function)
+    // {
+    //     callbackMap.insert(std::pair<int, Comms::commFunction>(id, function));
+    // }
 
     void init() {
         OREG_SERIAL.begin(921600, SERIAL_8N1, rx0P, tx0P);

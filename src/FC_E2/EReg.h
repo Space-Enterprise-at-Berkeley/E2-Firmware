@@ -22,8 +22,8 @@ namespace EREG_Comms {
 
     void init();
     void emitPacket(Comms::Packet *packet, HardwareSerial *serialBus);
-    void forwardToOreg(Comms::Packet packet);
-    void forwardToFreg(Comms::Packet packet);
+    //void forwardToOreg(Comms::Packet packet);
+    //void forwardToFreg(Comms::Packet packet);
     uint32_t processAvailableData();
-    void registerCallback(uint8_t id, Comms::commFunction function);
+    //void registerCallback(uint8_t id, Comms::commFunction function);
 }
