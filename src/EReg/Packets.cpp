@@ -91,7 +91,6 @@ namespace Packets {
         
         //pressure data
         Comms::Packet packet = {.id = PT_TELEMETRY_ID, .len=0};
-        /* // commented out for testing reduced comms, uncomment before flight
         Comms::packetAddFloat(&packet, filteredUpstreamPressure1);
         Comms::packetAddFloat(&packet, filteredUpstreamPressure2);
         Comms::packetAddFloat(&packet, filteredDownstreamPressure1);
@@ -119,7 +118,7 @@ namespace Packets {
         sendTemperatures();
         sendPhaseCurrents();
         sendLimitSwitches();
-        */
+        
 
         //send PT to AC data for GEMS autovent
         uint32_t currTime = millis();
