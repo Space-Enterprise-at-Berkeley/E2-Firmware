@@ -45,7 +45,8 @@ namespace WiFiComms {
 
     char ssid[] = NET_SSID;
     char password[] = NET_PASSWORD;
-    WiFi.config(ip, gateway, subnet);
+    WiFi.mode(WIFI_STA);
+    //WiFi.config(ip, gateway, subnet);
     WiFi.begin(ssid, password);
 
     WiFi.setAutoReconnect(true);
@@ -53,6 +54,54 @@ namespace WiFiComms {
     //TODO: multiple ports
     Udp.begin(ports[0]);
     enabled = true;
+
+    //Arduino OTA
+    #ifdef ALLOW_WIFI_UPLOAD
+      MDNS.begin("fc");
+      ArduinoOTA
+      .onStart([]() {
+        String type;
+        if (ArduinoOTA.getCommand() == U_FLASH)
+          type = "sketch";
+        else // U_SPIFFS
+          type = "filesystem";
+
+        // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
+        Serial.println("Start updating " + type);
+      })
+      .onEnd([]() {
+        Serial.println("\nEnd");
+      })
+      .onProgress([](unsigned int progress, unsigned int total) {
+        Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+      })
+      .onError([](ota_error_t error) {
+        Serial.printf("Error[%u]: ", error);
+        if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
+        else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
+        else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
+        else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
+        else if (error == OTA_END_ERROR) Serial.println("End Failed");
+      });
+
+    ArduinoOTA.begin();
+    #endif
+  }
+
+  uint32_t task_WiFiDaemon() {
+    if (WiFi.isConnected()) {
+      if (subnet != WiFi.subnetMask() || gateway != WiFi.gatewayIP()){
+        subnet = WiFi.subnetMask();
+        gateway = WiFi.gatewayIP();
+        ip = IPAddress(WiFi.gatewayIP());
+        ip[4] = IPADDR;
+        WiFi.config(ip, gateway, subnet);
+        #ifdef ALLOW_WIFI_UPLOAD
+        MDNS.begin("fc");
+        #endif
+      }
+    }
+    return 5000 * 1000;
   }
 
   void processWaitingPackets()
@@ -60,6 +109,9 @@ namespace WiFiComms {
     if (!enabled || !WiFi.isConnected()) {
       return;
     }
+    #ifdef ALLOW_WIFI_UPLOAD
+    ArduinoOTA.handle();
+    #endif
     if (Udp.available()) {
       if (Udp.parsePacket()) {
         // if(Udp.remotePort() != port) return;

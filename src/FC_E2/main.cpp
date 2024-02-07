@@ -301,6 +301,7 @@ void loop()
 #include "ReadPower.h"
 #include "BlackBox.h"
 #include "Radio.h"
+#include "EReg.h"
 
 
 uint32_t print_task() { 
@@ -317,8 +318,9 @@ Task taskTable[] = {
   {ChannelMonitor::task_readChannels, 0, true},
   {AC::task_actuationDaemon, 0, true},
   {AC::task_actuatorStates, 0, true},
-  //{Automation::task_sendAutoventConfig, 0, true},
+  {Automation::task_sendAutoventConfig, 0, true},
   {Power::task_readSendPower, 0, true},
+  {WiFiComms::task_WiFiDaemon, 0, true}
   //automation config
   //launch daemon?
 };
@@ -333,16 +335,16 @@ void setup() {
 
   Power::init();
   Comms::init(); // takes care of Serial.begin()
-  //EREG_Comms::init();
-  //WiFiComms::init();
+  EREG_Comms::init();
+  WiFiComms::init();
   initWire();
   Ducers::init();
   AC::init();
   FlightSensors::init();
   ChannelMonitor::init(7, 6, 5, 3, 4);
   Automation::init();
-  //BlackBox::init();
-  //Radio::initRadio();
+  BlackBox::init();
+  Radio::initRadio();
 
   while(1) {
     // main loop here to avoid arduino overhead
@@ -359,9 +361,9 @@ void setup() {
       }
     }
     Comms::processWaitingPackets();
-    //EREG_Comms::processAvailableData();
-    //WiFiComms::processWaitingPackets();
-    //Radio::processRadio();
+    EREG_Comms::processAvailableData();
+    WiFiComms::processWaitingPackets();
+    Radio::processRadio();
   }
 }
 

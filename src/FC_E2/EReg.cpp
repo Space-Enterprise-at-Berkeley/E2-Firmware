@@ -42,8 +42,8 @@ namespace EREG_Comms {
         }
         else if (packet->id == 171) {
         }
-        Comms::emitPacketToGS(packet);
-        WiFiComms::emitPacketToGS(packet);
+        //Comms::emitPacketToGS(packet);
+        //WiFiComms::emitPacketToGS(packet);
         Radio::forwardPacket(packet);
     }
 
@@ -63,8 +63,8 @@ namespace EREG_Comms {
         else if (packet->id == 171) {
             packet->id = 172;
         }
-        Comms::emitPacketToGS(packet);
-        WiFiComms::emitPacketToGS(packet);
+        //Comms::emitPacketToGS(packet);
+        //WiFiComms::emitPacketToGS(packet);
         Radio::forwardPacket(packet);
     }
 
@@ -157,27 +157,28 @@ namespace EREG_Comms {
         //     Serial.println((char*)packet.data);
         // });
 
-        for (int i = 200; i <= 210; i++) {
-            Comms::registerCallback(i, [](Comms::Packet packet, uint8_t id) {
-            forwardToOreg(packet, 0);
-            });
-        }
-        for (int i = 211; i <= 214; i++) {
-            Comms::registerCallback(i, [](Comms::Packet packet, uint8_t id) {
-            forwardToOreg(packet, -111);
-            });
-        }
+        // Disable forwarding ethernet comms to ereg over RS422 
+        // for (int i = 200; i <= 210; i++) {
+        //     Comms::registerCallback(i, [](Comms::Packet packet, uint8_t id) {
+        //     forwardToOreg(packet, 0);
+        //     });
+        // }
+        // for (int i = 211; i <= 214; i++) {
+        //     Comms::registerCallback(i, [](Comms::Packet packet, uint8_t id) {
+        //     forwardToOreg(packet, -111);
+        //     });
+        // }
 
-        for (int i = 220; i <= 230; i ++) {
-            Comms::registerCallback(i, [](Comms::Packet packet, uint8_t id) {
-            forwardToFreg(packet, -20);
-            });
-        }
-        for (int i = 231; i <= 234; i++) {
-            Comms::registerCallback(i, [](Comms::Packet packet, uint8_t id) {
-            forwardToOreg(packet, -131);
-            });
-        }
+        // for (int i = 220; i <= 230; i ++) {
+        //     Comms::registerCallback(i, [](Comms::Packet packet, uint8_t id) {
+        //     forwardToFreg(packet, -20);
+        //     });
+        // }
+        // for (int i = 231; i <= 234; i++) {
+        //     Comms::registerCallback(i, [](Comms::Packet packet, uint8_t id) {
+        //     forwardToOreg(packet, -131);
+        //     });
+        // }
         
         // Will likely break when merged, this stuff just needs to get run whenever there's an abort
         // Comms::registerCallback(ABORT, [](Comms::Packet packet, uint8_t id) {

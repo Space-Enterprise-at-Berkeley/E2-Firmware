@@ -5,6 +5,11 @@
 #include <WiFiUdp.h>
 #include "EspComms.h"
 
+#ifdef ALLOW_WIFI_UPLOAD
+#include <ESPmDNS.h>
+#include <ArduinoOTA.h>
+#endif
+
 #include <Arduino.h>
 
 #include <map>
@@ -20,6 +25,7 @@ namespace WiFiComms
 
   void init();
   void processWaitingPackets();
+  uint32_t task_WiFiDaemon();
 
   void emitPacket(Comms::Packet *packet, uint8_t ip, uint16_t port);
 
