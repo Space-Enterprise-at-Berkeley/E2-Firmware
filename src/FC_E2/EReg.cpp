@@ -91,9 +91,9 @@ namespace EREG_Comms {
                 Comms::Packet *packet = (Comms::Packet *)&oregbuffer;
                 //Serial.println("Got oreg packet");
                 if(Comms::verifyPacket(packet)) {
-                    //Serial.print("Found oreg packet with ID ");
-                    //Serial.print(packet->id);
-                    //Serial.print('\n');
+                    Serial.print("Found oreg packet with ID ");
+                    Serial.print(packet->id);
+                    Serial.print('\n');
                     
                     oregForwardToGS(packet);
                     // if (callbackMap.count(packet->id)) //after so offset is applied
@@ -101,7 +101,7 @@ namespace EREG_Comms {
                     //     callbackMap.at(packet->id)(*packet, FC);
                     // }
                     //handle packet (forward to GS)
-                    //Comms::emitPacket(packet, &RADIO_SERIAL, "\r\n\n", 3);
+                    // Comms::emitPacket(packet, &RADIO_SERIAL, "\r\n\n", 3);
                 }
                 ocnt = 0;
                 continue;
@@ -113,24 +113,25 @@ namespace EREG_Comms {
         }
 
         while(FREG_SERIAL.available()) {
-            // Serial.println("f available");
-            // uint8_t c = FREG_SERIAL.read();
-            // fregbuffer[fcnt] = c;
-            fregbuffer[fcnt] = FREG_SERIAL.read();
+            Serial.println("f available");
+            uint8_t c = FREG_SERIAL.read();
+            fregbuffer[fcnt] = c;
+            Serial.println(c);
+            //fregbuffer[fcnt] = FREG_SERIAL.read();
             if(fregbuffer[fcnt] == '\n') {
                 Comms::Packet *packet = (Comms::Packet *)&fregbuffer;
                 //Serial.println("Got freg packet");
                 if(Comms::verifyPacket(packet)) {
-                    //Serial.print("Found freg packet with ID ");
-                    //Serial.print(packet->id);
-                    //Serial.print('\n');
+                    Serial.print("Found freg packet with ID ");
+                    Serial.print(packet->id);
+                    Serial.print('\n');
                     
                     fregForwardToGS(packet);
                     // if (callbackMap.count(packet->id)) //after so offset is applied
                     // {
                     //     callbackMap.at(packet->id)(*packet, FC);
-                    // }
-                    //Comms::emitPacket(packet, &RADIO_SERIAL, "\r\n\n", 3);
+                    // // }
+                    // Comms::emitPacket(packet, &RADIO_SERIAL, "\r\n\n", 3);
                 }
                 fcnt = 0;
                 continue;
