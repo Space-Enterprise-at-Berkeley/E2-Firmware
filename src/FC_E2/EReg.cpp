@@ -27,7 +27,7 @@ namespace EREG_Comms {
     //     forwardToFreg(packet, 0);
     // } 
 
-    void oregForwardToGS(Comms::Packet *packet) {
+    void forwardToGS(Comms::Packet *packet) {
         // if (packet->id == 133) {
         //     Comms::sendAbort(packet->data[0], packet->data[1]);
         //     return;
@@ -44,28 +44,7 @@ namespace EREG_Comms {
         // }
         //Comms::emitPacketToGS(packet);
         //WiFiComms::emitPacketToGS(packet);
-        Radio::forwardPacket(packet);
-    }
-
-    void fregForwardToGS(Comms::Packet *packet) {
-        // if (packet->id == 133) {
-        //     Comms::sendAbort(packet->data[0], packet->data[1]);
-        //     return;
-        // }
-        // else if (packet->id <= 10) {
-        //     packet->id += 50;
-        //     //Comms::finishPacket(packet); done in emit
-        // }
-        // else if (packet->id == 102) {
-        //     packet->id = 62;
-        //     //Comms::finishPacket(packet); done in emit
-        // }
-        // else if (packet->id == 171) {
-        //     packet->id = 172;
-        // }
-        //Comms::emitPacketToGS(packet);
-        //WiFiComms::emitPacketToGS(packet);
-        Serial.println("forwarding ereg");
+        Comms::finishPacket(packet);
         Radio::forwardPacket(packet);
     }
 
@@ -83,10 +62,10 @@ namespace EREG_Comms {
     uint32_t processAvailableData() {
 
         while(FREG_SERIAL.available()) {
-            Serial.println("f available");
-            uint8_t c = FREG_SERIAL.read();
-            fregbuffer[fcnt] = c;
-            Serial.println(c);
+            // Serial.println("f available");
+            // uint8_t c = FREG_SERIAL.read();
+            fregbuffer[fcnt] = FREG_SERIAL.read();
+            //Serial.println(c);
             //fregbuffer[fcnt] = FREG_SERIAL.read();
             if(fregbuffer[fcnt] == '\n') {
                 Comms::Packet *packet = (Comms::Packet *)&fregbuffer;
@@ -96,7 +75,7 @@ namespace EREG_Comms {
                     Serial.print(packet->id);
                     Serial.print('\n');
                     
-                    fregForwardToGS(packet);
+                    forwardToGS(packet);
                     // if (callbackMap.count(packet->id)) //after so offset is applied
                     // {
                     //     callbackMap.at(packet->id)(*packet, FC);
@@ -125,7 +104,7 @@ namespace EREG_Comms {
                     Serial.print(packet->id);
                     Serial.print('\n');
                     
-                    oregForwardToGS(packet);
+                    forwardToGS(packet);
                     // if (callbackMap.count(packet->id)) //after so offset is applied
                     // {
                     //     callbackMap.at(packet->id)(*packet, FC);
@@ -141,7 +120,7 @@ namespace EREG_Comms {
                 ocnt = 0;
             }
         }
-        
+
         return 10;
     }
 
