@@ -156,22 +156,22 @@ namespace Packets {
         if (currTime - lastRS422 > reducedTelemFreq) {
             lastRS422 = currTime;
 
-            void sendReducedTelemetryRS422(
-                float filteredUpstreamPressure1,
-                float filteredUpstreamPressure2,
-                float filteredDownstreamPressure1,
-                float filteredDownstreamPressure2,
-                float rawUpstreamPressure1,
-                float rawUpstreamPressure2,
-                float rawDownstreamPressure1,
-                float rawDownstreamPressure2,
-                float encoderAngle,
-                float angleSetpoint,
-                float pressureSetpoint,
-                float motorPower,
-                float pressureControlP,
-                float pressureControlI,
-                float pressureControlD
+            sendReducedTelemetryRS422(
+                 filteredUpstreamPressure1,
+                 filteredUpstreamPressure2,
+                 filteredDownstreamPressure1,
+                 filteredDownstreamPressure2,
+                 rawUpstreamPressure1,
+                 rawUpstreamPressure2,
+                 rawDownstreamPressure1,
+                 rawDownstreamPressure2,
+                 encoderAngle,
+                 angleSetpoint,
+                 pressureSetpoint,
+                 motorPower,
+                 pressureControlP,
+                 pressureControlI,
+                 pressureControlD
             );
         }
         // Serial.printf("packet sent\n");
