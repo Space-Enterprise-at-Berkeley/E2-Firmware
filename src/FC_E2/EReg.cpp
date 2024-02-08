@@ -82,36 +82,6 @@ namespace EREG_Comms {
 
     uint32_t processAvailableData() {
 
-        while(OREG_SERIAL.available()) {
-            // Serial.println("o available");
-            // uint8_t c = OREG_SERIAL.read();
-            // oregbuffer[ocnt] = c;
-            oregbuffer[ocnt] = OREG_SERIAL.read();
-            if(oregbuffer[ocnt] == '\n') {
-                Comms::Packet *packet = (Comms::Packet *)&oregbuffer;
-                //Serial.println("Got oreg packet");
-                if(Comms::verifyPacket(packet)) {
-                    Serial.print("Found oreg packet with ID ");
-                    Serial.print(packet->id);
-                    Serial.print('\n');
-                    
-                    oregForwardToGS(packet);
-                    // if (callbackMap.count(packet->id)) //after so offset is applied
-                    // {
-                    //     callbackMap.at(packet->id)(*packet, FC);
-                    // }
-                    //handle packet (forward to GS)
-                    // Comms::emitPacket(packet, &RADIO_SERIAL, "\r\n\n", 3);
-                }
-                ocnt = 0;
-                continue;
-            }
-            ocnt++;
-            if (ocnt > sizeof(Comms::Packet)) {
-                ocnt = 0;
-            }
-        }
-
         while(FREG_SERIAL.available()) {
             Serial.println("f available");
             uint8_t c = FREG_SERIAL.read();
@@ -141,6 +111,37 @@ namespace EREG_Comms {
                 fcnt = 0;
             }
         }
+
+        while(OREG_SERIAL.available()) {
+            // Serial.println("o available");
+            // uint8_t c = OREG_SERIAL.read();
+            // oregbuffer[ocnt] = c;
+            oregbuffer[ocnt] = OREG_SERIAL.read();
+            if(oregbuffer[ocnt] == '\n') {
+                Comms::Packet *packet = (Comms::Packet *)&oregbuffer;
+                //Serial.println("Got oreg packet");
+                if(Comms::verifyPacket(packet)) {
+                    Serial.print("Found oreg packet with ID ");
+                    Serial.print(packet->id);
+                    Serial.print('\n');
+                    
+                    oregForwardToGS(packet);
+                    // if (callbackMap.count(packet->id)) //after so offset is applied
+                    // {
+                    //     callbackMap.at(packet->id)(*packet, FC);
+                    // }
+                    //handle packet (forward to GS)
+                    // Comms::emitPacket(packet, &RADIO_SERIAL, "\r\n\n", 3);
+                }
+                ocnt = 0;
+                continue;
+            }
+            ocnt++;
+            if (ocnt > sizeof(Comms::Packet)) {
+                ocnt = 0;
+            }
+        }
+        
         return 10;
     }
 
