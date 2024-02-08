@@ -58,7 +58,7 @@ namespace Radio {
             return;
         }
         // BlackBox::writePacket(packet);
-        Serial.println("forwarding packet");
+        //Serial.println("forwarding packet");
         int packetLen = packet->len + 8;
         if(radioBufferSize + packetLen > MAX_RADIO_TRX_SIZE - 1){
             transmitRadioBuffer();
