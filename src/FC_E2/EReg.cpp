@@ -65,6 +65,7 @@ namespace EREG_Comms {
         // }
         //Comms::emitPacketToGS(packet);
         //WiFiComms::emitPacketToGS(packet);
+        Serial.println("forwarding ereg");
         Radio::forwardPacket(packet);
     }
 
