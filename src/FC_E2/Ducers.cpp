@@ -162,7 +162,7 @@ namespace Ducers {
             Serial.println(raw);
 
         }
-        data[channelCounter] = multiplier[channelCounter] * (interpolate1000(raw) + offset[channelCounter]);
+        //data[channelCounter] = multiplier[channelCounter] * (interpolate1000(raw) + offset[channelCounter]);
         data[channelCounter] = raw;
         Comms::packetAddFloat(&ptPacket, data[channelCounter]);
         

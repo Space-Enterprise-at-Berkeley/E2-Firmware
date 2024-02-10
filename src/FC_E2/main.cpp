@@ -344,7 +344,7 @@ void setup() {
   ChannelMonitor::init(7, 6, 5, 3, 4);
   Automation::init();
   //BlackBox::init();
-  Radio::initRadio();
+  //Radio::initRadio();
 
   while(1) {
     // main loop here to avoid arduino overhead
