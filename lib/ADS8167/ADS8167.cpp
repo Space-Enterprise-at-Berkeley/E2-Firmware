@@ -175,7 +175,7 @@ uint16_t ADS8167::readChannelOTF(const uint8_t otf_next_channel, uint8_t* channe
     buffer[1] = 0x00;
     buffer[2] = 0x00;
 
-    // _theSPI->transfer(buffer, 3);
+    _theSPI->transfer(buffer, 3);
     for (int i = 2; i >= 0; i--){
         _theSPI->transfer(buffer[i]);
     }
