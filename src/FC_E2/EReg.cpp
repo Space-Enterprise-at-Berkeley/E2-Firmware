@@ -2,9 +2,9 @@
 
 namespace EREG_Comms {
 
-    char oregbuffer[sizeof(Comms::Packet)];
+    uint8_t oregbuffer[sizeof(Comms::Packet)];
     uint8_t ocnt = 0;
-    char fregbuffer[sizeof(Comms::Packet)];
+    uint8_t fregbuffer[sizeof(Comms::Packet)];
     uint8_t fcnt = 0;
     //so you can callback from packets sent to FC from ereg (gems autovent, abort)
     //std::map<uint8_t, Comms::commFunction> callbackMap; 
@@ -61,13 +61,23 @@ namespace EREG_Comms {
 
     uint32_t processAvailableData() {
 
+        if (Radio::transmitting) {
+            return 10;
+        }
+
         while(FREG_SERIAL.available()) {
             // Serial.println("f available");
             // uint8_t c = FREG_SERIAL.read();
-            fregbuffer[fcnt] = FREG_SERIAL.read();
+            // fregbuffer[fcnt] = FREG_SERIAL.read();
+            int recv = FREG_SERIAL.read();
+            if (recv == -1) {
+                continue;
+            } else {
+                fregbuffer[fcnt] = recv;
+            }
             //Serial.println(c);
             //fregbuffer[fcnt] = FREG_SERIAL.read();
-            if(fregbuffer[fcnt] == '\n') {
+            if(fcnt >= 2 && fregbuffer[fcnt] == '\n' && fregbuffer[fcnt-1] == '\n' && fregbuffer[fcnt-2] == '\n') {
                 Comms::Packet *packet = (Comms::Packet *)&fregbuffer;
                 //Serial.println("Got freg packet");
                 if(Comms::verifyPacket(packet)) {
@@ -96,8 +106,15 @@ namespace EREG_Comms {
             // uint8_t c = OREG_SERIAL.read();
             // oregbuffer[ocnt] = c;
             oregbuffer[ocnt] = OREG_SERIAL.read();
-            if(oregbuffer[ocnt] == '\n') {
-                Comms::Packet *packet = (Comms::Packet *)&oregbuffer;
+            int recv = OREG_SERIAL.read();
+            if (recv == -1) {
+                continue;
+            } else {
+                oregbuffer[ocnt] = recv;
+            }
+
+            if(ocnt >= 2 && oregbuffer[ocnt] == '\n' && oregbuffer[ocnt-1] == '\n' && oregbuffer[ocnt-2] == '\n') {
+                Comms::Packet *packet = (Comms::Packet *) &oregbuffer;
                 //Serial.println("Got oreg packet");
                 if(Comms::verifyPacket(packet)) {
                     Serial.print("Found oreg packet with ID ");
