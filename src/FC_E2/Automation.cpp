@@ -159,7 +159,7 @@ namespace Automation {
         //EREG_Comms::registerCallback(FC_LOX_PRESSURE, loxAutoVent);
         //EREG_Comms::registerCallback(FC_FUEL_PRESSURE, fuelAutoVent);
         Comms::registerCallback(FC_LOX_PRESSURE, loxAutoVent);
-        Comms::registerCallback(FC_LOX_PRESSURE, loxAutoVent);
+        Comms::registerCallback(FC_FUEL_PRESSURE, fuelAutoVent);
         Comms::registerCallback(FC_SET_AUTOVENT, setAutoVent);
         //do we want autovent on during flight???
     }
