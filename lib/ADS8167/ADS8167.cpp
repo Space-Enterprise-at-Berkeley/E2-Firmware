@@ -109,7 +109,7 @@ uint16_t ADS8167::readChannel(uint8_t* channel_out) {
 
   buffer[0] = 0x00;
   buffer[1] = 0x00;
-  _theSPI->transfer(buffer, 2);
+  // _theSPI->transfer(buffer, 2);
   for (int i = 2; i >= 0; i--){
       _theSPI->transfer(buffer[i]);
   }
