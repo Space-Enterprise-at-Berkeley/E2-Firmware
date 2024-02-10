@@ -58,7 +58,10 @@ namespace RS422
     serialBus->write(packet->timestamp, 4);
     serialBus->write(packet->checksum, 2);
     serialBus->write(packet->data, packet->len);
-    serialBus->write('\n');
+    for (int i = 0; i < 3; i++) {
+      serialBus->write('\n');
+    }
+    serialBus->flush();
   }
 
   void sendAbort(uint8_t systemMode, uint8_t abortReason) {
