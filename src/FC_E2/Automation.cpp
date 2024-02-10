@@ -17,7 +17,7 @@ namespace Automation {
 
     void onLaunch(Comms::Packet packet, uint8_t ip) {
         Mode systemMode = (Mode)packetGetUint8(&packet, 0); //now actually important. Dashboard must send right thing.
-        if (systemMode = LAUNCH){
+        if (systemMode == LAUNCH){
             vehicleState = FLIGHT;
         } else {
             vehicleState = FLOW;
