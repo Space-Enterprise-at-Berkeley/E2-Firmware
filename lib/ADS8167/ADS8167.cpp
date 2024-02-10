@@ -111,7 +111,7 @@ uint16_t ADS8167::readChannel(uint8_t* channel_out) {
   buffer[1] = 0x00;
   // _theSPI->transfer(buffer, 2);
   for (int i = 1; i >= 0; i--){
-      _theSPI->transfer(buffer[i]);
+      buffer[i] = _theSPI->transfer(buffer[i]);
   }
 
   digitalWrite(_cs_pin, HIGH);
@@ -126,7 +126,7 @@ uint16_t ADS8167::readChannel(uint8_t* channel_out) {
   buffer[1] = 0x00;
   // _theSPI->transfer(buffer, 2);
   for (int i = 1; i >= 0; i--){
-      _theSPI->transfer(buffer[i]);
+      buffer[i] = _theSPI->transfer(buffer[i]);
   }
 
   digitalWrite(_cs_pin, HIGH);
@@ -177,7 +177,7 @@ uint16_t ADS8167::readChannelOTF(const uint8_t otf_next_channel, uint8_t* channe
 
     // _theSPI->transfer(buffer, 3);
     for (int i = 2; i >= 0; i--){
-        _theSPI->transfer(buffer[i]);
+        buffer[i] = _theSPI->transfer(buffer[i]);
     }
 
     digitalWrite(_cs_pin, HIGH);
@@ -200,7 +200,7 @@ void ADS8167::write_cmd(const adc_cmd_t cmd, const uint16_t address, const uint8
     buffer[2] = (writeData) & 0xFF;
     // _theSPI->transfer(buffer, 3);
     for (int i = 2; i >= 0; i--){
-        _theSPI->transfer(buffer[i]);
+        buffer[i] = _theSPI->transfer(buffer[i]);
     }
 
     // _theSPI->endTransaction();
