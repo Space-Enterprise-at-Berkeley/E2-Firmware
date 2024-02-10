@@ -138,7 +138,7 @@ namespace Packets {
             //using send to all right now instead of extra socket
             //Comms::emitPacketToExtra(&packet);
             //RS422::emitPacket(&packet);
-            Comms:emitPacketToAll(&packet);
+            //Comms:emitPacketToAll(&packet);
             //RS422::emitPacket(&packet);
         }
 
