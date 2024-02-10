@@ -103,6 +103,9 @@ namespace Ducers {
         // Comms::registerCallback(140, handleFastReadPacket);
         // spi2 = new SPIClass(HSPI);
         spi2->begin();
+        spi2->setClockDivider(SPI_CLOCK_DIV128);
+        spi2->setDataMode(SPI_MODE0);
+
         // spi2->begin(45, 42, 41, 40);
         adc1.init(spi2, 40, 46);
         adc1.setAllInputsSeparate();

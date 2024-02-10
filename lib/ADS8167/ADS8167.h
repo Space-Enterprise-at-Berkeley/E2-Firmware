@@ -1,13 +1,13 @@
 #pragma once
 
 #include <Arduino.h>
-#include <SPI.h>
+#include <SoftSPI.h>
 
 class ADS8167 {
     public:
         ADS8167();
 
-        bool init(SPIClass *theSPI, uint8_t cs, uint8_t rdy);
+        bool init(SoftSPI *theSPI, uint8_t cs, uint8_t rdy);
 
         void setSDOMode();
         void enableSeqStatus(bool en);
