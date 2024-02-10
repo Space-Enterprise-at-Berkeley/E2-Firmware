@@ -8,8 +8,15 @@ SPIClass *spi2;
 
 void setup(){
     Serial.begin(921600);
-    spi2 = new SPIClass(HSPI);
-    spi2->begin(45, 42, 41, 40);
+
+    SoftSPI spi2Obj(41,42,45);
+    SoftSPI* spi2 = &spi2Obj;
+    
+    spi2->begin();
+    spi2->setClockDivider(SPI_CLOCK_DIV128);
+    spi2->setDataMode(SPI_MODE0);
+
+    // spi2->begin(45, 42, 41, 40);
     adc.init(spi2, 40, 46);
     adc.setAllInputsSeparate();
     adc.enableOTFMode();
