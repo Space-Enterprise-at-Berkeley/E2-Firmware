@@ -336,14 +336,14 @@ void setup() {
   Power::init();
   Comms::init(); // takes care of Serial.begin()
   EREG_Comms::init();
-  WiFiComms::init();
+  //WiFiComms::init();
   initWire();
   Ducers::init();
   AC::init();
   FlightSensors::init();
   ChannelMonitor::init(7, 6, 5, 3, 4);
   Automation::init();
-  BlackBox::init();
+  //BlackBox::init();
   Radio::initRadio();
 
   while(1) {

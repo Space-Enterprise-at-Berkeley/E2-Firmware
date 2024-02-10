@@ -8,7 +8,7 @@ namespace Ducers {
 
     uint32_t ptUpdatePeriod = 50 * 1000;
     Comms::Packet ptPacket = {.id = FC_PT_DATA};
-    const uint8_t numPT = 2;
+    const uint8_t numPT = 8;
     float data[numPT];
     float offset[numPT];
     float multiplier[numPT];
@@ -81,7 +81,7 @@ namespace Ducers {
         }
         Comms::emitPacketToGS(&response);
         WiFiComms::emitPacketToGS(&response);
-        Radio::forwardPacket(&response);
+        //Radio::forwardPacket(&response);
     }
 
     void resetCal(Comms::Packet packet, uint8_t ip){
@@ -101,7 +101,6 @@ namespace Ducers {
         spi2 = new SPIClass(HSPI);
         spi2->begin(45, 42, 41, 40);
         adc1.init(spi2, 40, 46);
-
         adc1.setAllInputsSeparate();
         adc1.enableOTFMode();
 
@@ -149,6 +148,7 @@ namespace Ducers {
     }
 
     uint32_t task_ptSample() {
+        
         // read from all 8 PTs in sequence
         if (channelCounter == 0){
              Comms::emitPacketToGS(&ptPacket);
@@ -157,7 +157,13 @@ namespace Ducers {
              ptPacket.len = 0;
         }
 
-        data[channelCounter] = multiplier[channelCounter] * (interpolate1000(adc1.readData(channelCounter)) + offset[channelCounter]);
+        uint16_t raw =  adc1.readData(channelCounter);
+        if (channelCounter == 0) {
+            Serial.println(raw);
+
+        }
+        data[channelCounter] = multiplier[channelCounter] * (interpolate1000(raw) + offset[channelCounter]);
+        data[channelCounter] = raw;
         Comms::packetAddFloat(&ptPacket, data[channelCounter]);
         
         channelCounter = (channelCounter + 1) % numPT;
@@ -171,5 +177,6 @@ namespace Ducers {
         }
         Serial.println();
     }
+
 
 };

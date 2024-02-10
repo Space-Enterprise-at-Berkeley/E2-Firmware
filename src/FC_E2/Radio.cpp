@@ -45,7 +45,7 @@ namespace Radio {
         transmitting = true;
         //digitalWrite(RADIO_LED, LOW);
         transmitStart = millis();
-        Serial.println("Transmitting Radio Packet");
+        //Serial.println("Transmitting Radio Packet");
         if(!success){
             Serial.println("Error Transmitting Radio Packet");
         }
@@ -66,7 +66,7 @@ namespace Radio {
         memcpy(radioBuffer + radioBufferSize, (uint8_t *) packet, packetLen);
         radioBufferSize += packetLen;
         
-        BlackBox::writePacket(packet);
+        //BlackBox::writePacket(packet);
     }
 
     bool processWaitingRadioPacket() {
@@ -102,14 +102,14 @@ namespace Radio {
                 Comms::Packet *packet = (Comms::Packet *) &packetBuffer;
                 
                 Comms::emitPacketToGS(packet);
-                BlackBox::writePacket(packet);
+                //BlackBox::writePacket(packet);
             }
             float rssi = (float) recvRadio.rssi;
             rssiPacket.len = 0;
             Comms::packetAddFloat(&rssiPacket, rssi);
             Comms::emitPacketToGS(&rssiPacket);
-            WiFiComms::emitPacketToGS(&rssiPacket);
-            BlackBox::writePacket(&rssiPacket);
+            //WiFiComms::emitPacketToGS(&rssiPacket);
+            //BlackBox::writePacket(&rssiPacket);
 
             recvRadio.ready = 0;
         }
