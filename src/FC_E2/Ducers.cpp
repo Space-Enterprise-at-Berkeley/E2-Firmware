@@ -1,9 +1,12 @@
 #include "Ducers.h"
 #include "EEPROM.h"
 
+
 namespace Ducers {
     ADS8167 adc1;
-    SPIClass *spi2; 
+    // SPIClass *spi2; 
+    SoftSPI spi2Obj(41,42,45);
+    SoftSPI* spi2 = &spi2Obj;
     
 
     uint32_t ptUpdatePeriod = 50 * 1000;
@@ -98,8 +101,9 @@ namespace Ducers {
 
     void init() {
         // Comms::registerCallback(140, handleFastReadPacket);
-        spi2 = new SPIClass(HSPI);
-        spi2->begin(45, 42, 41, 40);
+        // spi2 = new SPIClass(HSPI);
+        spi2->begin();
+        // spi2->begin(45, 42, 41, 40);
         adc1.init(spi2, 40, 46);
         adc1.setAllInputsSeparate();
         adc1.enableOTFMode();
