@@ -2,6 +2,7 @@
 
 #include <Arduino.h>
 #include <SoftSPI.h>
+// #include <SPI.h>
 
 class ADS8167 {
     public:
