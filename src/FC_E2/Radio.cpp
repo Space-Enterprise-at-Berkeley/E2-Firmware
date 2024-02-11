@@ -45,7 +45,7 @@ namespace Radio {
         transmitting = true;
         //digitalWrite(RADIO_LED, LOW);
         transmitStart = millis();
-        //Serial.println("Transmitting Radio Packet");
+        Serial.println("Transmitting Radio Packet");
         if(!success){
             Serial.println("Error Transmitting Radio Packet");
         }

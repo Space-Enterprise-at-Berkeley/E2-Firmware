@@ -160,7 +160,7 @@ namespace Ducers {
         if (channelCounter == 0){
              Comms::emitPacketToGS(&ptPacket);
              //WiFiComms::emitPacketToGS(&ptPacket);
-             //Radio::forwardPacket(&ptPacket);
+             Radio::forwardPacket(&ptPacket);
              ptPacket.len = 0;
         }
 
