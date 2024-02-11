@@ -5,6 +5,7 @@
 #include "WiFiCommsLite.h"
 #include "Radio.h"
 #include <ADS8167.h>
+#include <SoftSPI.h>
 
 #include <Arduino.h>
 
