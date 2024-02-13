@@ -14,4 +14,5 @@ namespace FlightSensors {
     uint32_t task_barometers();
     uint32_t task_accels();
     uint32_t task_GPS();
+    uint32_t task_fancy_barometer();
 };

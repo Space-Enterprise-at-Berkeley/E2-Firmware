@@ -82,6 +82,12 @@ namespace FlightSensors {
     SFE_UBLOX_GNSS neom9n;
     Comms::Packet gpsPacket = {.id = GPS_DATA};
 
+    float MS5607_temp = 0;
+    float MS5607_pressure = 0;
+    float MS5607_altitude = 0;
+
+    int fancy_baro_state = 0;
+
 
     // assumes initWire has been called
     void init() {
@@ -141,6 +147,36 @@ namespace FlightSensors {
         */
     }
 
+    uint32_t task_fancy_barometer() {
+        // MS5607
+        if(fancy_baro_state == 0) {
+            int delay_ms = fancyBarometer.startConversion(fancyBarometer.CONV_D1);
+            fancy_baro_state = 1;
+            return 1000 * delay_ms;
+        } else if(fancy_baro_state == 1) {
+            fancyBarometer.startMeasurment();
+            fancy_baro_state = 2;
+            return 1000 * 3;
+        } else if(fancy_baro_state == 2) {
+            fancyBarometer.getDigitalValue(fancyBarometer.DP);
+            int delay_ms = fancyBarometer.startConversion(fancyBarometer.CONV_D2);
+            fancy_baro_state = 3;
+            return 1000 * delay_ms;
+        } else if(fancy_baro_state == 3) {
+            fancyBarometer.startMeasurment();
+            fancy_baro_state = 4;
+            return 1000 * 3;
+        } else if(fancy_baro_state == 4) {
+            fancyBarometer.getDigitalValue(fancyBarometer.DT);
+            fancy_baro_state = 0;
+        }
+
+        MS5607_temp = fancyBarometer.getTemperature();
+        MS5607_pressure = fancyBarometer.getPressure();
+        MS5607_altitude = fancyBarometer.getAltitude();
+
+        return 25*1000;
+    }
 
     uint32_t task_barometers() {
         // BAROMETER PACKET
@@ -151,20 +187,6 @@ namespace FlightSensors {
         Comms::packetAddFloat(&baroPacket, bmp.readAltitude(SEALEVELPRESSURE_HPA));
         Comms::packetAddFloat(&baroPacket, bmp.temperature);
         Comms::packetAddFloat(&baroPacket, bmp.pressure / 100.0);
-
-        float MS5607_temp = 0;
-        float MS5607_pressure = 0;
-        float MS5607_altitude = 0;
-
-        // MS5607
-        // if(fancyBarometer.readDigitalValue()){
-        //     MS5607_temp = fancyBarometer.getTemperature();
-        //     MS5607_pressure = fancyBarometer.getPressure();
-        //     MS5607_altitude = fancyBarometer.getAltitude();
-        // }
-        // else{
-        //     Serial.println("MS5607 Error");
-        // }
 
         Comms::packetAddFloat(&baroPacket, MS5607_altitude);
         Comms::packetAddFloat(&baroPacket, MS5607_temp);
