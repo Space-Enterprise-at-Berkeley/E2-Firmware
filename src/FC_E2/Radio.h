@@ -11,6 +11,7 @@ namespace Radio {
     extern mode radioMode;
 
     #define MAX_RADIO_TRX_SIZE 128
+    #define PACKET_BUFFER_SIZE 20
 
     typedef struct{
 	uint8_t ready;
@@ -18,6 +19,9 @@ namespace Radio {
 	uint8_t length;
 	uint8_t buffer[MAX_RADIO_TRX_SIZE];
     } recvRadio_t;
+
+
+
 
     extern volatile recvRadio_t recvRadio;
 
@@ -33,5 +37,6 @@ namespace Radio {
     void forwardPacket(Comms::Packet *packet);
     bool processWaitingRadioPacket();
 
+    void processRadioBuffer();
     void processRadio();
 }

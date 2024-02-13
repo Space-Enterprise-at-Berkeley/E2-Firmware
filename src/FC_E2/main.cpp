@@ -50,6 +50,7 @@ void setup() {
   // setup stuff here
   nps = 0;
   prevTime = millis();
+  Serial.printf("hi!\n");
 
   pinMode(19, OUTPUT);
   digitalWrite(19, HIGH);
@@ -70,6 +71,7 @@ void setup() {
   while(1) {
     // main loop here to avoid arduino overhead
     for(uint32_t i = 0; i < TASK_COUNT; i++) { // for each task, execute if next time >= current time
+      Radio::processRadio();
       uint32_t ticks = micros(); // current time in microseconds
       if (taskTable[i].nexttime - ticks > UINT32_MAX / 2 && taskTable[i].enabled) {
         uint32_t nextTime = taskTable[i].taskCall();
@@ -80,21 +82,24 @@ void setup() {
         taskTable[i].nexttime = ticks + taskTable[i].taskCall();
         }
       }
+      
     }
+    Radio::processRadio();
     Comms::processWaitingPackets();
     EREG_Comms::processAvailableData();
     // WiFiComms::processWaitingPackets();
-    Radio::processRadio();
+    
+    Radio::processRadioBuffer();
 
     // Serial.printf("Radio state: %d\n", Radio::transmitting ? 1 : 0);
 
-    if (millis() - prevTime > 1000) {
-      prevTime = millis();
-      Serial.printf("loops: %d\n", nps);
-      nps = 0;
-    } else {
-      nps ++;
-    }
+    // if (millis() - prevTime > 1000) {
+    //   prevTime = millis();
+    //   Serial.printf("loops: %d\n", nps);
+    //   nps = 0;
+    // } else {
+    //   nps ++;
+    // }
   }
 }
 

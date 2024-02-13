@@ -8,6 +8,10 @@ namespace Radio {
     uint8_t radioBuffer[MAX_RADIO_TRX_SIZE];
     uint8_t radioBufferSize = 0;
 
+    uint8_t radioPacketBuffer[PACKET_BUFFER_SIZE][MAX_RADIO_TRX_SIZE];
+    uint8_t packetBufferSizesMap[PACKET_BUFFER_SIZE];
+    uint8_t packetBufferPtr;
+
     volatile bool transmitting = false;
     long transmitStart = 0;
 
@@ -18,6 +22,8 @@ namespace Radio {
     Comms::Packet rssiPacket = {.id = FC_RSSI};
 
     bool enabled = false;
+
+
     
     void initRadio() {
 
@@ -28,6 +34,19 @@ namespace Radio {
         radioMode = TX;
         Serial.println("Starting in flight mode");
         enabled = true;
+    }
+
+    void processRadioBuffer() {
+        if (!enabled) {
+            return;
+        }
+        bool success = Si446x_TX(radioPacketBuffer[packetBufferPtr - 1], packetBufferSizesMap[packetBufferPtr - 1], 0, SI446X_STATE_RX);
+        if (success == true) {
+            packetBufferPtr -= 1;
+            Serial.printf("transmut one packet - pbrptr is %d\n", packetBufferPtr);
+        } else {
+            Serial.printf("prb fail\n");
+        }
     }
 
     void transmitRadioBuffer(bool swapFlag){
@@ -41,10 +60,24 @@ namespace Radio {
             radioBuffer[radioBufferSize] = 255;
             radioBufferSize++;
         }
-        // bool success = Si446x_TX(radioBuffer, radioBufferSize, 0, SI446X_STATE_RX);
-        while (!Si446x_TX(radioBuffer, radioBufferSize, 0, SI446X_STATE_RX));
-        bool success = true;
-        // transmitting = true;
+        bool success = Si446x_TX(radioBuffer, radioBufferSize, 0, SI446X_STATE_RX);
+        Serial.printf("success is %d\n", success);
+        if (success == false) {
+            Serial.printf("adding to buffer, ptr is %d\n", packetBufferPtr);
+            if (packetBufferPtr >= PACKET_BUFFER_SIZE) {
+                radioBufferSize = 0;
+                return;
+            } else {
+                //copy radioBufferSize bytes of radioBuffer into packetBuffer[packetBufferPtr]
+                memcpy(radioPacketBuffer[packetBufferPtr], radioBuffer, radioBufferSize);
+                packetBufferSizesMap[packetBufferPtr] = radioBufferSize;
+                packetBufferPtr++;
+                radioBufferSize = 0;
+                return;
+            }
+        }
+
+        transmitting = true;
         //digitalWrite(RADIO_LED, LOW);
         transmitStart = millis();
         // Serial.println("Transmitting Radio Packet");
@@ -60,7 +93,7 @@ namespace Radio {
             return;
         }
         // BlackBox::writePacket(packet);
-        //Serial.println("forwarding packet");
+        // Serial.println("forwarding packet");
         int packetLen = packet->len + 8;
         if(radioBufferSize + packetLen > MAX_RADIO_TRX_SIZE - 1){
             // Serial.printf("Attempting to transmit buffer w size  %d\n", radioBufferSize+packetLen);

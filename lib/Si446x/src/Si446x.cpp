@@ -482,6 +482,7 @@ void Si446x_init()
 	pinMode(SI446X_IRQ, INPUT_PULLUP);
 #endif
 	SPI4463.begin(18, 17, 16);
+	SPI4463.setClockDivider(SPI_CLOCK_DIV64);
 #else
 	CSN_DDR |= _BV(CSN_BIT);
 	SDN_DDR |= _BV(SDN_BIT);
