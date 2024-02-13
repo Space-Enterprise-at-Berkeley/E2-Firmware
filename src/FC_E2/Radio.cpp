@@ -41,11 +41,13 @@ namespace Radio {
             radioBuffer[radioBufferSize] = 255;
             radioBufferSize++;
         }
-        bool success = Si446x_TX(radioBuffer, radioBufferSize, 0, SI446X_STATE_RX);
-        transmitting = true;
+        // bool success = Si446x_TX(radioBuffer, radioBufferSize, 0, SI446X_STATE_RX);
+        while (!Si446x_TX(radioBuffer, radioBufferSize, 0, SI446X_STATE_RX));
+        bool success = true;
+        // transmitting = true;
         //digitalWrite(RADIO_LED, LOW);
         transmitStart = millis();
-        Serial.println("Transmitting Radio Packet");
+        // Serial.println("Transmitting Radio Packet");
         if(!success){
             Serial.println("Error Transmitting Radio Packet");
         }

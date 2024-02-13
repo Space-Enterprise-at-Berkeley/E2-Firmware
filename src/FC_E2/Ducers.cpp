@@ -155,7 +155,8 @@ namespace Ducers {
     }
 
     uint32_t task_ptSample() {
-        
+
+
         // read from all 8 PTs in sequence
         if (channelCounter == 0){
              Comms::emitPacketToGS(&ptPacket);

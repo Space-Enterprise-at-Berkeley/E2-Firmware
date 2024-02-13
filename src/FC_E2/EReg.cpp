@@ -61,12 +61,12 @@ namespace EREG_Comms {
 
     uint32_t processAvailableData() {
 
-        if (Radio::transmitting) {
-            Serial.printf("waiting for turn\n");
-            return 10;
-        } else {
-            // Serial.printf("got turn\n");
-        }
+        // if (Radio::transmitting) {
+        //     Serial.printf("waiting for turn\n");
+        //     return 10;
+        // } else {
+        //     Serial.printf("got turn\n");
+        // }
 
         while(FREG_SERIAL.available()) {
             // Serial.println("f available");
@@ -108,7 +108,7 @@ namespace EREG_Comms {
             // Serial.println("o available");
             // uint8_t c = OREG_SERIAL.read();
             // oregbuffer[ocnt] = c;
-            oregbuffer[ocnt] = OREG_SERIAL.read();
+            // oregbuffer[ocnt] = OREG_SERIAL.read();
             int recv = OREG_SERIAL.read();
             if (recv == -1) {
                 continue;

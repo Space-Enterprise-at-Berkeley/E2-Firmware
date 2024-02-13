@@ -30,6 +30,7 @@ Task taskTable[] = {
 
   {Ducers::task_ptSample, 0, true},
   {print_task, 0, true},
+  {FlightSensors::task_fancy_barometer, 0, true},
   {FlightSensors::task_barometers, 0, true},
   {FlightSensors::task_accels, 0, true},
   {ChannelMonitor::task_readChannels, 0, true},
@@ -64,7 +65,7 @@ void setup() {
   ChannelMonitor::init(7, 6, 5, 3, 4);
   Automation::init();
   //BlackBox::init();
-  // Radio::initRadio();
+  Radio::initRadio();
 
   while(1) {
     // main loop here to avoid arduino overhead
@@ -84,6 +85,7 @@ void setup() {
     EREG_Comms::processAvailableData();
     // WiFiComms::processWaitingPackets();
     Radio::processRadio();
+
     // Serial.printf("Radio state: %d\n", Radio::transmitting ? 1 : 0);
 
     if (millis() - prevTime > 1000) {

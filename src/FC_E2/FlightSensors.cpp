@@ -179,6 +179,7 @@ namespace FlightSensors {
     }
 
     uint32_t task_barometers() {
+
         // BAROMETER PACKET
         baroPacket.len = 0;
 
@@ -200,6 +201,8 @@ namespace FlightSensors {
 
     uint32_t task_accels() {
         // ACCELEROMETER PACKET
+
+
         accelPacket.len = 0;
 
         // LSM6DS032 (16g, lowg)

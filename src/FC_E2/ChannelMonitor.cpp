@@ -57,6 +57,8 @@ float adcToCont(uint16_t counts) {
 
 // reads currents and continuity, reports them via packets and by setting the above arrays
 uint32_t task_readChannels() {
+
+
     Comms::Packet contPacket = {.id = FC_ACT_CONT};
     Comms::Packet currPacket = {.id = FC_ACT_CURR};
     Comms::Packet breakwirePacket = {.id = FC_BREAKWIRE};
