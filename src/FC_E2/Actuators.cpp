@@ -147,7 +147,7 @@ namespace AC {
     }
 
     // run every 10ms, could maybe less time as this is essentially the timing resolution of an actuation
-    return 1000 * 10;
+    return 1000 * 100;
   }
 
   // converts command from packet 100 to actuator state in packet 2

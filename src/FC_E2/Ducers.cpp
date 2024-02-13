@@ -8,7 +8,7 @@ namespace Ducers {
 
     uint32_t ptUpdatePeriod = 50 * 1000;
     Comms::Packet ptPacket = {.id = FC_PT_DATA};
-    const uint8_t numPT = 8;
+    const uint8_t numPT = 2;
     float data[numPT];
     float offset[numPT];
     float multiplier[numPT];

@@ -62,7 +62,10 @@ namespace EREG_Comms {
     uint32_t processAvailableData() {
 
         if (Radio::transmitting) {
+            Serial.printf("waiting for turn\n");
             return 10;
+        } else {
+            // Serial.printf("got turn\n");
         }
 
         while(FREG_SERIAL.available()) {

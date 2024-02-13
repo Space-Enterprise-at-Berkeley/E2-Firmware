@@ -157,14 +157,14 @@ namespace FlightSensors {
         float MS5607_altitude = 0;
 
         // MS5607
-        if(fancyBarometer.readDigitalValue()){
-            MS5607_temp = fancyBarometer.getTemperature();
-            MS5607_pressure = fancyBarometer.getPressure();
-            MS5607_altitude = fancyBarometer.getAltitude();
-        }
-        else{
-            Serial.println("MS5607 Error");
-        }
+        // if(fancyBarometer.readDigitalValue()){
+        //     MS5607_temp = fancyBarometer.getTemperature();
+        //     MS5607_pressure = fancyBarometer.getPressure();
+        //     MS5607_altitude = fancyBarometer.getAltitude();
+        // }
+        // else{
+        //     Serial.println("MS5607 Error");
+        // }
 
         Comms::packetAddFloat(&baroPacket, MS5607_altitude);
         Comms::packetAddFloat(&baroPacket, MS5607_temp);
