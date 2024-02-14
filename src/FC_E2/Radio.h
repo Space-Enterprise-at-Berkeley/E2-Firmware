@@ -30,6 +30,8 @@ namespace Radio {
     void transmitRadioBuffer();
     void transmitTestPattern() ;
 
+    void processTransmitStack();
+
     void forwardPacket(Comms::Packet *packet);
     bool processWaitingRadioPacket();
 

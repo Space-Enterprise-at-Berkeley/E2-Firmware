@@ -22,12 +22,10 @@ uint32_t print_task() {
   return 1000 * 1000;
 }
 
-int nps;
-uint32_t prevTime;
+
 
 Task taskTable[] = {
   // Ducers
-
   {Ducers::task_ptSample, 0, true},
   {print_task, 0, true},
   {FlightSensors::task_fancy_barometer, 0, true},
@@ -46,26 +44,13 @@ Task taskTable[] = {
 
 #define TASK_COUNT (sizeof(taskTable) / sizeof (struct Task))
 
-void setup() {
-  // setup stuff here
-  nps = 0;
-  prevTime = millis();
+TaskHandle_t Task0; //multicore tasks, not our scheduler tasks
+TaskHandle_t Task1;
 
-  pinMode(19, OUTPUT);
-  digitalWrite(19, HIGH);
 
-  Power::init();
-  Comms::init(); // takes care of Serial.begin()
-  EREG_Comms::init();
-  //WiFiComms::init();
-  initWire();
-  Ducers::init();
-  AC::init();
-  FlightSensors::init();
-  ChannelMonitor::init(7, 6, 5, 3, 4);
-  Automation::init();
-  //BlackBox::init();
-  Radio::initRadio();
+void core0Task(void * parameter) {
+
+  Serial.printf("started on core 0\n");
 
   while(1) {
     // main loop here to avoid arduino overhead
@@ -83,19 +68,71 @@ void setup() {
     }
     Comms::processWaitingPackets();
     EREG_Comms::processAvailableData();
-    // WiFiComms::processWaitingPackets();
-    Radio::processRadio();
-
-    // Serial.printf("Radio state: %d\n", Radio::transmitting ? 1 : 0);
-
-    if (millis() - prevTime > 1000) {
-      prevTime = millis();
-      Serial.printf("loops: %d\n", nps);
-      nps = 0;
-    } else {
-      nps ++;
-    }
   }
 }
 
-void loop() {} // unused
+void core1Task(void * parameter) {
+
+  Serial.printf("started on core 1\n");
+
+  while (69) {
+    Radio::processTransmitStack();
+    delay(1);
+    Radio::processRadio();
+  }
+
+
+}
+
+void setup() {
+
+  Serial.begin(921600);
+  Serial.printf("hi!!\n");
+
+  pinMode(19, OUTPUT);
+  digitalWrite(19, HIGH);
+  Power::init();
+  Comms::init(); // takes care of Serial.begin()
+  EREG_Comms::init();
+  //WiFiComms::init();
+  initWire();
+  Ducers::init();
+  AC::init();
+  FlightSensors::init();
+  ChannelMonitor::init(7, 6, 5, 3, 4);
+  Automation::init();
+  Radio::initRadio();
+  //BlackBox::init();
+  Serial.printf("init done\n");
+  delay(100);
+
+  Serial.printf("sending off core 1\n");
+  xTaskCreatePinnedToCore(
+                  core1Task,   /* Task function. */
+                  "Task1",     /* name of task. */
+                  20000,       /* Stack size of task */
+                  NULL,        /* parameter of the task */
+                  8,           /* priority of the task */
+                  &Task1,      /* Task handle to keep track of created task */
+                  1);          /* pin task to core 1 */
+
+  delay(10);
+
+  Serial.printf("sending off core 0\n");
+  xTaskCreatePinnedToCore(
+                  core0Task,   /* Task function. */
+                  "Task0",     /* name of task. */
+                  20000,       /* Stack size of task */
+                  NULL,        /* parameter of the task */
+                  8,           /* priority of the task */
+                  &Task0,      /* Task handle to keep track of created task */
+                  0);          /* pin task to core 0 */
+
+
+
+
+}
+
+void loop() {
+  
+}

@@ -11,6 +11,19 @@ namespace Radio {
     volatile bool transmitting = false;
     long transmitStart = 0;
 
+    #define PACKET_BUFFER_SIZE 20
+
+    volatile SemaphoreHandle_t stackMutex = NULL;
+    volatile uint8_t packetStack[PACKET_BUFFER_SIZE][MAX_RADIO_TRX_SIZE];
+    volatile uint8_t packetStackLengths[PACKET_BUFFER_SIZE];
+    volatile uint8_t packetStackSize = 0;
+    uint8_t stackPacketTransmitBuffer[MAX_RADIO_TRX_SIZE]; //for the second core to copy data into
+
+    volatile uint32_t cumPacketsPushed = 0;
+    volatile uint32_t cumPacketsTransmitted = 0;
+
+
+
     volatile recvRadio_t recvRadio;
 
     char packetBuffer[sizeof(Comms::Packet)];
@@ -25,9 +38,31 @@ namespace Radio {
         Si446x_setTxPower(127);
         Si446x_setupCallback(SI446X_CBS_SENT, 1); 
 
+        stackMutex = xSemaphoreCreateMutex();
+
         radioMode = TX;
         Serial.println("Starting in flight mode");
         enabled = true;
+    }
+
+     void processTransmitStack() {
+        //this is only run from core 1!! (second core) 
+        if (!xSemaphoreTake(stackMutex, 0xffffffUL)) { //~0.5s timeout
+            Serial.println("C1: Failed to take mutex");
+            return;
+        }
+        if(packetStackSize == 0){
+            xSemaphoreGive(stackMutex);
+            return;
+        } 
+        memcpy(stackPacketTransmitBuffer, (void*)packetStack[packetStackSize - 1], packetStackLengths[packetStackSize - 1]);
+        uint8_t len = packetStackLengths[packetStackSize - 1];
+        packetStackSize--;
+        xSemaphoreGive(stackMutex);
+
+        while (!Si446x_TX(stackPacketTransmitBuffer, len, 0, SI446X_STATE_RX));
+        cumPacketsTransmitted++;
+        Serial.printf("C1: Transmitted radio packet. Cum packets transmitted: %d\n", cumPacketsTransmitted);
     }
 
     void transmitRadioBuffer(bool swapFlag){
@@ -41,18 +76,32 @@ namespace Radio {
             radioBuffer[radioBufferSize] = 255;
             radioBufferSize++;
         }
-        // bool success = Si446x_TX(radioBuffer, radioBufferSize, 0, SI446X_STATE_RX);
-        while (!Si446x_TX(radioBuffer, radioBufferSize, 0, SI446X_STATE_RX));
-        bool success = true;
-        // transmitting = true;
-        //digitalWrite(RADIO_LED, LOW);
-        transmitStart = millis();
-        // Serial.println("Transmitting Radio Packet");
-        if(!success){
-            Serial.println("Error Transmitting Radio Packet");
+
+        bool success = false;
+
+        if (!xSemaphoreTake(stackMutex, 0xffffffUL)) { //~0.5s timeout
+            Serial.println("C0: Failed to take mutex");
+            return;
+        } 
+        if(packetStackSize < PACKET_BUFFER_SIZE){
+            memcpy((uint8_t*)packetStack[packetStackSize], radioBuffer, radioBufferSize);
+            packetStackLengths[packetStackSize] = radioBufferSize;
+            packetStackSize++;
+            success = true;
+        } else{
+            memcpy((uint8_t*)packetStack[packetStackSize - 1], radioBuffer, radioBufferSize);
+            packetStackLengths[packetStackSize - 1] = radioBufferSize;
+        }
+        xSemaphoreGive(stackMutex);
+        if (success) {
+            cumPacketsPushed++;
+            Serial.printf("C0: Added packet to stack, size: %d. Cum packets pushed to stack: %d\n", radioBufferSize, cumPacketsPushed);
+        } else {
+            Serial.printf("C0: Stack full, overwrote top packet, size: %d\n", radioBufferSize);
         }
         radioBufferSize = 0;
     }
+
     void transmitRadioBuffer(){ transmitRadioBuffer(false);}
 
     void forwardPacket(Comms::Packet *packet){
@@ -72,52 +121,7 @@ namespace Radio {
         //BlackBox::writePacket(packet);
     }
 
-    bool processWaitingRadioPacket() {
-        if (!enabled) {
-            return false;
-        }
-        if(recvRadio.ready == 1){
-            Serial.print("Received radio packet of size ");
-            Serial.println(recvRadio.length);
 
-            int16_t lastRssi = recvRadio.rssi;
-            Serial.print("RSSI:" );
-            Serial.println(lastRssi);
-
-            memcpy(radioBuffer, (uint8_t *)recvRadio.buffer, recvRadio.length);
-
-            recvRadio.ready == 0;
-
-            int idx = 0;
-            while(idx<recvRadio.length){
-                int packetID = radioBuffer[idx];
-                if(packetID == 255){
-                    radioBufferSize = 0;
-                    return true;
-                }
-
-                int packetLen = radioBuffer[idx+1];
-
-                memcpy(packetBuffer, (uint8_t *)radioBuffer + idx, packetLen+8);
-
-                idx += packetLen + 8;
-
-                Comms::Packet *packet = (Comms::Packet *) &packetBuffer;
-                
-                Comms::emitPacketToGS(packet);
-                //BlackBox::writePacket(packet);
-            }
-            float rssi = (float) recvRadio.rssi;
-            rssiPacket.len = 0;
-            Comms::packetAddFloat(&rssiPacket, rssi);
-            Comms::emitPacketToGS(&rssiPacket);
-            //WiFiComms::emitPacketToGS(&rssiPacket);
-            //BlackBox::writePacket(&rssiPacket);
-
-            recvRadio.ready = 0;
-        }
-        return false;
-    }
 
     void processRadio() {
         if (!enabled) {
