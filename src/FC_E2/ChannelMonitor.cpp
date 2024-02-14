@@ -33,8 +33,8 @@ void init(uint8_t s0, uint8_t s1, uint8_t s2, uint8_t mux1out_pin, uint8_t mux2o
     mux1out = mux1out_pin;
     mux2out = mux2out_pin;
 
-    // every 10 ms
-    cmUpdatePeriod = 1000 * 10;
+    // every 100 ms
+    cmUpdatePeriod = 1000 * 100;
 
     pinMode(sel0, OUTPUT);
     pinMode(sel1, OUTPUT);
@@ -57,6 +57,8 @@ float adcToCont(uint16_t counts) {
 
 // reads currents and continuity, reports them via packets and by setting the above arrays
 uint32_t task_readChannels() {
+
+
     Comms::Packet contPacket = {.id = FC_ACT_CONT};
     Comms::Packet currPacket = {.id = FC_ACT_CURR};
     Comms::Packet breakwirePacket = {.id = FC_BREAKWIRE};
@@ -66,11 +68,13 @@ uint32_t task_readChannels() {
         digitalWrite(sel0, i & 0x01);
         digitalWrite(sel1, (i >> 1) & 0x01);
         digitalWrite(sel2, (i >> 2) & 0x01);
-        delay(5);
+        delayMicroseconds(1);
 
         // read raw current and continuity voltages in ADC counts
+
         uint16_t mux1Val = analogRead(mux1out);
         uint16_t mux2Val = analogRead(mux2out);
+
         //Serial.println(mux1Val);
         mux1Data[i] = mux1Val;
         mux2Data[i] = mux2Val;

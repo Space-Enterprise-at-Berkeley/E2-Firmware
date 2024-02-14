@@ -41,11 +41,13 @@ namespace Radio {
             radioBuffer[radioBufferSize] = 255;
             radioBufferSize++;
         }
-        bool success = Si446x_TX(radioBuffer, radioBufferSize, 0, SI446X_STATE_RX);
-        transmitting = true;
+        // bool success = Si446x_TX(radioBuffer, radioBufferSize, 0, SI446X_STATE_RX);
+        while (!Si446x_TX(radioBuffer, radioBufferSize, 0, SI446X_STATE_RX));
+        bool success = true;
+        // transmitting = true;
         //digitalWrite(RADIO_LED, LOW);
         transmitStart = millis();
-        Serial.println("Transmitting Radio Packet");
+        // Serial.println("Transmitting Radio Packet");
         if(!success){
             Serial.println("Error Transmitting Radio Packet");
         }
@@ -61,6 +63,7 @@ namespace Radio {
         //Serial.println("forwarding packet");
         int packetLen = packet->len + 8;
         if(radioBufferSize + packetLen > MAX_RADIO_TRX_SIZE - 1){
+            // Serial.printf("Attempting to transmit buffer w size  %d\n", radioBufferSize+packetLen);
             transmitRadioBuffer();
         }
         memcpy(radioBuffer + radioBufferSize, (uint8_t *) packet, packetLen);

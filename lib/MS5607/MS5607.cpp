@@ -86,7 +86,7 @@ char MS5607::startMeasurment(void){
   Wire.write(R_ADC);
   char error = Wire.endTransmission();
   if(error == 0){
-    delay(3);
+    // delay(3);
     return(1);
   }else{return(0);}
 }

@@ -155,7 +155,8 @@ namespace Ducers {
     }
 
     uint32_t task_ptSample() {
-        
+
+
         // read from all 8 PTs in sequence
         if (channelCounter == 0){
              Comms::emitPacketToGS(&ptPacket);
@@ -170,7 +171,7 @@ namespace Ducers {
 
         }
         data[channelCounter] = multiplier[channelCounter] * (interpolate1000(raw) + offset[channelCounter]);
-        data[channelCounter] = raw;
+        // data[channelCounter] = raw;
         Comms::packetAddFloat(&ptPacket, data[channelCounter]);
         
         channelCounter = (channelCounter + 1) % numPT;
