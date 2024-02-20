@@ -1,4 +1,5 @@
 #include "HAL.h"
+#include "StateMachine.h"
 
 namespace HAL {
 
@@ -486,11 +487,15 @@ namespace HAL {
 
     void valveClosedLimitSwitchTrigger() {
         closedLimitSwitchEngaged = digitalRead(LIMIT_1);
-        Util::stopMotor();
+        if (StateMachine::getCurrentState() != StateMachine::FLOW) {
+            Util::stopMotor();
+        }
     }
     void valveOpenLimitSwitchTrigger() {
         openLimitSwitchEngaged = digitalRead(LIMIT_2);
-        Util::stopMotor();
+        if (StateMachine::getCurrentState() != StateMachine::FLOW) {
+            Util::stopMotor();
+        }
     }
     int getClosedLimitSwitchState() {
         closedLimitSwitchEngaged = digitalRead(LIMIT_1);
