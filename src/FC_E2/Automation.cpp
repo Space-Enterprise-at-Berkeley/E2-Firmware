@@ -46,27 +46,13 @@ namespace Automation {
                 //open lox and fuel gems
                 AC::actuate(LOX_GEMS, AC::ON, 0);
                 AC::actuate(FUEL_GEMS, AC::ON, 0);
-                break;
-            case ENGINE_OVERTEMP: // no tcs on flight
-                AC::actuate(LOX_GEMS, AC::ON, 0);
-                AC::actuate(FUEL_GEMS, AC::ON, 0);
-                //close n2 flow and fill
-                AC::actuate(N2_FLOW,AC::TIMED_RETRACT, 8000);
-                break;
-            case LC_UNDERTHRUST: // no lcs on flight
-                AC::actuate(LOX_GEMS, AC::ON, 0);
-                AC::actuate(FUEL_GEMS, AC::ON, 0);
-                //close n2 flow and fill
                 AC::actuate(N2_FLOW,AC::TIMED_RETRACT, 8000);
                 break;
             case MANUAL_ABORT: //not on flight
                 AC::actuate(LOX_GEMS, AC::ON, 0);
                 AC::actuate(FUEL_GEMS, AC::ON, 0);
                 //close n2 flow and fill
-                AC::actuate(N2_FLOW,AC::TIMED_RETRACT, 8000);
                 break;
-            case IGNITER_NO_CONTINUITY:
-            case BREAKWIRE_NO_CONTINUITY:
             case BREAKWIRE_NO_BURNT:
                 AC::actuate(LOX_GEMS, AC::ON, 0);
                 AC::actuate(FUEL_GEMS, AC::ON, 0);

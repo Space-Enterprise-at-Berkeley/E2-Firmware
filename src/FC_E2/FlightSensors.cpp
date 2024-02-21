@@ -149,10 +149,10 @@ namespace FlightSensors {
         neom9n.setNavigationFrequency(5);
         neom9n.setAutoPVT(true);
         //neom9n.setHighPrecisionMode(): wonder if this helps
-
-        //neom9n.setNMEAOutputPort(Serial);
-
         
+        //set to airborne <4g instead of portable
+        neom9n.setDynamicModel(DYN_MODEL_AIRBORNE4g);
+
     }
 
     uint32_t task_fancy_barometer() {
