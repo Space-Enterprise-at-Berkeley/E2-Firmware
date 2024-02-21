@@ -16,7 +16,12 @@ void setup()
     while (1);
   }
 
+myGNSS.factoryReset(); //Reset everything: baud rate, I2C address, update rate, everything.
+
+  delay(5000);
+
   //This will pipe all NMEA sentences to the serial port so we can see them
+  myGNSS.setI2COutput(COM_TYPE_NMEA);
   myGNSS.setNMEAOutputPort(Serial);
 }
 

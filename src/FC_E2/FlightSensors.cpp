@@ -132,19 +132,27 @@ namespace FlightSensors {
         highg_accel.setRange(SFE_KX134_RANGE64G); // 64g Range
         highg_accel.enableDataEngine(); // Enables the bit that indicates data is ready.
         highg_accel.enableAccel();
-        /*
+        
         if (neom9n.begin() == false) //Connect to the u-blox module using Wire port
         {
             Serial.println(F("u-blox GNSS not detected at default I2C address. Please check wiring. Freezing."));
             while (1);
         }
 
-        neom9n.setI2COutput(COM_TYPE_UBX); //Set the I2C port to output UBX only (turn off NMEA noise)
+        //neom9n.factoryReset(); //Reset everything: baud rate, I2C address, update rate, everything.
+
+        //delay(5000);
+
+        //neom9n.setI2COutput(COM_TYPE_NMEA); //Set the I2C port to output UBX only (turn off NMEA noise)
+        neom9n.setI2COutput(COM_TYPE_UBX);
         neom9n.saveConfigSelective(VAL_CFG_SUBSEC_IOPORT); //Save (only) the communications port settings to flash and BBR
-        neom9n.setNavigationFrequency(40);
+        neom9n.setNavigationFrequency(5);
         neom9n.setAutoPVT(true);
         //neom9n.setHighPrecisionMode(): wonder if this helps
-        */
+
+        //neom9n.setNMEAOutputPort(Serial);
+
+        
     }
 
     uint32_t task_fancy_barometer() {
@@ -237,6 +245,7 @@ namespace FlightSensors {
 
     uint32_t task_GPS() {
         gpsPacket.len = 0;
+        //neom9n.checkUblox(); //See if new data is available. Process bytes as they come in.
         Comms::packetAddFloat(&gpsPacket, neom9n.getAltitude() / 1000);
         Comms::packetAddFloat(&gpsPacket, neom9n.getLatitude() / 1e7);
         Comms::packetAddFloat(&gpsPacket, neom9n.getLongitude() / 1e7);
@@ -245,11 +254,21 @@ namespace FlightSensors {
         Comms::packetAddFloat(&gpsPacket, neom9n.getGroundSpeed() / 1000);
         Comms::packetAddUint8(&gpsPacket, (uint8_t)(neom9n.getSIV()));
 
+        
+        //Serial.print("SIV:");
+        //Serial.println(neom9n.getSIV());
+        //Serial.print("Fix:");
+        //Serial.println(neom9n.getGnssFixOk());
+        //Serial.printf("%2.9f\n", neom9n.getAltitude()/1000);
+        //Serial.printf("%2.9f\n", neom9n.getLatitude()/1e7);
+        //Serial.printf("%2.9f\n", neom9n.getLongitude()/1e7);
+        
+
         // emit the packets
         Comms::emitPacketToGS(&gpsPacket);
         WiFiComms::emitPacketToGS(&gpsPacket);
         Radio::forwardPacket(&gpsPacket);
-        return 100 * 1000;
+        return 200 * 1000;
     }
 
 

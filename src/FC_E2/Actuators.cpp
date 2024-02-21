@@ -54,6 +54,7 @@ namespace AC {
 
   // called when an actuation needs to begin, registered callback in init
   void beginActuation(Comms::Packet tmp, uint8_t ip) {
+    /*
     uint8_t channel = packetGetUint8(&tmp, 0);
     uint8_t cmd = packetGetUint8(&tmp, 1);
     uint32_t time = packetGetUint32(&tmp, 2);
@@ -61,9 +62,11 @@ namespace AC {
     Serial.println("Received command to actuate channel " + String(channel) + " with command " + String(cmd) + " w time " + String(time));
 
     actuate(channel, cmd, time);
+    */
   }
 
   void actuate(uint8_t channel, uint8_t cmd, uint32_t time) {
+    /*
     // set states and timers of actuator
     actuators[channel].state = cmd;
     actuators[channel].timeLeft = time;
@@ -80,15 +83,18 @@ namespace AC {
       actuators[channel].stop();
     }
     return;
+    */
   }
 
   void delayedActuate(uint8_t channel, uint8_t cmd, uint32_t time, uint32_t delay) {
+    /*
     // add to list of delayed actuations
     delayedActuationsChannel[delayedActuationCount] = channel;
     delayedActuationsCmd[delayedActuationCount] = cmd;
     delayedActuationsTime[delayedActuationCount] = time;
     delayedActuationsDelay[delayedActuationCount] = delay + millis();
     delayedActuationCount++;
+    */
   }
 
   uint8_t getActuatorState(uint8_t channel) {

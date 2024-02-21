@@ -33,6 +33,7 @@ Task taskTable[] = {
   {FlightSensors::task_fancy_barometer, 0, true},
   {FlightSensors::task_barometers, 0, true},
   {FlightSensors::task_accels, 0, true},
+  {FlightSensors::task_GPS, 0, true},
   {ChannelMonitor::task_readChannels, 0, true},
   {AC::task_actuationDaemon, 0, true},
   {AC::task_actuatorStates, 0, true},
