@@ -12,7 +12,6 @@
 #include "ChannelMonitor.h"
 #include "Automation.h"
 #include "ReadPower.h"
-#include "BlackBox.h"
 #include "Radio.h"
 #include "EReg.h"
 
@@ -78,7 +77,7 @@ void setup() {
           taskTable[i].enabled = false;
         }
         else {
-        taskTable[i].nexttime = ticks + taskTable[i].taskCall();
+        taskTable[i].nexttime = ticks + nextTime;
         }
       }
     }

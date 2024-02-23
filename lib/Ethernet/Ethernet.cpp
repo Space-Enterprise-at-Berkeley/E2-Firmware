@@ -104,7 +104,7 @@ void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress g
 	W5500.writeSnIMR(0, 0x04);
 	// Set Interupprt
 	if (ETH_intN == -1) {
-		ETH_intN = 9;
+		ETH_intN = 20;
 	}
 	pinMode(ETH_intN, INPUT_PULLUP);
 	//attachInterrupt(ETH_intN, setRecvFlag, FALLING);
@@ -113,7 +113,7 @@ void EthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress g
 
 bool EthernetClass::detectRead() {
 	//if (INTnFlag) {
-	if (!digitalRead(9)) {
+	if (!digitalRead(20)) {
 		W5500.writeSnIR(0, 0xff);
 		INTnFlag = false;
 		return true;

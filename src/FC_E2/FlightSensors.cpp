@@ -255,13 +255,13 @@ namespace FlightSensors {
 
 
         
-        Serial.print("SIV:");
-        Serial.println(neom9n.getSIV());
-        Serial.print("Fix:");
-        Serial.println(neom9n.getGnssFixOk());
-        Serial.printf("%2.9f\n", neom9n.getAltitude()/1000);
-        Serial.printf("%2.9f\n", neom9n.getLatitude()/1e7);
-        Serial.printf("%2.9f\n", neom9n.getLongitude()/1e7);
+        // Serial.print("SIV:");
+        // Serial.println(neom9n.getSIV());
+        // Serial.print("Fix:");
+        // Serial.println(neom9n.getGnssFixOk());
+        // Serial.printf("%2.9f\n", neom9n.getAltitude()/1000);
+        // Serial.printf("%2.9f\n", neom9n.getLatitude()/1e7);
+        // Serial.printf("%2.9f\n", neom9n.getLongitude()/1e7);
 
         
 

@@ -45,7 +45,7 @@ namespace Comms {
 
   void init() {
     //init(10, -1, -1, -1, -1);
-    init(10, 13, 26, 12, 9);
+    init(10, 13, 26, 12, 20);
   }
 
   void initExtraSocket(int port, uint8_t ip){
@@ -108,6 +108,7 @@ namespace Comms {
   void processWaitingPackets()
   {
     if (Ethernet.detectRead()) {
+      //Serial.print("detected read");
       if (Udp.parsePacket()) {
         Serial.println("packet");
         // if(Udp.remotePort() != port) return;

@@ -167,7 +167,7 @@ namespace Ducers {
 
         uint16_t raw =  adc1.readData(channelCounter);
         if (channelCounter == 0) {
-            Serial.println(raw);
+            //Serial.println(raw);
 
         }
         data[channelCounter] = multiplier[channelCounter] * (interpolate1000(raw) + offset[channelCounter]);
