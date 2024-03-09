@@ -2,6 +2,8 @@
 
 namespace TC {
   Comms::Packet tcPacket = {.id = 2};
+  Comms::Packet coldJunctPacket = {.id = 3};
+  Comms::Packet faultPacket = {.id = 4};
   MAX31855* tcs = new MAX31855[8];
   int sendRate = 50 * 1000; // 100ms
   SPIClass *vspi;
@@ -11,6 +13,14 @@ namespace TC {
   ulong abortStart[8] = {0,0,0,0,0,0,0,0};
   uint8_t ABORTTC1 = 1;
   uint8_t ABORTTC2 = 2;
+
+  float temperatures[8] = {0,0,0,0,0,0,0,0};
+  float cjt[8] = {0,0,0,0,0,0,0,0};
+  uint8_t temp_faults[8] = {0,0,0,0,0,0,0,0};
+  float temp;
+  float cj;
+  uint8_t f;
+
 
   void init() {
     //Serial.println("Initializing TCs...");
@@ -45,45 +55,49 @@ namespace TC {
     return 0;
   }
 
-  float sample(uint8_t index) {
-    if (abortOn && (index == ABORTTC1 || index == ABORTTC2)){
-      float temp = tcs[index].readCelsius();
-      if (isnan(temp)){
-        //do not reset abort timer
-      } else {
-        if (temp > abortTemp){
-          if (abortStart[index] == 0){
-            abortStart[index] = millis();
-          }
-        }
-        else{
-          abortStart[index] = 0;
-        }
-      }
-
-      if (abortStart[index] != 0 && millis() - abortStart[index] > abortTime){
-        Comms::sendAbort(HOTFIRE, ENGINE_OVERTEMP);
-        setAbort(false);
-      }
-      
-    }
-    return tcs[index].readCelsius();
+  void sample(uint8_t index) {
+    tcs[index].readCelsius(&temp, &cj, &f);
+    temperatures[index] = temp;
+    cjt[index] = cj;
+    temp_faults[index] = f;
   }
 
   uint32_t task_sampleTCs() {
     tcPacket.len = 0;
+    // add temperatures, the faults
     for (uint8_t i = 0; i < 8; i ++) {
-      Comms::packetAddFloat(&tcPacket, sample(i));
+      sample(i);
+      Comms::packetAddFloat(&tcPacket, temperatures[i]);
     }
     Comms::emitPacketToGS(&tcPacket);
+
+    coldJunctPacket.len = 0;
+    for (uint8_t i = 0; i < 8; i ++) {
+      Comms::packetAddFloat(&coldJunctPacket, cjt[i]);
+    }
+    Comms::emitPacketToGS(&coldJunctPacket);
+
+    faultPacket.len = 0;
+    for (uint8_t i = 0; i < 8; i ++) {
+      Comms::packetAddUint8(&faultPacket, temp_faults[i]);
+    }
+     Comms::emitPacketToGS(&faultPacket);
+
     return sendRate;
   }
 
   void print_sampleTCs(){
     for (uint8_t i = 0; i < 8; i ++) {
-      Serial.print(sample(i));
-      Serial.print(" ");
+      Serial.print(temperatures[i]);
+      Serial.print(" : ");
+      Serial.print(temp_faults[i]);
+      Serial.print(" : ");
+      Serial.println(cjt[i]);
     }
     Serial.println();
+  }
+
+  float getTemp(int i) {
+    return temperatures[i];
   }
 }
